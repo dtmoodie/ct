@@ -26,13 +26,8 @@ namespace ct
         {
             return value;
         }
-        
-        static constexpr Type outputType()
-        {
-            return {};
-        }
+
         Type value;
-        
     };
     template <uint32_t N, class T> inline
         HashedObject<T, N> makeHashed(T && value)

@@ -10,8 +10,9 @@ namespace ct
     template<class T>
     using enable_if_pod = typename std::enable_if<
         std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value>::type;
+
     template<class T>
-    using data_type = typename std::remove_reference<T>::type::Type;
+    using data_type = typename remove_reference_t<T>::Type;
 
     template<class T>
     struct Square<T, enable_if_pod<T>>
@@ -69,5 +70,4 @@ namespace ct
     {
         return {std::forward<IN>(input), args...};
     }
-
 } // namespace ct
