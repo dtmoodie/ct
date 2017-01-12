@@ -14,6 +14,7 @@ template<uint32_t N> struct ctv
 {
     const static uint32_t value = N;
 };
+template<uint32_t N> const uint32_t ctv<N>::value;
 
 BOOST_AUTO_TEST_CASE(string)
 {

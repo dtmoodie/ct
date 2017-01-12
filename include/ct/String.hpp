@@ -34,10 +34,10 @@ namespace ct
     }
 #define DECLARE_CLASS_HASH \
 static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__);} \
-static const uint32_t hash = getHash();
+enum : uint32_t {hash = getHash()};
 
 #define DECLARE_MODULE_HASH(N) \
 static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__) ^ N;} \
-static const uint32_t hash = getHash();
+enum : uint32_t {hash = getHash()};
 
 } // namespace ct

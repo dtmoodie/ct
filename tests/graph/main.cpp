@@ -31,6 +31,17 @@ const char* getInputType(T&& t)
     return typeid(typename T::Input_t).name();
 }
 
+template<class T>
+ct::enable_if_pod<T> testPod(T&& t)
+{
+    return;
+}
+
+struct vec
+{
+    float data[3];
+};
+
 BOOST_AUTO_TEST_CASE(operators)
 {
     float value = 15.0f;
@@ -38,6 +49,7 @@ BOOST_AUTO_TEST_CASE(operators)
     std::cout << hashed.getHash() << std::endl;
     std::cout << getBaseName(hashed) << std::endl;
     std::cout << getOutputType(hashed) << std::endl;
+    testPod(hashed);
 
     auto sqop = ct::makeUnary<ct::Square>(hashed);
     std::cout << sqop.getHash() << std::endl;
@@ -50,6 +62,4 @@ BOOST_AUTO_TEST_CASE(operators)
     std::cout << getOutputType(sqrtop) << std::endl;
     
     auto result2 = sqrtop();
-    
-
 }
