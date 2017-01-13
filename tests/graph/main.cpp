@@ -165,4 +165,10 @@ BOOST_AUTO_TEST_CASE(unary_operators_vector_const)
         BOOST_REQUIRE_EQUAL(intvec[i], hashedvec(i));
         BOOST_REQUIRE_EQUAL(sqvec(i), hashedvec(i) * hashedvec(i));
     }
+    auto sqrtvec = ct::makeUnary<ct::Sqrt>(sqvec);
+    for (int i = 0; i < hashedvec.getSize(); ++i)
+    {
+        BOOST_REQUIRE_EQUAL(sqrtvec(i), hashedvec(i));
+    }
+    sqrtvec(0);
 }

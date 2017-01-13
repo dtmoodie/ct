@@ -46,7 +46,7 @@ namespace ct
         typedef OperatorType<T> Input_t;
         typedef decay_t<typename decay_t<T>::Elem_t> Output_t;
         typedef typename remove_reference_t<T>::Elem_t OutputReference_t;
-        typedef Output_t Type;
+        typedef decay_t<typename decay_t<T>::Type> Type;
         typedef decay_t<typename decay_t<T>::Elem_t> Elem_t;
         enum
         {
