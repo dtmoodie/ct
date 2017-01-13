@@ -7,9 +7,12 @@ namespace ct
 {
     template<class T, typename enable = void>
     struct Square;
+
+    
     template<class T>
     using enable_if_pod = typename std::enable_if<
         std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value>::type;
+
 
     template<class T>
     using data_type = typename remove_reference_t<T>::Type;
@@ -30,21 +33,34 @@ namespace ct
 
         Output_t operator()()
         {
-            return value()*value();
+            Output_t  tmp = value();
+            return tmp*tmp;
         }
         
-        void operator()(OutputReference_t val)
+        template<class... Dims>
+        Output_t operator()(Dims... dims)
         {
-            val = value() * value();
+            Output_t tmp = value(dims...);
+            return tmp*tmp;
         }
         Input_t value;
     };
 
     template<class T, typename enable = void>
     struct Sqrt;
+    template<class T>
+    constexpr bool test_pod_or_indexable(T* t= nullptr)
+    {
+        return std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value || T::IsIndexable;
+    }
+    template<class T>
+    constexpr bool test_pod(T* t= nullptr)
+    {
+        return std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value;
+    }
 
     template<class T>
-    struct Sqrt<T, enable_if_pod<T>>
+    struct Sqrt<T, typename std::enable_if<std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value>::type>
     {
         DECLARE_CLASS_HASH;
         typedef OperatorType<T> Input_t;
@@ -60,6 +76,12 @@ namespace ct
         Output_t operator()()
         {
             return std::sqrt(value());
+        }
+        
+        template<class ... Dims>
+        Output_t operator()(Dims... dims)
+        {
+            return std::sqrt(value(dims...));
         }
 
         Input_t value;
