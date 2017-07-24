@@ -32,6 +32,24 @@ namespace ct
     {
         return ctcrc32Range(str, classNameIdx(str));
     }
+
+    // https://stackoverflow.com/questions/25195176/how-do-i-convert-a-c-string-to-a-int-at-compile-time
+    constexpr bool isDigit(char c) {
+        return c <= '9' && c >= '0';
+    }
+
+    constexpr int stoiImpl(const char* str, int value = 0) {
+        return *str ?
+            isDigit(*str) ?
+            stoiImpl(str + 1, (*str - '0') + value * 10)
+            : throw "compile-time-error: not a digit"
+            : value;
+    }
+
+    constexpr int stoi(const char* str) {
+        return stoiImpl(str);
+    }
+
 #define DECLARE_CLASS_HASH \
 static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__);} \
 enum : uint32_t {hash = getHash()};
