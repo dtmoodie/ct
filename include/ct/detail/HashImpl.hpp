@@ -57,6 +57,12 @@ namespace ct
             return (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF];
         }
 
+        template<size_t idx>
+        constexpr uint32_t combine_crc32_ignore_whitespace(const char * str, uint32_t part)
+        {
+            return str[idx] != ' ' ? (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF] : part;
+        }
+
 
         constexpr uint32_t ctCombine_crc32(const char * str, uint32_t part, size_t idx)
         {
@@ -69,9 +75,21 @@ namespace ct
             return combine_crc32<idx>(str, crc32<idx - 1>(str));
         }
 
+        template<size_t idx>
+        constexpr uint32_t crc32_ignore_whitespace(const char * str)
+        {
+            return combine_crc32_ignore_whitespace<idx>(str, crc32_ignore_whitespace<idx - 1>(str));
+        }
+
         // This is the stop-recursion function
         template<>
         constexpr uint32_t crc32<size_t(-1)>(const char * str)
+        {
+            return 0xFFFFFFFF;
+        }
+
+        template<>
+        constexpr uint32_t crc32_ignore_whitespace<size_t(-1)>(const char * str)
         {
             return 0xFFFFFFFF;
         }
