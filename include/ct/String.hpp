@@ -1,6 +1,5 @@
 #pragma once
 #include "detail/StringImpl.hpp"
-#include "Hash.hpp"
 namespace ct
 {
     template<size_t N>
@@ -18,7 +17,8 @@ namespace ct
     }
 
     constexpr size_t findFirst(const char* str, char character = ':', size_t pos = 0){
-        return *str ? (*str == character) ? pos + 1 : findFirst(str + 1, character, pos+1) : pos;
+        //return *str ? (*str == character) ? pos + 1 : findFirst(str + 1, character, pos+1) : pos;
+        return detail::findFirst(str, strLen(str), 0, character);
     }
 
     constexpr size_t countOccurances(const char* str, char character = ':', size_t count = 0){
@@ -32,12 +32,12 @@ namespace ct
 
     template<size_t Tlen>
     constexpr size_t classNameIdx(const char(&str)[Tlen]){
-        return detail::ctFindDeliminator(str, Tlen - 1);
+        return detail::ctFindDeliminator(str, Tlen - 1) - 2;
     }
+
     
-    template<size_t Tlen>
-    constexpr uint32_t hashClassName(const char(&str)[Tlen]){
-        return ctcrc32Range(str, classNameIdx(str));
+    constexpr size_t classNameIdx(const char* str) {
+        return detail::ctFindDeliminator(str, strLen(str) - 1) - 1;
     }
 
     // https://stackoverflow.com/questions/25195176/how-do-i-convert-a-c-string-to-a-int-at-compile-time
@@ -71,13 +71,5 @@ namespace ct
     constexpr int stoiRange(const char* start, int len) {
         return stoiImplRange(start, start + len);
     }
-
-#define DECLARE_CLASS_HASH \
-static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__);} \
-enum : uint32_t {hash = getHash()};
-
-#define DECLARE_MODULE_HASH(N) \
-static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__) ^ N;} \
-enum : uint32_t {hash = getHash()};
 
 } // namespace ct

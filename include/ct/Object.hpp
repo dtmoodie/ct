@@ -1,17 +1,39 @@
 #pragma once
 #include "String.hpp"
+#include "Hash.hpp"
 #include <ct/detail/TypeTraits.hpp>
 #include <type_traits>
 
 namespace ct
 {
+    template<size_t Tlen>
+    constexpr uint32_t hashClassName(const char(&str)[Tlen]) {
+        return ctcrc32Range(str, classNameIdx(str) + 1);
+    }
+    constexpr uint32_t hashClassName(const char* str)
+    {
+        return ctcrc32Range(str, classNameIdx(str));
+    }
+}
+
+#define DECLARE_CLASS_HASH \
+static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__);}
+
+#define DECLARE_MODULE_HASH(N) \
+static constexpr uint32_t getHash() {return ct::hashClassName(__FUNCTION__) ^ N;} \
+enum : uint32_t {hash = getHash()};
+
+namespace ct
+{
+
+
     template<class T, uint32_t N, typename enable = void>
     struct HashedObject;
 
     template<class T, uint32_t N>
     struct HashedObject<T, N, typename std::enable_if<std::is_pod<remove_reference_t<T>>::value>::type>
     {
-        DECLARE_MODULE_HASH(N)
+        DECLARE_MODULE_HASH(N);
         enum
         {
             ConstSize = 1,
@@ -43,7 +65,7 @@ namespace ct
     template<class T, uint32_t N>
     struct HashedObject<T, N, typename std::enable_if<Indexable<decay_t<T>>::IsIndexable>::type>
     {
-        DECLARE_MODULE_HASH(N)
+        DECLARE_MODULE_HASH(N);
         enum
         {
             ConstSize = Indexable<decay_t<T>>::ConstSize || std::is_const<remove_reference_t<T>>::value,

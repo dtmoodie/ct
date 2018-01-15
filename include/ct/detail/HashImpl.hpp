@@ -1,5 +1,6 @@
 #pragma once
-
+#include <cstdint>
+#include <ct/String.hpp>
 namespace ct
 {
     namespace detail
@@ -97,6 +98,11 @@ namespace ct
         constexpr uint32_t ctcrc32(const char* str, size_t len)
         {
             return len == -1 ? 0xFFFFFFFF : ctCombine_crc32(str, ctcrc32(str, len - 1), len);
+        }
+
+        constexpr uint32_t ctcrc32(const char* str)
+        {
+            return ctcrc32(str, ct::strLen(str));
         }
     } // namespace detail
 } // namespace ct

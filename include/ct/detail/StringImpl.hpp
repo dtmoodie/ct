@@ -15,7 +15,6 @@ namespace ct
         {
             return str[idx] == del ? idx : idx == N - 1 ? N : findFirst<idx + 1, N>(str, del);    
         }
-        
 
         // len needs to be length of string - 1
         constexpr size_t ctFindDeliminator(const char* str, size_t len)

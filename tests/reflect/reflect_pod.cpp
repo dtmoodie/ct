@@ -1,6 +1,8 @@
 #include <ct/reflect/reflect_data.hpp>
 #include <ct/reflect/cereal.hpp>
 #include <ct/reflect/printer.hpp>
+#include <ct/reflect/hash.hpp>
+
 #include <cereal/archives/json.hpp>
 #include <iostream>
 
@@ -41,7 +43,7 @@ namespace ct
 
         REFLECT_DATA_DERIVED(Inherited, ReflectedStruct)
             REFLECT_DATA_MEMBER(w)
-            REFLECT_DATA_END;
+        REFLECT_DATA_END;
     }
 }
 
@@ -78,6 +80,16 @@ int main(int argc, char** argv)
     static_assert(ct::reflect::ReflectData<Inherited>::I0 == 4, "Fetching base param count is broken");
     static_assert(ct::reflect::ReflectData<Inherited>::N == 5, "Inheritance param counting is broken");
     std::cout << std::endl;
+    
+    static_assert(ct::reflect::detail::hashMember<Inherited, 0>() != 0, "asdf");
+    static_assert(ct::reflect::detail::hashMember<Inherited, 1>() != 0, "asdf");
+    static_assert(ct::reflect::detail::hashMember<Inherited, 2>() != 0, "asdf");
+    static_assert(ct::reflect::detail::hashMember<Inherited, 3>() != 0, "asdf");
+    static_assert(ct::reflect::detail::hashMember<Inherited, 4>() != 0, "asdf");
+
+    static_assert(ct::reflect::detail::hashMembers<Inherited>(ct::_counter_<4>()) != 0, "asdf");
+    
+    std::integral_constant<uint32_t, ct::reflect::classHash<Inherited>()>::value;
 
     Inherited test;
     ct::reflect::printStruct(std::cout, test);
@@ -95,5 +107,8 @@ int main(int argc, char** argv)
         cereal::JSONOutputArchive ar(std::cout);
         ar(cmp);
     }
+    
+    ct::reflect::classHash<ReflectedStruct>();
     return 0;
 }
+

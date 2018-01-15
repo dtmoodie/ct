@@ -15,8 +15,18 @@ namespace ct
         return detail::crc32_ignore_whitespace<len - 2>(str) ^ 0xFFFFFFFF;
     }
 
-    constexpr uint32_t ctcrc32Range(const char* str, size_t len)
+    constexpr uint32_t ctcrc32Range(const char* str, size_t end)
     {
-        return len < 2 ? 0 : detail::ctcrc32(str, len - 2) ^ 0xFFFFFFFF;
+        return end < 2 ? 0 : detail::ctcrc32(str, end - 1) ^ 0xFFFFFFFF;
+    }
+
+    constexpr uint32_t ctcrc32Range(const char* str, size_t begin, size_t len)
+    {
+        return len < 2 ? 0 : detail::ctcrc32(str + begin, len - 1) ^ 0xFFFFFFFF;
+    }
+    template<class T>
+    constexpr T combineHash(T seed, T hash)
+    {
+        return seed ^ hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 }

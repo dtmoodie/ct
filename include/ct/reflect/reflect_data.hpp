@@ -83,6 +83,7 @@ namespace ct
         static constexpr int START = __COUNTER__;                                                                      \
         static constexpr bool IS_SPECIALIZED = true;                                                                   \
         static constexpr int I0 = 0;                                                                                   \
+        static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE DType;
 
 #define REFLECT_DATA_DERIVED(TYPE, BASE)                                                                               \
@@ -92,6 +93,7 @@ namespace ct
         static constexpr int START = __COUNTER__;                                                                      \
         static constexpr bool IS_SPECIALIZED = true;                                                                   \
         static constexpr int I0 = ReflectData<BASE, void>::N;                                                          \
+        static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE DType;                                                                                            \
         template <int I>                                                                                               \
         static constexpr auto& get(DType& data, ct::_counter_<I> cnt, std::enable_if_t < I >= 0 && I<I0> * = 0)        \
