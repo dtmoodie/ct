@@ -3,6 +3,7 @@
 #include <ct/reflect/printer.hpp>
 #include <ct/reflect/hash.hpp>
 
+
 #include <cereal/archives/json.hpp>
 #include <iostream>
 
@@ -86,10 +87,14 @@ int main(int argc, char** argv)
     static_assert(ct::reflect::detail::hashMember<Inherited, 2>() != 0, "asdf");
     static_assert(ct::reflect::detail::hashMember<Inherited, 3>() != 0, "asdf");
     static_assert(ct::reflect::detail::hashMember<Inherited, 4>() != 0, "asdf");
+    static_assert(ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<int>(), "ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<int>()");
 
     static_assert(ct::reflect::detail::hashMembers<Inherited>(ct::_counter_<4>()) != 0, "asdf");
-    
+
     std::integral_constant<uint32_t, ct::reflect::classHash<Inherited>()>::value;
+    
+    
+    
 
     Inherited test;
     ct::reflect::printStruct(std::cout, test);

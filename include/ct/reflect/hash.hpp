@@ -8,15 +8,15 @@ namespace ct
     namespace reflect
     {
         template<class T>
-        constexpr uint32_t hashMembers()
+        constexpr std::uint32_t hashMembers()
         {
             return detail::hashMembers<T>(ct::_counter_<ReflectData<T>::N - 1>());
         }
 
         template<class T>
-        constexpr uint32_t classHash()
+        constexpr std::uint32_t classHash()
         {
-            return ct::combineHash(ct::detail::ctcrc32(ReflectData<T>::getName(), ct::strLen(ReflectData<T>::getName())), hashMembers<T>());
+            return ct::combineHash<std::uint32_t>(ct::detail::ctcrc32(ReflectData<T>::getName(), ct::strLen(ReflectData<T>::getName())), hashMembers<T>());
         }
     }
 }
