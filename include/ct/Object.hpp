@@ -17,7 +17,7 @@ namespace ct
 }
 
 #define DECLARE_CLASS_HASH \
-static constexpr uint32_t getHash() {return hashClassName(__FUNCTION__);}
+static constexpr uint32_t getHash() {return ct::hashClassName(__FUNCTION__);}
 
 #define DECLARE_MODULE_HASH(N) \
 static constexpr uint32_t getHash() {return ct::hashClassName(__FUNCTION__) ^ N;} \
