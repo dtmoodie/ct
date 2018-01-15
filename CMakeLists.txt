@@ -5,7 +5,6 @@ if(NOT MSVC)
   list(APPEND CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 file(GLOB_RECURSE hdr "include/*.hpp")
-add_subdirectory(dependencies/ctti)
 
 add_library(ct INTERFACE)
 
@@ -14,7 +13,7 @@ target_include_directories(ct
 		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> 
 		$<INSTALL_INTERFACE:include>
 )
-target_link_libraries(ct INTERFACE ctti)
+
 ADD_CUSTOM_TARGET(ct_files SOURCES ${hdr})
 set_target_properties(ct_files PROPERTIES FOLDER Dependencies)
 
