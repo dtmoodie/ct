@@ -2,6 +2,7 @@
 
 #include <cereal/cereal.hpp>
 #include <ct/reflect/detail/cereal.hpp>
+#include <ct/reflect/reflect_data.hpp>
 namespace ct
 {
     namespace reflect

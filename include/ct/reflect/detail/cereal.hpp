@@ -1,5 +1,5 @@
 #pragma once
-
+#include <ct/detail/counter.hpp>
 #include <cereal/cereal.hpp>
 
 namespace ct

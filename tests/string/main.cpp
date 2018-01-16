@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(string)
     static_assert(ct::findLast("asdf:asdf") == 4, "findLast(\"asdf:asdf\") == 4");
     static_assert(ct::findLast("asdf:asdf", 'a') == 5, "findLast(\"asdf:asdf\", 'a') == 5");
     static_assert("asdf:asdf"[4] == ':', "\"asdf:asdf\"[4] == ':'");
-    static_assert(ct::classNameIdx("TestHash::getName()") == 7, "asdf");
+    static_assert(ct::classNameIdx("TestHash::getName()") == 8, "asdf");
     
     /*ctv<ctcrc32("test_string")>::value;
     ctv<classNameIdx("test_string:")>::value;
