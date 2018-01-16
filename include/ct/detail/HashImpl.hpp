@@ -52,31 +52,31 @@ namespace ct
             0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
         };
 
-        template<size_t idx>
+        template<std::size_t idx>
         constexpr uint32_t combine_crc32(const char * str, uint32_t part)
         {
             return (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF];
         }
 
-        template<size_t idx>
+        template<std::size_t idx>
         constexpr uint32_t combine_crc32_ignore_whitespace(const char * str, uint32_t part)
         {
             return str[idx] != ' ' ? (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF] : part;
         }
 
 
-        constexpr uint32_t ctCombine_crc32(const char * str, uint32_t part, size_t idx)
+        constexpr uint32_t ctCombine_crc32(const char * str, uint32_t part, std::size_t idx)
         {
             return (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF];
         }
 
-        template<size_t idx>
+        template<std::size_t idx>
         constexpr uint32_t crc32(const char * str)
         {
             return combine_crc32<idx>(str, crc32<idx - 1>(str));
         }
 
-        template<size_t idx>
+        template<std::size_t idx>
         constexpr uint32_t crc32_ignore_whitespace(const char * str)
         {
             return combine_crc32_ignore_whitespace<idx>(str, crc32_ignore_whitespace<idx - 1>(str));
@@ -84,18 +84,18 @@ namespace ct
 
         // This is the stop-recursion function
         template<>
-        constexpr uint32_t crc32<size_t(-1)>(const char * str)
+        constexpr uint32_t crc32<std::size_t(-1)>(const char * /*str*/)
         {
             return 0xFFFFFFFF;
         }
 
         template<>
-        constexpr uint32_t crc32_ignore_whitespace<size_t(-1)>(const char * str)
+        constexpr uint32_t crc32_ignore_whitespace<std::size_t(-1)>(const char * /*str*/)
         {
             return 0xFFFFFFFF;
         }
 
-        constexpr uint32_t ctcrc32(const char* str, size_t len)
+        constexpr uint32_t ctcrc32(const char* str, std::size_t len)
         {
             return len == -1 ? 0xFFFFFFFF : ctCombine_crc32(str, ctcrc32(str, len - 1), len);
         }

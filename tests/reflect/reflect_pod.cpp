@@ -1,7 +1,7 @@
-#include <ct/reflect/reflect_data.hpp>
 #include <ct/reflect/cereal.hpp>
-#include <ct/reflect/printer.hpp>
 #include <ct/reflect/hash.hpp>
+#include <ct/reflect/printer.hpp>
+#include <ct/reflect/reflect_data.hpp>
 
 
 #include <cereal/archives/json.hpp>
@@ -57,7 +57,7 @@ struct InternallyReflected
     REFLECT_INTERNAL_END;
 };
 
-int main(int argc, char** argv)
+int main(int /*argc*/, char** /*argv*/)
 {
     InternallyReflected data2;
     ReflectedStruct data;

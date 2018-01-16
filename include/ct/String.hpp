@@ -1,5 +1,6 @@
 #pragma once
 #include "detail/StringImpl.hpp"
+#include <cstddef>
 namespace ct
 {
     template<size_t N>
@@ -17,7 +18,6 @@ namespace ct
     }
 
     constexpr size_t findFirst(const char* str, char character = ':', size_t pos = 0){
-        //return *str ? (*str == character) ? pos + 1 : findFirst(str + 1, character, pos+1) : pos;
         return detail::findFirst(str, strLen(str), 0, character);
     }
 
@@ -25,18 +25,18 @@ namespace ct
         return *str ? countOccurances(str + 1, character,  *str == character ? count + 1 : count) : count;
     }
 
-    template<size_t N>
-    constexpr size_t findLast(const char(&str)[N], char character = ':'){
+    template<std::size_t N>
+    constexpr std::size_t findLast(const char(&str)[N], char character = ':'){
         return detail::ctFindDeliminator(str, N - 1, character);
     }
 
-    template<size_t Tlen>
-    constexpr size_t classNameIdx(const char(&str)[Tlen]){
+    template<std::size_t Tlen>
+    constexpr std::size_t classNameIdx(const char(&str)[Tlen]){
         return detail::ctFindDeliminator(str, Tlen - 1) - 2;
     }
 
     
-    constexpr size_t classNameIdx(const char* str) {
+    constexpr std::size_t classNameIdx(const char* str) {
         return detail::ctFindDeliminator(str, strLen(str) - 1) - 1;
     }
 
