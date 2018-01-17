@@ -27,6 +27,6 @@ namespace ct
     template<class T>
     constexpr T combineHash(T seed, T hash)
     {
-        return seed ^ hash + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return (seed ^ hash) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 }

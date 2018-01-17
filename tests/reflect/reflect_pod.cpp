@@ -20,7 +20,7 @@ struct ReflectedStruct
 
 struct Inherited : public ReflectedStruct
 {
-    float w;
+    double w;
 };
 
 struct Composite
@@ -57,6 +57,40 @@ struct InternallyReflected
     REFLECT_INTERNAL_END;
 };
 
+template<class T, int I>
+static constexpr size_t getOffset()
+{
+    return reinterpret_cast<size_t>(&ct::reflect::ReflectData<T>::get(*static_cast<T*>(nullptr), ct::_counter_<I>()));
+}
+
+struct TestA
+{
+    REFLECT_INTERNAL_START(TestA)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+    REFLECT_INTERNAL_END;
+};
+
+struct TestB
+{
+    REFLECT_INTERNAL_START(TestB)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+    REFLECT_INTERNAL_END;
+};
+
+struct TestC
+{
+    REFLECT_INTERNAL_START(TestC)
+
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, z)
+    REFLECT_INTERNAL_END;
+};
+
 int main(int /*argc*/, char** /*argv*/)
 {
     InternallyReflected data2;
@@ -73,6 +107,10 @@ int main(int /*argc*/, char** /*argv*/)
         ar(data);
     }
     std::cout << std::endl;
+
+    std::cout << "Offset: " << getOffset<ReflectedStruct, 1>() << std::endl;
+    //getOffset<ReflectedStruct, 1>() ;
+
     data2.x = 5;
     data2.y = 6;
     data2.z = 10;
@@ -89,13 +127,17 @@ int main(int /*argc*/, char** /*argv*/)
     static_assert(ct::reflect::detail::hashMember<Inherited, 4>() != 0, "asdf");
     static_assert(ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<int>(), "ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<int>()");
 
+    static_assert(ct::strLen(ct::reflect::ReflectData<Inherited>::getName()) == 9, "ct::strLen(ct::reflect::ReflectData<Inherited>::getName()) == 9");
     static_assert(ct::reflect::detail::hashMembers<Inherited>(ct::_counter_<4>()) != 0, "asdf");
+    static_assert(ct::reflect::hashMembers<Inherited>() != 0, "ct::reflect::hashMembers<Inherited>() != 0");
+    static_assert(ct::detail::ctcrc32(ct::reflect::ReflectData<Inherited>::getName(ct::_counter_<0>())) != ct::detail::ctcrc32(ct::reflect::ReflectData<Inherited>::getName(ct::_counter_<1>())),
+                  "ct::detail::ctcrc32(ct::reflect::ReflectData<Inherited>::getName(ct::_counter_<0>())) != ct::detail::ctcrc32(ct::reflect::ReflectData<Inherited>::getName(ct::_counter_<1>()))");
 
-    std::integral_constant<uint32_t, ct::reflect::classHash<Inherited>()>::value;
-    
-    
-    
-
+    static_assert(ct::reflect::detail::hashMember<Inherited, 0>() != ct::reflect::detail::hashMember<Inherited, 1>(),
+                 "ct::reflect::detail::hashMember<Inherited>(ct::_counter_<0>()) != ct::reflect::detail::hashMember<Inherited>(ct::_counter_<1>())");
+    static_assert(ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<double>(), "ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<double>()");
+    static_assert(ct::reflect::hashMembers<TestA>() == ct::reflect::hashMembers<TestB>(), "");
+    static_assert(ct::reflect::hashMembers<TestA>() != ct::reflect::hashMembers<TestC>(), "");
     Inherited test;
     ct::reflect::printStruct(std::cout, test);
     std::cout << std::endl;
@@ -113,7 +155,7 @@ int main(int /*argc*/, char** /*argv*/)
         ar(cmp);
     }
     
-    ct::reflect::classHash<ReflectedStruct>();
+    std::cout << std::endl << ct::reflect::classHash<ReflectedStruct>() << std::endl;
     return 0;
 }
 

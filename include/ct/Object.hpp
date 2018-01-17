@@ -10,17 +10,31 @@ namespace ct
     constexpr uint32_t hashClassName(const char(&str)[Tlen]) {
         return ctcrc32Range(str, classNameIdx(str) + 1);
     }
-    constexpr uint32_t hashClassName(const char* str)
+    constexpr uint32_t hashClassNameHelper(const char* str)
     {
         return ctcrc32Range(str, classNameIdx(str));
     }
+    constexpr uint32_t hashClassName(const char* str)
+    {
+#ifdef _MSC_VER
+        return ctcrc32Range(str, classNameIdx(str));
+#else
+        return hashClassNameHelper(str + ct::findLast(str, ' ') + 1);
+#endif
+    }
 }
 
+#ifdef _MSC_VER
+#define __CT_STRUCT_MAGIC_FUNCTION__ __FUNCTION__
+#else
+#define __CT_STRUCT_MAGIC_FUNCTION__ __PRETTY_FUNCTION__
+#endif
+
 #define DECLARE_CLASS_HASH \
-static constexpr uint32_t getHash() {return ct::hashClassName(__FUNCTION__);}
+static constexpr uint32_t getHash() {return ct::hashClassName(__CT_STRUCT_MAGIC_FUNCTION__);}
 
 #define DECLARE_MODULE_HASH(N) \
-static constexpr uint32_t getHash() {return ct::hashClassName(__FUNCTION__) ^ N;} \
+static constexpr uint32_t getHash() {return ct::hashClassName(__CT_STRUCT_MAGIC_FUNCTION__) ^ N;} \
 enum : uint32_t {hash = getHash()};
 
 namespace ct

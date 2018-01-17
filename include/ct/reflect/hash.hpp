@@ -1,8 +1,8 @@
 #pragma once
-#include <ct/hash.hpp>
+#include <ct/Hash.hpp>
 #include <ct/String.hpp>
-#include <ct/reflect/reflect_data.hpp>
 #include <ct/reflect/detail/hash.hpp>
+#include <ct/reflect/reflect_data.hpp>
 namespace ct
 {
     namespace reflect
@@ -16,7 +16,7 @@ namespace ct
         template<class T>
         constexpr std::uint32_t classHash()
         {
-            return ct::combineHash<std::uint32_t>(ct::detail::ctcrc32(ReflectData<T>::getName(), ct::strLen(ReflectData<T>::getName())), hashMembers<T>());
+            return ct::combineHash<std::uint32_t>(ct::detail::ctcrc32(ReflectData<T>::getName()), hashMembers<T>());
         }
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
-#include <ct/detail/counter.hpp>
 #include <cereal/cereal.hpp>
+#include <ct/detail/counter.hpp>
+#include <ct/reflect/reflect_data.hpp>
 
 namespace ct
 {

@@ -30,6 +30,11 @@ namespace ct
         return detail::ctFindDeliminator(str, N - 1, character);
     }
 
+    constexpr std::size_t findLast(const char* str, char character = ':')
+    {
+        return detail::ctFindDeliminator(str, ct::strLen(str) - 1, character);
+    }
+
     template<std::size_t Tlen>
     constexpr std::size_t classNameIdx(const char(&str)[Tlen]){
         return detail::ctFindDeliminator(str, Tlen - 1) - 2;
@@ -37,7 +42,11 @@ namespace ct
 
     
     constexpr std::size_t classNameIdx(const char* str) {
+#ifdef _MSC_VER
         return detail::ctFindDeliminator(str, strLen(str) - 1) - 1;
+#else
+        return detail::ctFindDeliminator(str, strLen(str) - 1) - 1;
+#endif
     }
 
     // https://stackoverflow.com/questions/25195176/how-do-i-convert-a-c-string-to-a-int-at-compile-time
