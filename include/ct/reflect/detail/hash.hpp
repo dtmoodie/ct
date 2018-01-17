@@ -11,14 +11,27 @@ namespace ct
     {
         namespace detail
         {
+            template<class T>
+            constexpr uint32_t hashDataType(T* /*ptr*/ )
+            {
+                return 0;
+            }
+
+#define HASH_TYPE(type) constexpr uint32_t hashDataType(type*) {return ctcrc32(#type); }
+            HASH_TYPE(float);
+            HASH_TYPE(double);
+            HASH_TYPE(int);
+            HASH_TYPE(unsigned char);
+            HASH_TYPE(char);
+            HASH_TYPE(unsigned int);
+            HASH_TYPE(short);
+            HASH_TYPE(unsigned short);
+            HASH_TYPE(size_t);
+
             template<class T> 
             constexpr uint32_t hashDataType()
             {
-#ifdef _MSC_VER
-                return ct::detail::ctcrc32(__FUNCSIG__);
-#else
-                return ct::detail::ctcrc32(__PRETTY_FUNCTION__);
-#endif
+                return hashDataType(static_cast<T*>(nullptr));
             }
 
             template<class T>

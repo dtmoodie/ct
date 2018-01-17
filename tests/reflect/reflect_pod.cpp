@@ -157,10 +157,10 @@ int main(int /*argc*/, char** /*argv*/)
     static_assert(ct::reflect::hashMembers<TestA>() == ct::reflect::hashMembers<TestB>(), "");
     static_assert(ct::reflect::hashMembers<TestA>() != ct::reflect::hashMembers<TestC>(), "");
 
-    static_assert(ct::reflect::detail::hashDataType<float>() == 3702093872, "Cross platform hash test");
+    static_assert(ct::reflect::detail::hashDataType<float>() == 3383058069, "Cross platform hash test");
 
     // Need to make sure hashes are the same on windows and linux
-    static_assert(ct::reflect::classHash<TestA>() == 3705536443, "Test to make sure the hash is consistent across platforms");
+    static_assert(ct::reflect::classHash<TestA>() == 2489699677, "Test to make sure the hash is consistent across platforms");
 
     std::cout << "TestA.x offset " << getOffset<TestA, 0>() << std::endl;
     std::cout << "TestA.y offset " << getOffset<TestA, 1>() << std::endl;
@@ -189,7 +189,8 @@ int main(int /*argc*/, char** /*argv*/)
             std::cout << "Offset incorrect" << std::endl;
             return 1;
         }
-        static_assert(std::is_same_v<getType<TestA, 0>, float>, "std::is_same_v<getType<TestA, 0>, float>");
+
+        static_assert(std::is_same<getType<TestA, 0>, float>::value, "std::is_same_v<getType<TestA, 0>, float>");
     }
 
     {
@@ -233,7 +234,7 @@ int main(int /*argc*/, char** /*argv*/)
             std::cout << "Offset based access not working" << std::endl;
             return 1;
         }
-        static_assert(std::is_same_v<getType<Inherited, 4>, double>, "std::is_same_v<getType<Inherited, 4>, double>");
+        static_assert(std::is_same<getType<Inherited, 4>, double>::value, "std::is_same_v<getType<Inherited, 4>, double>");
     }
     
 
