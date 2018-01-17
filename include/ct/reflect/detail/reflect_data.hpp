@@ -42,6 +42,7 @@ namespace ct
         {
             static constexpr bool IS_SPECIALIZED = true;
             static constexpr int N = T::N;
+            static constexpr const char* getName() { return T::getName(); }
 
             static constexpr auto get(const T& data, _counter_<0>) -> decltype(T::get(data, _counter_<0>()))
             {

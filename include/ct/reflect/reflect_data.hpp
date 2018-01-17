@@ -150,6 +150,7 @@ namespace ct
     static constexpr int START = __COUNTER__;                                                                          \
     typedef TYPE DType;                                                                                                \
     static constexpr int I0 = 0;                                                                                       \
+    static constexpr const char* getName(){return #TYPE; }                                                             \
     typedef void INTERNALLY_REFLECTED;
 
 #define REFLECT_INTERNAL_END static constexpr int N = __COUNTER__ - START - 1 + I0

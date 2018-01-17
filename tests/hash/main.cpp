@@ -7,7 +7,7 @@ using namespace ct;
 struct HashedStruct
 {
     DECLARE_CLASS_HASH
-    static constexpr const char* getName(){return __PRETTY_FUNCTION__;}
+    static constexpr const char* getName(){return __CT_STRUCT_MAGIC_FUNCTION__;}
 };
 
 

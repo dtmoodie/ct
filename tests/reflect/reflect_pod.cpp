@@ -31,6 +31,38 @@ struct Composite
     REFLECT_INTERNAL_END;
 };
 
+struct TestA
+{
+    REFLECT_INTERNAL_START(TestA)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+        REFLECT_INTERNAL_END;
+};
+
+struct TestB
+{
+    REFLECT_INTERNAL_START(TestB)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+        REFLECT_INTERNAL_END;
+};
+
+struct TestC
+{
+    REFLECT_INTERNAL_START(TestC)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, z)
+        REFLECT_INTERNAL_END;
+};
+
+struct TestVec
+{
+    std::vector<float> vec;
+};
+
 namespace ct
 {
     namespace reflect
@@ -45,6 +77,10 @@ namespace ct
         REFLECT_DATA_DERIVED(Inherited, ReflectedStruct)
             REFLECT_DATA_MEMBER(w)
         REFLECT_DATA_END;
+
+        REFLECT_DATA_START(TestVec)
+            REFLECT_DATA_MEMBER(vec)
+        REFLECT_DATA_END;
     }
 }
 
@@ -58,38 +94,20 @@ struct InternallyReflected
 };
 
 template<class T, int I>
-static constexpr size_t getOffset()
+static constexpr size_t getSize()
 {
-    return reinterpret_cast<size_t>(&ct::reflect::ReflectData<T>::get(*static_cast<T*>(nullptr), ct::_counter_<I>()));
+    return sizeof(std::decay_t<decltype(ct::reflect::get<I>(std::declval<T>()))>);
+    
 }
 
-struct TestA
+template<class T, int I>
+static size_t getOffset()
 {
-    REFLECT_INTERNAL_START(TestA)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, z)
-    REFLECT_INTERNAL_END;
-};
+    return reinterpret_cast<size_t>(&ct::reflect::get<I>(*static_cast<T*>(nullptr)));
+}
 
-struct TestB
-{
-    REFLECT_INTERNAL_START(TestB)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, z)
-    REFLECT_INTERNAL_END;
-};
-
-struct TestC
-{
-    REFLECT_INTERNAL_START(TestC)
-
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, z)
-    REFLECT_INTERNAL_END;
-};
+template<class T, int I>
+using getType = std::decay_t<decltype(ct::reflect::get<I>(std::declval<T>()))>;
 
 int main(int /*argc*/, char** /*argv*/)
 {
@@ -138,6 +156,87 @@ int main(int /*argc*/, char** /*argv*/)
     static_assert(ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<double>(), "ct::reflect::detail::hashDataType<float>() != ct::reflect::detail::hashDataType<double>()");
     static_assert(ct::reflect::hashMembers<TestA>() == ct::reflect::hashMembers<TestB>(), "");
     static_assert(ct::reflect::hashMembers<TestA>() != ct::reflect::hashMembers<TestC>(), "");
+
+    static_assert(ct::reflect::detail::hashDataType<float>() == 3702093872, "Cross platform hash test");
+
+    // Need to make sure hashes are the same on windows and linux
+    static_assert(ct::reflect::classHash<TestA>() == 3705536443, "Test to make sure the hash is consistent across platforms");
+
+    std::cout << "TestA.x offset " << getOffset<TestA, 0>() << std::endl;
+    std::cout << "TestA.y offset " << getOffset<TestA, 1>() << std::endl;
+    std::cout << "TestA.z offset " << getOffset<TestA, 2>() << std::endl;
+
+    {
+        TestA val;
+        val.x = 0;
+        val.y = 1;
+        val.z = 2;
+
+        if (reinterpret_cast<unsigned char*>(&val.x) != (reinterpret_cast<unsigned char*>(&val) + getOffset<TestA, 0>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+
+        if (reinterpret_cast<unsigned char*>(&val.y) != (reinterpret_cast<unsigned char*>(&val) + getOffset<TestA, 1>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+
+        if (reinterpret_cast<unsigned char*>(&val.z) != (reinterpret_cast<unsigned char*>(&val) + getOffset<TestA, 2>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+        static_assert(std::is_same_v<getType<TestA, 0>, float>, "std::is_same_v<getType<TestA, 0>, float>");
+    }
+
+    {
+        Inherited val;
+        val.x = 0;
+        val.y = 1;
+        val.z = 2;
+        val.id = 10;
+        val.w = 5;
+
+        if (reinterpret_cast<unsigned char*>(&val.x) != (reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 0>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+
+        if (reinterpret_cast<unsigned char*>(&val.y) != (reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 1>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+
+        if (reinterpret_cast<unsigned char*>(&val.z) != (reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 2>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+        if (reinterpret_cast<unsigned char*>(&val.id) != (reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 3>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+        if (reinterpret_cast<unsigned char*>(&val.w) != (reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 4>()))
+        {
+            std::cout << "Offset incorrect" << std::endl;
+            return 1;
+        }
+
+        if (*reinterpret_cast<double*>(reinterpret_cast<unsigned char*>(&val) + getOffset<Inherited, 4>()) != val.w)
+        {
+            std::cout << "Offset based access not working" << std::endl;
+            return 1;
+        }
+        static_assert(std::is_same_v<getType<Inherited, 4>, double>, "std::is_same_v<getType<Inherited, 4>, double>");
+    }
+    
+
     Inherited test;
     ct::reflect::printStruct(std::cout, test);
     std::cout << std::endl;
