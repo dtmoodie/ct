@@ -28,6 +28,12 @@ namespace ct
             HASH_TYPE(unsigned short);
             HASH_TYPE(size_t);
 
+            template<class T>
+            constexpr uint32_t hashDataType(std::vector<T>*)
+            {
+                return ct::combineHash(ctcrc32("vector"), hashDataType(static_cast<T*>(nullptr)));
+            }
+
             template<class T> 
             constexpr uint32_t hashDataType()
             {
