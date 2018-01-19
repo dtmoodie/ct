@@ -56,18 +56,15 @@ if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
 endif()
 
 export(TARGETS ct
-      FILE "${PROJECT_BINARY_DIR}/ctTargets.cmake"
+	FILE ct-targets.cmake
 )
+	
+install(TARGETS ct 
+	EXPORT ct
+	DESTINATION lib
+) # ignored
 
-export(PACKAGE ct)
-
-install(TARGETS ct
-        EXPORT ctTargets
+install(EXPORT ct FILE ct-config.cmake
+	DESTINATION share/cmake/ct
 )
-
-install(DIRECTORY include/
-        DESTINATION include
-        FILES_MATCHING PATTERN "*.hpp"
-)
-install(EXPORT ctTargets DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ct"
-)
+install(DIRECTORY include/ct DESTINATION include)
