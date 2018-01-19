@@ -34,13 +34,11 @@ namespace ct
 static constexpr uint32_t getHash() {return ct::hashClassName(__CT_STRUCT_MAGIC_FUNCTION__);}
 
 #define DECLARE_MODULE_HASH(N) \
-static constexpr uint32_t getHash() {return ct::hashClassName(__CT_STRUCT_MAGIC_FUNCTION__) ^ N;} \
+static constexpr uint32_t getHash() {return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__) ^ N;} \
 enum : uint32_t {hash = getHash()};
 
 namespace ct
 {
-
-
     template<class T, uint32_t N, typename enable = void>
     struct HashedObject;
 
@@ -83,4 +81,5 @@ namespace ct
         return{ std::forward<T>(value) };
     }
 }
-#define CT_MAKE_HASHED(var) makeHashed<ctcrc32(#var)>(var)
+#define CT_MAKE_HASHED(var) ct::makeHashed<ctcrc32(#var)>(var)
+

@@ -4,8 +4,8 @@
 
 #include <boost/test/unit_test.hpp>
 #include <ct/Hash.hpp>
-#include <ct/String.hpp>
 #include <ct/Object.hpp>
+#include <ct/String.hpp>
 #include <ct/operators/Unary.hpp>
 #include <iostream>
 
@@ -123,7 +123,7 @@ BOOST_AUTO_TEST_CASE(unary_operators_scalar_const)
 }
 
 
-BOOST_AUTO_TEST_CASE(unary_operators_vector)
+/*BOOST_AUTO_TEST_CASE(unary_operators_vector)
 {
     std::vector<int> intvec(100, 5);
     int indexable = ct::Indexable<std::vector<int>>::IsIndexable;
@@ -172,3 +172,4 @@ BOOST_AUTO_TEST_CASE(unary_operators_vector_const)
     }
     sqrtvec(0);
 }
+*/
