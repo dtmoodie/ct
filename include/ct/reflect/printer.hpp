@@ -1,8 +1,8 @@
 #pragma once
-
-#include <ostream>
 #include <ct/reflect/detail/printer.hpp>
 
+#include <vector>
+#include <ostream>
 namespace ct
 {
     namespace reflect
@@ -22,6 +22,22 @@ namespace std
     ct::reflect::enable_if_reflected<T, ostream>& operator<<(ostream& os, const T& data)
     {
         ct::reflect::printStruct(os, data);
+        return os;
+    }
+    template<class T>
+    ct::reflect::enable_if_reflected<T, ostream>& operator<<(ostream& os, const std::vector<T>& data)
+    {
+        if (!data.empty())
+        {
+            os << '[';
+            for (size_t i = 0; i < data.size(); ++i)
+            {
+                if (i != 0)
+                    os << ',';
+                os << data[i];
+            }
+            os << ']';
+        }
         return os;
     }
 }
