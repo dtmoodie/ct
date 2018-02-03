@@ -1,8 +1,9 @@
 #pragma once
 #include "ct/reflect/reflect_data.hpp"
+#include <ct/detail/counter.hpp>
 
-#include <type_traits>
 #include <ostream>
+#include <type_traits>
 
 namespace ct
 {
@@ -22,7 +23,7 @@ namespace ct
             -> decltype(ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>()));
 #endif
         template <int I, class T>
-        static constexpr inline auto getValue(const T& data)
+        static constexpr inline auto getValue(const T& data) -> decltype(get<I, T>(data))
         {
             return get<I, T>(data);
         }
