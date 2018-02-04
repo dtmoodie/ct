@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_REFLECT_DETAIL_REFLECT_DATA_HPP
+#define CT_REFLECT_DETAIL_REFLECT_DATA_HPP
 #include "ct/reflect/reflect_data.hpp"
 #include <ct/detail/counter.hpp>
 
@@ -23,13 +24,13 @@ namespace ct
             -> decltype(ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>()));
 #endif
         template <int I, class T>
-        static constexpr inline auto getValue(const T& data) -> decltype(get<I, T>(data))
+        static constexpr inline auto getValue(const T& data) -> std::decay_t<decltype(get<I, T>(data))>
         {
             return get<I, T>(data);
         }
 
         template <int I, class T>
-        static constexpr inline void setValue(T& data, const decltype(get<I, T>(data))& value)
+        static constexpr inline void setValue(T& data, const std::decay_t<decltype(get<I, T>(data))>& value)
         {
             get<I, T>(data) = value;
         }
@@ -77,3 +78,4 @@ namespace ct
         };
     }
 }
+#endif
