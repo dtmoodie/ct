@@ -1,5 +1,6 @@
 #pragma once
 #include <ct/detail/counter.hpp>
+#include <ct/reflect/reflect_data.hpp>
 namespace ct
 {
     namespace reflect
