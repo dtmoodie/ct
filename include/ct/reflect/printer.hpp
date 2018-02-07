@@ -1,5 +1,6 @@
 #pragma once
 #include <ct/reflect/detail/printer.hpp>
+#include <ct/reflect/reflect_data.hpp>
 
 #include <vector>
 #include <ostream>

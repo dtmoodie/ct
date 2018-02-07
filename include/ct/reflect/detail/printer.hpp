@@ -1,5 +1,5 @@
 #pragma once
-
+#include <ct/detail/counter.hpp>
 namespace ct
 {
     namespace reflect

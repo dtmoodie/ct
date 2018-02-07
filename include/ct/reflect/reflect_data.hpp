@@ -70,12 +70,6 @@ namespace ct
             return ReflectData<std::remove_const_t<T>>::N;
         }
 
-        template <class T, class T2 = void>
-        using enable_if_reflected = std::enable_if_t<ReflectData<T>::IS_SPECIALIZED, T2>;
-
-        template <class T, class T2 = void>
-        using enable_if_not_reflected = typename std::enable_if<!ReflectData<T>::IS_SPECIALIZED, T2>::type;
-
     } // namespace ct::reflect
 } // namespace ct
 

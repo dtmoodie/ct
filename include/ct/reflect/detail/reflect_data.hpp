@@ -8,6 +8,13 @@ namespace ct
 {
     namespace reflect
     {
+        template <class T, class Enable>
+        struct ReflectData;
+        template <class T, class T2 = void>
+        using enable_if_reflected = std::enable_if_t<ReflectData<T, void>::IS_SPECIALIZED, T2>;
+
+        template <class T, class T2 = void>
+        using enable_if_not_reflected = typename std::enable_if<!ReflectData<T, void>::IS_SPECIALIZED, T2>::type;
 
         template <class T, class Enable = void>
         struct ReflectData;
@@ -28,7 +35,7 @@ namespace ct
         }
 
         template <int I, class T>
-        static constexpr inline void setValue(T& data, const decltype(get<I, T>(data))& value)
+        static constexpr inline void setValue(T& data, const std::decay_t<decltype(get<I, T>(data))>& value)
         {
             get<I, T>(data) = value;
         }
