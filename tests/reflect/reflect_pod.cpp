@@ -3,7 +3,6 @@
 #include <ct/reflect/printer.hpp>
 #include <ct/reflect/reflect_data.hpp>
 
-
 #include <cereal/archives/json.hpp>
 #include <iostream>
 
@@ -25,42 +24,34 @@ struct Inherited : public ReflectedStruct
 
 struct Composite
 {
-    REFLECT_INTERNAL_START(Composite)
-        REFLECT_INTERNAL_MEMBER(ReflectedStruct, a)
-        REFLECT_INTERNAL_MEMBER(ReflectedStruct, b)
-    REFLECT_INTERNAL_END;
+    ReflectedStruct a;
+    ReflectedStruct b;
 };
 
 struct TestA
 {
-    REFLECT_INTERNAL_START(TestA)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, z)
-        REFLECT_INTERNAL_END;
+    float x, y, z;
 };
 
 struct TestB
 {
-    REFLECT_INTERNAL_START(TestB)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, z)
-        REFLECT_INTERNAL_END;
+    float x, y, z;
 };
 
 struct TestC
 {
-    REFLECT_INTERNAL_START(TestC)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, z)
-        REFLECT_INTERNAL_END;
+    float y, x, z;
 };
 
 struct TestVec
 {
     std::vector<float> vec;
+};
+
+// Doesn't work with C++11 :/
+struct InternallyReflected
+{
+    float x,y,z;
 };
 
 namespace ct
@@ -74,6 +65,29 @@ namespace ct
             REFLECT_DATA_MEMBER(id)
         REFLECT_DATA_END;
 
+        REFLECT_DATA_START(Composite)
+            REFLECT_DATA_MEMBER(a)
+            REFLECT_DATA_MEMBER(b)
+        REFLECT_DATA_END;
+
+        REFLECT_DATA_START(TestA)
+            REFLECT_DATA_MEMBER(x)
+            REFLECT_DATA_MEMBER(y)
+            REFLECT_DATA_MEMBER(z)
+        REFLECT_DATA_END;
+
+        REFLECT_DATA_START(TestB)
+            REFLECT_DATA_MEMBER(x)
+            REFLECT_DATA_MEMBER(y)
+            REFLECT_DATA_MEMBER(z)
+        REFLECT_DATA_END;
+
+        REFLECT_DATA_START(TestC)
+            REFLECT_DATA_MEMBER(y)
+            REFLECT_DATA_MEMBER(x)
+            REFLECT_DATA_MEMBER(z)
+        REFLECT_DATA_END;
+
         REFLECT_DATA_DERIVED(Inherited, ReflectedStruct)
             REFLECT_DATA_MEMBER(w)
         REFLECT_DATA_END;
@@ -81,23 +95,20 @@ namespace ct
         REFLECT_DATA_START(TestVec)
             REFLECT_DATA_MEMBER(vec)
         REFLECT_DATA_END;
+
+        REFLECT_DATA_START(InternallyReflected)
+            REFLECT_DATA_MEMBER(x)
+            REFLECT_DATA_MEMBER(y)
+            REFLECT_DATA_MEMBER(z)
+        REFLECT_DATA_END;
     }
 }
 
-struct InternallyReflected
-{
-    REFLECT_INTERNAL_START(InternallyReflected)
-        REFLECT_INTERNAL_MEMBER(float, x)
-        REFLECT_INTERNAL_MEMBER(float, y)
-        REFLECT_INTERNAL_MEMBER(float, z)
-    REFLECT_INTERNAL_END;
-};
 
 template<class T, int I>
 static constexpr size_t getSize()
 {
-    return sizeof(std::decay_t<decltype(ct::reflect::get<I>(std::declval<T>()))>);
-    
+    return sizeof(typename std::decay<decltype(ct::reflect::get<I>(std::declval<T>()))>::type);
 }
 
 template<class T, int I>
@@ -107,7 +118,7 @@ static size_t getOffset()
 }
 
 template<class T, int I>
-using getType = std::decay_t<decltype(ct::reflect::get<I>(std::declval<T>()))>;
+using getType = typename std::decay<decltype(ct::reflect::get<I>(std::declval<T>()))>::type;
 
 int main(int /*argc*/, char** /*argv*/)
 {

@@ -58,7 +58,7 @@ namespace ct
 
                 return ct::combineHash<uint32_t>(
                             ct::detail::ctcrc32(ReflectData<T>::getName(ct::_counter_<IDX>())),
-                            hashDataType<std::decay_t<DType>>());
+                            hashDataType<typename std::decay<DType>::type>());
             }
 
             template<class T>

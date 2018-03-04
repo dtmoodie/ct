@@ -1,6 +1,9 @@
 #pragma once
 #include <ct/detail/counter.hpp>
 #include <ct/reflect/reflect_data.hpp>
+#include <ct/reflect/printer.hpp>
+#include <vector>
+
 namespace ct
 {
     namespace reflect

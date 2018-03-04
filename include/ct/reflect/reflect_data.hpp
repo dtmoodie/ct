@@ -23,7 +23,7 @@ namespace ct
 
         template <typename T>
         struct is_container<T,
-                            std::conditional_t<false,
+                            typename std::conditional<false,
                                                is_container_helper<typename T::value_type,
                                                                    typename T::size_type,
                                                                    typename T::allocator_type,
@@ -34,7 +34,7 @@ namespace ct
                                                                    decltype(std::declval<T>().end()),
                                                                    decltype(std::declval<T>().cbegin()),
                                                                    decltype(std::declval<T>().cend())>,
-                                               void>> : public std::true_type
+                                               void>::type> : public std::true_type
         {
         };
 
@@ -46,28 +46,28 @@ namespace ct
 
         template <int I, class T>
         static constexpr inline auto get(T& data)
-            -> decltype(ReflectData<std::remove_const_t<T>>::get(data, _counter_<I>()))
+            -> decltype(ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>()))
         {
-            return ReflectData<std::remove_const_t<T>>::get(data, _counter_<I>());
+            return ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>());
         }
 
         template <int I, class T>
         static constexpr inline auto get(const T& data)
-            -> decltype(ReflectData<std::remove_const_t<T>>::get(data, _counter_<I>()))
+            -> decltype(ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>()))
         {
-            return ReflectData<std::remove_const_t<T>>::get(data, _counter_<I>());
+            return ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>());
         }
 
         template <int I, class T>
         static constexpr inline const char* getName()
         {
-            return ReflectData<std::remove_const_t<T>>::getName(_counter_<I>());
+            return ReflectData<typename std::remove_const<T>::type>::getName(_counter_<I>());
         }
 
         template <class T>
         constexpr int len()
         {
-            return ReflectData<std::remove_const_t<T>>::N;
+            return ReflectData<typename std::remove_const<T>::type>::N;
         }
 
     } // namespace ct::reflect
@@ -112,18 +112,18 @@ namespace ct
         static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE DType;                                                                                            \
         template <int I>                                                                                               \
-        static constexpr auto& get(DType& data, ct::_counter_<I> cnt, std::enable_if_t < I >= 0 && I<I0> * = 0)        \
+        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->decltype(ReflectData<BASE, void>::get(data, cnt))&        \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
         template <int I>                                                                                               \
-        static constexpr const auto&                                                                                   \
-        get(const DType& data, ct::_counter_<I> cnt, std::enable_if_t < I >= 0 && I<I0> * = 0)                         \
+        static constexpr auto                                                                                   \
+        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const decltype(ReflectData<BASE, void>::get(data, cnt))&                         \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
         template <int I>                                                                                               \
-        static constexpr const char* getName(ct::_counter_<I> cnt, std::enable_if_t < I >= 0 && I<I0> * = 0)           \
+        static constexpr const char* getName(ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)           \
         {                                                                                                              \
             return ReflectData<BASE, void>::getName(cnt);                                                              \
         }
@@ -131,15 +131,13 @@ namespace ct
 #define REFLECT_DATA_MEMBER(NAME) REFLECT_DATA_MEMBER_(NAME, __COUNTER__)
 
 #define REFLECT_DATA_MEMBER_(NAME, N)                                                                                  \
-    static constexpr auto& get(DType& data, ct::_counter_<N - START - 1 + I0>) { return data.NAME; }                   \
-    static constexpr const auto& get(const DType& data, ct::_counter_<N - START - 1 + I0>) { return data.NAME; }       \
+    static constexpr auto get(DType& data, ct::_counter_<N - START - 1 + I0>)-> decltype(data.NAME)& { return data.NAME; }                   \
+    static constexpr auto get(const DType& data, ct::_counter_<N - START - 1 + I0>)-> const decltype(data.NAME)& { return data.NAME; }       \
     static constexpr const char* getName(ct::_counter_<N - START - 1 + I0> /*dummy*/) { return #NAME; }
 
 #define REFLECT_DATA_END                                                                                               \
     static constexpr int N = __COUNTER__ - START - 1 + I0;                                                             \
     }
-
-#define REFLECTED_EXPORT_DECL MO_EXPORTS
 
 #define REFLECT_TEMPLATED_DATA_START(TYPE)                                                                             \
     template <class... T>                                                                                              \
@@ -149,6 +147,58 @@ namespace ct
         static constexpr bool IS_SPECIALIZED = true;                                                                   \
         static constexpr int I0 = 0;                                                                                   \
         typedef TYPE<T...> DType;
+
+#define REFLECT_TEMPLATED_DERIVED_DATA_START(TYPE, BASE) \
+    template <class... T>                                                                                                        \
+    struct ReflectData<TYPE<T...>, void>                                                                                     \
+    {                                                                                                                  \
+        static constexpr int START = __COUNTER__;                                                                      \
+        static constexpr bool IS_SPECIALIZED = true;                                                                   \
+        static constexpr int I0 = ReflectData<BASE, void>::N;                                                          \
+        static constexpr const char* getName(){return #TYPE; }                                                         \
+        typedef TYPE<T...> DType;                                                                                            \
+        template <int I>                                                                                               \
+        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->decltype(ReflectData<BASE, void>::get(data, cnt))&        \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::get(data, cnt);                                                            \
+        }                                                                                                              \
+        template <int I>                                                                                               \
+        static constexpr auto                                                                                   \
+        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const decltype(ReflectData<BASE, void>::get(data, cnt))&                         \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::get(data, cnt);                                                            \
+        }                                                                                                              \
+        template <int I>                                                                                               \
+        static constexpr const char* getName(ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)           \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::getName(cnt);                                                              \
+        }
+
+#define REFLECT_TEMPLATED_DERIVED_DATA_START_2(TYPE, BASE, TEMPLATE_TYPE) \
+    template <TEMPLATE_TYPE... T>                                                                                                        \
+    struct ReflectData<TYPE<T...>, void>                                                                                     \
+    {                                                                                                                  \
+        static constexpr int START = __COUNTER__;                                                                      \
+        static constexpr bool IS_SPECIALIZED = true;                                                                   \
+        static constexpr int I0 = ReflectData<BASE, void>::N;                                                          \
+        static constexpr const char* getName(){return #TYPE; }                                                         \
+        typedef TYPE<T...> DType;                                                                                            \
+        template <int I>                                                                                               \
+        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->decltype(ReflectData<BASE, void>::get(data, cnt))&        \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::get(data, cnt);                                                            \
+        }                                                                                                              \
+        template <int I>                                                                                               \
+        static constexpr auto                                                                                   \
+        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const decltype(ReflectData<BASE, void>::get(data, cnt))&                         \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::get(data, cnt);                                                            \
+        }                                                                                                              \
+        template <int I>                                                                                               \
+        static constexpr const char* getName(ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)           \
+        {                                                                                                              \
+            return ReflectData<BASE, void>::getName(cnt);                                                              \
+        }
 
 // Internally reflectable type, ie no external declaration of ReflectData
 // Example usage:

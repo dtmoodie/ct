@@ -25,6 +25,7 @@ namespace std
         ct::reflect::printStruct(os, data);
         return os;
     }
+
     template<class T>
     ct::reflect::enable_if_reflected<T, ostream>& operator<<(ostream& os, const std::vector<T>& data)
     {

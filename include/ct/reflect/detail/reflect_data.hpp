@@ -10,10 +10,13 @@ namespace ct
 {
     namespace reflect
     {
+        template<bool Enable, typename DType = void>
+        using enable_if_t = typename std::enable_if<Enable, DType>::type;
+
         template <class T, class Enable>
         struct ReflectData;
         template <class T, class T2 = void>
-        using enable_if_reflected = std::enable_if_t<ReflectData<T, void>::IS_SPECIALIZED, T2>;
+        using enable_if_reflected = enable_if_t<ReflectData<T, void>::IS_SPECIALIZED, T2>;
 
         template <class T, class T2 = void>
         using enable_if_not_reflected = typename std::enable_if<!ReflectData<T, void>::IS_SPECIALIZED, T2>::type;
@@ -31,13 +34,13 @@ namespace ct
             -> decltype(ReflectData<typename std::remove_const<T>::type>::get(data, _counter_<I>()));
 #endif
         template <int I, class T>
-        static constexpr inline auto getValue(const T& data) -> std::decay_t<decltype(get<I, T>(data))>
+        static constexpr inline auto getValue(const T& data) -> typename std::decay<decltype(get<I, T>(data))>::type
         {
             return get<I, T>(data);
         }
 
         template <int I, class T>
-        static constexpr inline void setValue(T& data, const std::decay_t<decltype(get<I, T>(data))>& value)
+        static constexpr inline void setValue(T& data, const typename std::decay<decltype(get<I, T>(data))>::type& value)
         {
             get<I, T>(data) = value;
         }
