@@ -158,13 +158,13 @@ namespace ct
         static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE<T...> DType;                                                                                            \
         template <int I>                                                                                               \
-        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->decltype(ReflectData<BASE, void>::get(data, cnt))&        \
+        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)-> typename std::decay<decltype(ReflectData<BASE, void>::get(data, cnt))>::type&        \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
         template <int I>                                                                                               \
         static constexpr auto                                                                                   \
-        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const decltype(ReflectData<BASE, void>::get(data, cnt))&                         \
+        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const typename std::decay<decltype(ReflectData<BASE, void>::get(data, cnt))>::type&                         \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
@@ -184,13 +184,13 @@ namespace ct
         static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE<T...> DType;                                                                                            \
         template <int I>                                                                                               \
-        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->decltype(ReflectData<BASE, void>::get(data, cnt))&        \
+        static constexpr auto get(DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->typename std::decay<decltype(ReflectData<BASE, void>::get(data, cnt))>::type&        \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
         template <int I>                                                                                               \
         static constexpr auto                                                                                   \
-        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const decltype(ReflectData<BASE, void>::get(data, cnt))&                         \
+        get(const DType& data, ct::_counter_<I> cnt, enable_if_t < I >= 0 && I<I0> * = 0)->const typename std::decay<decltype(ReflectData<BASE, void>::get(data, cnt))>::type& \
         {                                                                                                              \
             return ReflectData<BASE, void>::get(data, cnt);                                                            \
         }                                                                                                              \
