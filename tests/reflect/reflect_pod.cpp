@@ -49,10 +49,23 @@ struct TestVec
 };
 
 // Doesn't work with C++11 :/
+#if __cplusplus > 201103
+
+struct InternallyReflected
+{
+    REFLECT_INTERNAL_START(InternallyReflected)
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+    REFLECT_INTERNAL_END;
+};
+
+#else
 struct InternallyReflected
 {
     float x,y,z;
 };
+#endif
 
 namespace ct
 {
@@ -95,12 +108,13 @@ namespace ct
         REFLECT_DATA_START(TestVec)
             REFLECT_DATA_MEMBER(vec)
         REFLECT_DATA_END;
-
+#if __cplusplus <= 201103
         REFLECT_DATA_START(InternallyReflected)
             REFLECT_DATA_MEMBER(x)
             REFLECT_DATA_MEMBER(y)
             REFLECT_DATA_MEMBER(z)
         REFLECT_DATA_END;
+#endif
     }
 }
 

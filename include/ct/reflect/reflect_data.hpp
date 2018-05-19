@@ -130,11 +130,17 @@ namespace ct
 
 #define REFLECT_DATA_MEMBER(NAME) REFLECT_DATA_MEMBER_(NAME, __COUNTER__)
 
+#if __cplusplus > 201103
+#define REFLECT_DATA_MEMBER_(NAME, N)                                                                                  \
+    static constexpr auto& get(DType& data, ct::_counter_<N - START - 1 + I0>){ return data.NAME; }                   \
+    static constexpr const auto& get(const DType& data, ct::_counter_<N - START - 1 + I0>){ return data.NAME; }       \
+    static constexpr const char* getName(ct::_counter_<N - START - 1 + I0> /*dummy*/) { return #NAME; }
+#else
 #define REFLECT_DATA_MEMBER_(NAME, N)                                                                                  \
     static constexpr auto get(DType& data, ct::_counter_<N - START - 1 + I0>)-> decltype(data.NAME)& { return data.NAME; }                   \
     static constexpr auto get(const DType& data, ct::_counter_<N - START - 1 + I0>)-> const decltype(data.NAME)& { return data.NAME; }       \
     static constexpr const char* getName(ct::_counter_<N - START - 1 + I0> /*dummy*/) { return #NAME; }
-
+#endif
 #define REFLECT_DATA_END                                                                                               \
     static constexpr int N = __COUNTER__ - START - 1 + I0;                                                             \
     }
@@ -207,7 +213,7 @@ namespace ct
 //    REFLECT_INTERNAL_MEMBER(float, y)
 //    REFLECT_INTERNAL_MEMBER(float, z)
 // REFLECT_INTERNAL_END;
-
+#if __cplusplus > 201103
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME) \
     TYPE NAME; \
     REFLECT_DATA_MEMBER(NAME)
@@ -230,3 +236,4 @@ namespace ct
     typedef void INTERNALLY_REFLECTED;
 
 #define REFLECT_INTERNAL_END static constexpr int N = __COUNTER__ - START - 1 + I0
+#endif
