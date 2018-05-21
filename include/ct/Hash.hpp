@@ -6,7 +6,12 @@ namespace ct
     template <std::size_t len>
     constexpr uint32_t ctcrc32(const char(&str)[len])
     {
-        return detail::crc32<len - 2>(str) ^ 0xFFFFFFFF;
+        return detail::crc32<len>(str) ^ 0xFFFFFFFF;
+    }
+
+    constexpr uint32_t ctcrc32(const char* str)
+    {
+        return detail::ctcrc32(str) ^ 0xFFFFFFFF;
     }
 
     template <std::size_t len>

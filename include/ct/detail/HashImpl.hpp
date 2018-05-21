@@ -102,7 +102,7 @@ namespace ct
 
         constexpr uint32_t ctcrc32(const char* str)
         {
-            return ctcrc32(str, ct::strLen(str));
+            return ctcrc32(str, ct::strLen(str) - 1);
         }
     } // namespace detail
 } // namespace ct
