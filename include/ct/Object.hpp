@@ -25,16 +25,16 @@ namespace ct
 }
 
 #ifdef _MSC_VER
-#define __CT_STRUCT_MAGIC_FUNCTION__ __FUNCTION__
+#define CT_STRUCT_MAGIC_FUNCTION __FUNCTION__
 #else
-#define __CT_STRUCT_MAGIC_FUNCTION__ __PRETTY_FUNCTION__
+#define CT_STRUCT_MAGIC_FUNCTION __PRETTY_FUNCTION__
 #endif
 
 #define DECLARE_CLASS_HASH \
-static constexpr uint32_t getHash() {return ct::hashClassName(__CT_STRUCT_MAGIC_FUNCTION__);}
+static constexpr uint32_t getHash() {return ct::hashClassName(CT_STRUCT_MAGIC_FUNCTION);}
 
 #define DECLARE_MODULE_HASH(N) \
-static constexpr uint32_t getHash() {return ct::ctcrc32(__CT_STRUCT_MAGIC_FUNCTION__) ^ N;} \
+static constexpr uint32_t getHash() {return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION) ^ N;} \
 enum : uint32_t {hash = getHash()};
 
 namespace ct
@@ -45,7 +45,7 @@ namespace ct
     template<class T, uint32_t N>
     struct HashedObject<T, N, typename std::enable_if<std::is_pod<remove_reference_t<T>>::value>::type>
     {
-        DECLARE_MODULE_HASH(N);
+        DECLARE_MODULE_HASH(N)
         enum
         {
             ConstSize = 1,

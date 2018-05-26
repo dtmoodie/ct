@@ -67,7 +67,7 @@ namespace ct
 
         constexpr uint32_t ctCombine_crc32(const char * str, uint32_t part, std::size_t idx)
         {
-            return (part >> 8) ^ crc_table[(part ^ str[idx]) & 0x000000FF];
+            return (part >> 8) ^ crc_table[(part ^ static_cast<uint32_t>(str[idx])) & 0x000000FF];
         }
 
         template<std::size_t idx>
@@ -97,7 +97,7 @@ namespace ct
 
         constexpr uint32_t ctcrc32(const char* str, std::size_t len)
         {
-            return len == -1 ? 0xFFFFFFFF : ctCombine_crc32(str, ctcrc32(str, len - 1), len);
+            return len == static_cast<std::size_t>(-1) ? 0xFFFFFFFF : ctCombine_crc32(str, ctcrc32(str, len - 1), len);
         }
 
         constexpr uint32_t ctcrc32(const char* str)
