@@ -42,4 +42,21 @@ namespace std
         }
         return os;
     }
+
+    template<class T>
+    auto operator<<(ct::reflect::enable_if_not_reflected<T, ostream&> os, const std::vector<T>& data) ->decltype(os << data[0])
+    {
+        if (!data.empty())
+        {
+            os << '[';
+            for (size_t i = 0; i < data.size(); ++i)
+            {
+                if (i != 0)
+                    os << ',';
+                os << data[i];
+            }
+            os << ']';
+        }
+        return os;
+    }
 }
