@@ -40,7 +40,7 @@ namespace ct
         }
 
         template <int I, class T>
-        static constexpr inline void setValue(T& data, const typename std::decay<decltype(get<I, T>(data))>::type& value)
+        static inline void setValue(T& data, const typename std::decay<decltype(get<I, T>(data))>::type& value)
         {
             get<I, T>(data) = value;
         }
