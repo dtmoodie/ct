@@ -19,6 +19,17 @@ namespace ct
 
 namespace std
 {
+
+    template<class T>
+    ct::reflect::enable_if_reflected<T, ostream>& operator<<(ostream& os, const T* data)
+    {
+        if(data)
+        {
+            os << *data;
+        }
+        return os;
+    }
+
     template <class T>
     ct::reflect::enable_if_reflected<T, ostream>& operator<<(ostream& os, const T& data)
     {
