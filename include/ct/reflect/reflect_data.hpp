@@ -3,14 +3,11 @@
 #include "ct/reflect/detail/reflect_data.hpp"
 #include <stdint.h>
 
-#pragma once
-
-
-
 namespace ct
 {
     namespace reflect
     {
+
         template <typename T, typename _ = void>
         struct is_container : std::false_type
         {
@@ -158,9 +155,9 @@ namespace ct
     template <class... T>                                                                                                        \
     struct ReflectData<TYPE<T...>, void>                                                                                     \
     {                                                                                                                  \
-        static constexpr int START = __COUNTER__;                                                                      \
-        static constexpr bool IS_SPECIALIZED = true;                                                                   \
-        static constexpr int I0 = ReflectData<BASE, void>::N;                                                          \
+        static constexpr const int START = __COUNTER__;                                                                      \
+        static constexpr const bool IS_SPECIALIZED = true;                                                                   \
+        static constexpr const int I0 = ReflectData<BASE, void>::N;                                                          \
         static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE<T...> DType;                                                                                            \
         template <int I>                                                                                               \
@@ -184,9 +181,9 @@ namespace ct
     template <TEMPLATE_TYPE... T>                                                                                                        \
     struct ReflectData<TYPE<T...>, void>                                                                                     \
     {                                                                                                                  \
-        static constexpr int START = __COUNTER__;                                                                      \
-        static constexpr bool IS_SPECIALIZED = true;                                                                   \
-        static constexpr int I0 = ReflectData<BASE, void>::N;                                                          \
+        static constexpr const int START = __COUNTER__;                                                                      \
+        static constexpr const bool IS_SPECIALIZED = true;                                                                   \
+        static constexpr const int I0 = ReflectData<BASE, void>::N;                                                          \
         static constexpr const char* getName(){return #TYPE; }                                                         \
         typedef TYPE<T...> DType;                                                                                            \
         template <int I>                                                                                               \
