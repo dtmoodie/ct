@@ -2,6 +2,53 @@
 #include <utility>
 #include <ct/detail/counter.hpp>
 
+template<class T, class T1>
+struct AccessToken
+{
+    AccessToken(T& obj, void(T::*setter)(T1)): m_obj(obj), m_setter(setter){}
+
+    ~AccessToken(){(m_obj.*m_setter)(std::move(m_data));}
+
+    operator T1&(){return m_data;}
+    template<class AR>
+    void load(AR& ar)
+    {
+        ar(m_data);
+    }
+private:
+    T1 m_data;
+    T& m_obj;
+    void(T::*m_setter)(T1);
+};
+
+template<class T>
+struct Getter;
+
+template<class T, class D>
+struct Getter<D(T::*)()>
+{
+    Getter(D(T::*getter)() const): m_getter(getter){}
+
+    D get(const T& obj) const
+    {
+        return (obj.*m_getter)();
+    }
+private:
+    D(T::*m_getter)() const;
+};
+
+template<class T, class D>
+struct Getter<D(*)(const T&)>
+{
+    Getter(D(*getter)(const T&)): m_getter(getter){}
+    D get(const T& obj) const
+    {
+        return m_getter(obj);
+    }
+private:
+    D(*m_getter)(const T&);
+};
+
 template<class T, class T0, class T1>
 struct Accessor
 {
@@ -19,6 +66,7 @@ private:
     T0(*m_getter)(const T&);
     void(*m_setter)(T&, T1);
 };
+
 template<class T, class T0>
 struct Accessor<T, T0, void>
 {
@@ -46,13 +94,13 @@ struct MemberAccessor
 
     void set(T& obj, T1&& value) const{(obj.*m_setter)(std::forward(value));}
 
+    AccessToken<T, T1> set(T& obj) const{return AccessToken<T, T1>(obj, m_setter);}
+
 private:
     const char* m_name;
     T0(T::*m_getter)() const;
     void(T::*m_setter)(T1);
 };
-
-
 
 template<class T, class T0>
 struct MemberAccessor<T, T0, void>
@@ -110,7 +158,8 @@ struct Reflect;
 
 #define REFLECT_END \
     static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
-    static constexpr const int REFLECT_COUNTER = REFLECT_COUNT_END - REFLECT_COUNT_START; \
+    static constexpr const int REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
+    static constexpr ct::_counter_<REFLECTION_COUNT-1> end(){return ct::_counter_<REFLECTION_COUNT-1>{};} \
     }
 
 
