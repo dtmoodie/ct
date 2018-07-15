@@ -77,24 +77,36 @@ void saveStruct(AR& ar, const T& obj)
     saveStructHelper(ar, obj, Reflect<T>::end());
 }
 
-template<class AR, class T>
-void loadStructHelper(AR& ar,  T&, ct::_counter_<0> idx)
+template<class AR, class T, int I>
+auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::SetType, void>::value>::type
 {
-    auto accessor = Reflect<T>::getAccessor(idx);
+    auto accessor = Reflect<T>::getAccessor(ct::_counter_<I>{});
+    ar(cereal::make_nvp(accessor.getName(), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
+}
+
+template<class AR, class T, int I>
+auto loadValue(AR&, T&) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::SetType, void>::value>::type
+{
 
 }
 
-template<int I,  class AR, class T>
-void loadStructHelper(AR& ar,  T&, ct::_counter_<I> idx)
+template<class AR, class T>
+void loadStructHelper(AR& ar,  T& obj, ct::_counter_<0>)
 {
-    auto accessor = Reflect<T>::getAccessor(idx);
+    loadValue<AR, T, 0>(ar, obj);
+}
 
+template<int I,  class AR, class T>
+void loadStructHelper(AR& ar,  T&obj, ct::_counter_<I> idx)
+{
+    loadStructHelper(ar, obj, --idx);
+    loadValue<AR, T, I>(ar, obj);
 }
 
 template<class AR, class T>
 void loadStruct(AR& ar, T& obj)
 {
-
+    loadStructHelper(ar, obj, Reflect<T>::end());
 }
 
 template<class T>
@@ -108,11 +120,25 @@ void test(T& obj)
         cereal::JSONOutputArchive ar(std::cout);
         saveStruct(ar, obj);
     }
-    std::cout << "Binary: " << std::endl;
     std::cout << std::endl;
+    std::cout << "Binary: " << std::endl;
     {
-        cereal::BinaryOutputArchive ar(std::cout);
-        saveStruct(ar, obj);
+        {
+            cereal::BinaryOutputArchive ar(std::cout);
+            saveStruct(ar, obj);
+        }
+        std::stringstream ss;
+        {
+            cereal::BinaryOutputArchive ar(ss);
+            saveStruct(ar, obj);
+        }
+        {
+            cereal::BinaryInputArchive ar(ss);
+            T loaded_object;
+            loadStruct(ar, loaded_object);
+            std::cout << std::endl;
+            printStruct(std::cout, loaded_object);
+        }
     }
 }
 
