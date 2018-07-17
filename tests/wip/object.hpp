@@ -14,3 +14,14 @@ public:
 
     float half() const{return data / 2.0f;}
 };
+
+struct NonSerializable
+{
+    float a,b,c;
+};
+
+struct TestNonSerizableData
+{
+    NonSerializable a;
+    float b;
+};

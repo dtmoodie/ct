@@ -23,6 +23,10 @@ namespace ct
         ACCESSOR(data, &Bar::get, &Bar::set)
         MEMBER_FUNCTION(half, &Bar::half)
     REFLECT_END;
+    REFLECT_BEGIN(TestNonSerizableData)
+        PUBLIC_ACCESS(a)
+        PUBLIC_ACCESS(b)
+    REFLECT_END;
 }
 
 
@@ -53,12 +57,11 @@ namespace ct
 #endif
 }
 
-
 template<class T>
 void test(T& obj)
 {
     std::cout << ct::Reflect<T>::getName() << std::endl;
-    ct::printStruct<ct::PrintAllOptions>(std::cout, obj);
+    ct::printStruct(std::cout, obj);
     std::cout << std::endl;
     std::cout << "JSON: " << std::endl;
     {
@@ -87,6 +90,8 @@ void test(T& obj)
     }
 }
 
+
+
 int main()
 {
     Foo obj;
@@ -101,6 +106,12 @@ int main()
     bar.set(4);
     test(bar);
     static_assert(ct::Reflect<Bar>::REFLECTION_COUNT == 2, "Reflect<Bar>::REFLECTION_COUNT == 2");
+
+    TestNonSerizableData non_serializable;
+    ct::printStruct<ct::SkipUnprintable>(std::cout, non_serializable);
+    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "");
+    static_assert(ct::CanWrite<TestNonSerizableData, 1>::value == true, "");
+    std::cout << std::endl;
 
     #ifdef HAVE_OPENCV
         cv::Rect rect(0,2, 4, 5);

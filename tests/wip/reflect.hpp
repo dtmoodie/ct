@@ -9,7 +9,10 @@ namespace ct
     {
         AccessToken(T& obj, void(T::*setter)(T1)): m_obj(obj), m_setter(setter){}
 
-        ~AccessToken(){(m_obj.*m_setter)(std::move(m_data));}
+        ~AccessToken()
+        {
+            (m_obj.*m_setter)(std::move(m_data));
+        }
 
         operator T1&(){return m_data;}
         template<class AR>
@@ -35,6 +38,7 @@ namespace ct
     template<class T, class D>
     struct Getter<D(T::*)() const>
     {
+        using GetType = typename std::decay<D>::type;
         Getter(D(T::*getter)() const): m_getter(getter){}
 
         D get(const T& obj) const
@@ -48,6 +52,7 @@ namespace ct
     template<class T, class D>
     struct Getter<D(*)(const T&)>
     {
+        using GetType = typename std::decay<D>::type;
         Getter(D(*getter)(const T&)): m_getter(getter){}
         D get(const T& obj) const
         {
