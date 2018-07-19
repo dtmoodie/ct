@@ -113,8 +113,10 @@ int main()
 
     TestNonSerizableData non_serializable;
     ct::printStruct<ct::SkipUnprintable>(std::cout, non_serializable);
-    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "");
-    static_assert(ct::CanWrite<TestNonSerizableData, 1>::value == true, "");
+    static_assert(ct::detail::stream_writable<NonSerializable>::value == false, "ct::detail::stream_writable<NonSerializable>::value == false");
+    static_assert(ct::detail::stream_writable<float>::value, "ct::detail::stream_writable<float>::value");
+    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "ct::CanWrite<TestNonSerizableData, 0>::value == false");
+    static_assert(ct::CanWrite<TestNonSerizableData, 1>::value, "ct::CanWrite<TestNonSerizableData, 1>::value == true");
     std::cout << std::endl;
 
     #ifdef HAVE_OPENCV
