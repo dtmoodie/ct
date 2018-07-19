@@ -56,8 +56,8 @@ namespace ct
         MEMBER_FUNCTION(area, &cv::Rect::area)
         MEMBER_FUNCTION(size, &cv::Rect::size)
     REFLECT_END;
-#endif
 }
+#endif
 
 template<class T>
 void test(T& obj)
