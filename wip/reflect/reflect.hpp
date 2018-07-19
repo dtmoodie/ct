@@ -189,9 +189,9 @@ namespace ct
 
 #define PUBLIC_ACCESS(NAME) \
     static ct::Accessor<const decltype(DataType::NAME)&(*)(const DataType&), decltype(DataType::NAME)&(*)(DataType&)> getAccessor(ct::_counter_<__COUNTER__ - REFLECT_COUNT_START - 1>){\
-        return ct::makeAccessor(#NAME, \
-            +[](const DataType& obj)-> const decltype(DataType::NAME)&{return obj.NAME;  }, \
-            +[](DataType& obj)-> decltype(DataType::NAME)&{ return obj.NAME; });}
+        return {#NAME, \
+            [](const DataType& obj)-> const decltype(DataType::NAME)&{return obj.NAME;  }, \
+            [](DataType& obj)-> decltype(DataType::NAME)&{ return obj.NAME; }};}
 
 #define ACCESSOR(NAME, GETTER, SETTER) \
     static auto getAccessor(ct::_counter_<__COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor(#NAME, GETTER, SETTER)) { return ct::makeAccessor(#NAME, GETTER, SETTER); }
