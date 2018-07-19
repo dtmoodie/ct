@@ -1,5 +1,6 @@
 #pragma once
 #include <ostream>
+#include <typeinfo>
 
 namespace ct
 {

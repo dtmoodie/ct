@@ -1,13 +1,15 @@
 #include "reflect.hpp"
 #include "object.hpp"
 #include "equal.hpp"
-#include "cerealize.hpp"
+
 #include "print.hpp"
 
+#ifdef HAVE_CEREAL
+#include "cerealize.hpp"
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
-
+#endif
 #include <iostream>
 #include <cassert>
 
@@ -63,6 +65,7 @@ void test(T& obj)
     std::cout << ct::Reflect<T>::getName() << std::endl;
     ct::printStruct(std::cout, obj);
     std::cout << std::endl;
+#ifdef HAVE_CEREAL
     std::cout << "JSON: " << std::endl;
     {
         cereal::JSONOutputArchive ar(std::cout);
@@ -88,6 +91,7 @@ void test(T& obj)
             assert(ct::equal(obj, loaded_object));
         }
     }
+#endif
 }
 
 
