@@ -210,7 +210,7 @@ namespace ct
 //    REFLECT_INTERNAL_MEMBER(float, y)
 //    REFLECT_INTERNAL_MEMBER(float, z)
 // REFLECT_INTERNAL_END;
-#if __cplusplus > 201103
+#if __cplusplus > 201103 || defined(_MSC_VER)
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME) \
     TYPE NAME; \
     REFLECT_DATA_MEMBER(NAME)
