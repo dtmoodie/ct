@@ -95,7 +95,7 @@ namespace ct
         printValue<I, Options>(os, obj);
     }
 
-    template<class Options = PrintOptions, class T>
+    template<class Options, class T>
     void printStruct(std::ostream& os, const T& obj)
     {
         os << Options::object_begin;

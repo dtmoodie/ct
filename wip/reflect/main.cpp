@@ -1,13 +1,15 @@
 #include "reflect.hpp"
 #include "object.hpp"
 #include "equal.hpp"
-#include "cerealize.hpp"
+
 #include "print.hpp"
 
+#ifdef HAVE_CEREAL
+#include "cerealize.hpp"
 #include <cereal/cereal.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
-
+#endif
 #include <iostream>
 #include <cassert>
 
@@ -54,8 +56,8 @@ namespace ct
         MEMBER_FUNCTION(area, &cv::Rect::area)
         MEMBER_FUNCTION(size, &cv::Rect::size)
     REFLECT_END;
-#endif
 }
+#endif
 
 template<class T>
 void test(T& obj)
@@ -63,6 +65,7 @@ void test(T& obj)
     std::cout << ct::Reflect<T>::getName() << std::endl;
     ct::printStruct(std::cout, obj);
     std::cout << std::endl;
+#ifdef HAVE_CEREAL
     std::cout << "JSON: " << std::endl;
     {
         cereal::JSONOutputArchive ar(std::cout);
@@ -88,6 +91,7 @@ void test(T& obj)
             assert(ct::equal(obj, loaded_object));
         }
     }
+#endif
 }
 
 
@@ -109,8 +113,10 @@ int main()
 
     TestNonSerizableData non_serializable;
     ct::printStruct<ct::SkipUnprintable>(std::cout, non_serializable);
-    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "");
-    static_assert(ct::CanWrite<TestNonSerizableData, 1>::value == true, "");
+    static_assert(ct::detail::stream_writable<NonSerializable>::value == false, "ct::detail::stream_writable<NonSerializable>::value == false");
+    static_assert(ct::detail::stream_writable<float>::value, "ct::detail::stream_writable<float>::value");
+    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "ct::CanWrite<TestNonSerizableData, 0>::value == false");
+    static_assert(ct::CanWrite<TestNonSerizableData, 1>::value, "ct::CanWrite<TestNonSerizableData, 1>::value == true");
     std::cout << std::endl;
 
     #ifdef HAVE_OPENCV
