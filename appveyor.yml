@@ -10,15 +10,20 @@ before_build:
    cd build
 
    cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib
+
 - sh: >-
     mkdir -p build
 
     cd build
 
     cmake ..
+
 build_script:
-  -cmd: msbuild ct.sln
-  -sh: make
+- cmd: >-
+    msbuild ct.sln
+
+- sh: make
+
 test_script:
 - cmd: wip_reflect
 - sh: ./wip_reflect
