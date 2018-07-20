@@ -14,9 +14,11 @@ before_build:
     mkdir -p build
 
     cd build
-    
+
     cmake ..
-build:
-  verbosity: minimal
+build_script:
+  -cmd: msbuild ct.sln
+  -sh: make
 test_script:
 - cmd: wip_reflect
+- sh: ./wip_reflect
