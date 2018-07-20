@@ -1,0 +1,14 @@
+version: 1.0.{build}
+image:
+- Previous Visual Studio 2017
+- Ubuntu
+clone_depth: 1
+before_build:
+-  mkdir build
+   cd build
+- cmd: cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib
+- sh: cmake ..
+build:
+  verbosity: minimal
+test_script:
+- cmd: wip_reflect
