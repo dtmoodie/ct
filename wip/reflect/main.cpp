@@ -112,7 +112,6 @@ int main()
     std::cout << std::endl;
 
     Bar bar;
-    x
     test(bar);
     static_assert(ct::Reflect<Bar>::REFLECTION_COUNT == 2, "Reflect<Bar>::REFLECTION_COUNT == 2");
 
