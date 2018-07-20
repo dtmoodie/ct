@@ -30,6 +30,7 @@ namespace ct
         static std::ostream& onUnprintable(std::ostream& os, const char* name, const T& data)
         {
             os << "Unable to print '" << name << "' o << operator available for " << typeid(T).name();
+            return os;
         }
     };
 

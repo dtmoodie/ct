@@ -29,6 +29,11 @@ namespace ct
         PUBLIC_ACCESS(a)
         PUBLIC_ACCESS(b)
     REFLECT_END;
+
+    REFLECT_DERIVED(DerivedFoo, Foo)
+        PUBLIC_ACCESS(id)
+    REFLECT_END;
+
 }
 
 
@@ -107,7 +112,7 @@ int main()
     std::cout << std::endl;
 
     Bar bar;
-    bar.set(4);
+    x
     test(bar);
     static_assert(ct::Reflect<Bar>::REFLECTION_COUNT == 2, "Reflect<Bar>::REFLECTION_COUNT == 2");
 
@@ -124,4 +129,9 @@ int main()
         test(rect);
         static_assert(ct::Reflect<cv::Rect>::REFLECTION_COUNT == 8, "Reflect<cv::Rect>::REFLECTION_COUNT == 8");
     #endif
+    DerivedFoo derived_foo;
+    test(derived_foo);
+    static_assert(ct::Reflect<DerivedFoo>::REFLECTION_COUNT == 4, "");
+    ct::Reflect<DerivedFoo>::getAccessor(ct::_counter_<0>{});
+    std::cout << ct::Reflect<DerivedFoo>::REFLECTION_COUNT << std::endl;
 }

@@ -25,3 +25,9 @@ struct TestNonSerizableData
     NonSerializable a;
     float b;
 };
+
+
+struct DerivedFoo: public Foo
+{
+    int id;
+};
