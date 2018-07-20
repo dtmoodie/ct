@@ -55,7 +55,7 @@ if(NOT TARGET ct)
         endif()
 
         if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
-            include_directories(${Boost_INCLUDE_DIRS})
+            include_directories(${Boost_INCLUDE_DIRS} ${CMAKE_CURRENT_LIST_DIR}/include)
             include(CTest)
             enable_testing()
             SUBDIRLIST(tests "${CMAKE_CURRENT_LIST_DIR}/tests")
