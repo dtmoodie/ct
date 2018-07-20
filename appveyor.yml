@@ -4,10 +4,14 @@ image:
 - Ubuntu
 clone_depth: 1
 before_build:
--  mkdir build
+- cmd: >-
+   if not exist "build" mkdir build
    cd build
-- cmd: cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib
-- sh: cmake ..
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib
+- sh: >-
+    mkdir -p build
+    cd build
+    cmake ..
 build:
   verbosity: minimal
 test_script:
