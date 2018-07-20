@@ -1,6 +1,7 @@
 #pragma once
 #include "print.hpp"
 #include "reflect.hpp"
+#include <cstdint>
 
 namespace std
 {
@@ -19,17 +20,17 @@ namespace ct
         template <class T>
         struct stream_writable {
             template <class U>
-            static constexpr auto check(std::ostream* os, U* val) -> decltype(*os << *val, size_t(0))
+            static constexpr auto check(std::ostream* os, U* val) -> decltype(*os << *val, uint32_t())
             {
                 return 0;
             }
 
             template <class U>
-            static constexpr int check(...)
+            static constexpr uint8_t check(...)
             {
                 return 0;
             }
-            static const bool value = sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(size_t);
+            static const bool value = sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(uint32_t);
         };
     }
 
