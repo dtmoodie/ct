@@ -179,6 +179,18 @@ namespace ct
 
     template<class T, class U = void>
     using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
+
+
+    template<class T, uint8_t I>
+    using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
+
+    template<class T, uint8_t I>
+    struct GetterType
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::GetType;
+    };
+
 }
 
 #define REFLECT_BEGIN(TYPE) \
@@ -236,3 +248,4 @@ namespace ct
     static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
     static constexpr const int REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
     static constexpr ct::Indexer<REFLECTION_COUNT - 1> end() { return ct::Indexer<REFLECTION_COUNT - 1>{}; }
+

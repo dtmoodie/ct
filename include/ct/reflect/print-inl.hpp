@@ -19,14 +19,14 @@ namespace ct
     template<class T, int I>
     struct CanWrite
     {
-        using DType = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetType;
+        using DType = typename GetterType<T, I>::type;
         enum{value = detail::stream_writable<DType>::value};
     };
 
     template<class T, class O, int I>
     struct ShouldWrite
     {
-        using DType = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetType;
+        using DType = typename GetterType<T, I>::type;
         using GetterTraits = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetterTraits_t;
         enum{
             is_calculated = std::is_same<GetterTraits, CalculatedValue>::value,
