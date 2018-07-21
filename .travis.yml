@@ -8,8 +8,9 @@ cache:
   apt: true
 
 script:
+ - git clone https://github.com/USCiLab/cereal
  - mkdir build
  - cd build
- - cmake ..
+ - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include
  - make
  - ./wip_reflect
