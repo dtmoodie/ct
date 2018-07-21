@@ -4,7 +4,7 @@
 // forces a compile time value
 template<int I> struct ctv
 {
-    enum { value = I };
+    static constexpr const int value = I;
 };
 
 
