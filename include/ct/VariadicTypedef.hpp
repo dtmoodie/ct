@@ -4,12 +4,12 @@
 namespace ct
 {
     template <typename... Args>
-    struct variadic_typedef
+    struct VariadicTypedef
     {
     };
 
     template <typename... Args>
-    struct convert_in_tuple
+    struct ConvertToTuple
     {
         // Leaving this empty will cause the compiler
         // to complain if you try to access a "type" member.
@@ -18,64 +18,94 @@ namespace ct
         // if you know something about the types.
     };
 
+    template<class ... Args>
+    struct ConvertFromTuple
+    {
+
+    };
+
     template <typename... Args>
-    struct convert_in_tuple<variadic_typedef<Args...>>
+    struct ConvertToTuple<VariadicTypedef<Args...>>
     {
         // use Args normally
-        typedef std::tuple<Args...> type;
+        using type = std::tuple<Args...>;
+    };
+
+    template<class...Args>
+    struct ConvertFromTuple<std::tuple<Args...>>
+    {
+        using type = VariadicTypedef<Args...>;
     };
 
     template <typename T, class T2>
-    struct append_to_tupple
+    struct Append
     {
+        using type = VariadicTypedef<T, T2>;
+        using tuple_type = std::tuple<T, T2>;
     };
 
     template <typename T, typename... Args>
-    struct append_to_tupple<T, variadic_typedef<Args...>>
+    struct Append<T, VariadicTypedef<Args...>>
     {
-        typedef variadic_typedef<T, Args...> type;
-        typedef std::tuple<T, Args...> tuple_type;
+        using type = VariadicTypedef<T, Args...>;
+        using tuple_type = std::tuple<T, Args...>;
     };
 
     template <typename... Args>
-    struct append_to_tupple<void, variadic_typedef<Args...>>
+    struct Append<void, VariadicTypedef<Args...>>
     {
-        typedef variadic_typedef<Args...> type;
-        typedef std::tuple<Args...> tuple_type;
+        using type = VariadicTypedef<Args...>;
+        using tuple_type = std::tuple<Args...>;
     };
 
     template <typename... Args>
-    struct append_to_tupple<variadic_typedef<Args...>, void>
+    struct Append<VariadicTypedef<Args...>, void>
     {
-        typedef variadic_typedef<Args...> type;
-        typedef std::tuple<Args...> tuple_type;
+        using type = VariadicTypedef<Args...>;
+        using tuple_type = std::tuple<Args...>;
     };
 
     template <typename Arg>
-    struct append_to_tupple<Arg, variadic_typedef<void>>
+    struct Append<Arg, VariadicTypedef<void>>
     {
-        typedef variadic_typedef<Arg> type;
-        typedef std::tuple<Arg> tuple_type;
+        using type = VariadicTypedef<Arg>;
+        using tuple_type = std::tuple<Arg>;
     };
 
     template <>
-    struct append_to_tupple<void, variadic_typedef<void>>
+    struct Append<void, VariadicTypedef<void>>
     {
-        typedef variadic_typedef<void> type;
-        typedef std::tuple<void> tuple_type;
+        using type = VariadicTypedef<void>;
+        using tuple_type = std::tuple<void>;
     };
 
     template <typename Arg>
-    struct append_to_tupple<variadic_typedef<void>, Arg>
+    struct Append<VariadicTypedef<void>, Arg>
     {
-        typedef variadic_typedef<Arg> type;
-        typedef std::tuple<Arg> tuple_type;
+        using type = VariadicTypedef<Arg>;
+        using tuple_type = std::tuple<Arg>;
+    };
+
+    template<class ... T, class Arg>
+    struct Append<VariadicTypedef<T...>, Arg>
+    {
+        using type = VariadicTypedef<T..., Arg>;
+        using tuple_type = std::tuple<T..., Arg>;
     };
 
     template <>
-    struct append_to_tupple<void, void>
+    struct Append<void, void>
     {
-        typedef variadic_typedef<void> type;
-        typedef std::tuple<void> tuple_type;
+        using type = VariadicTypedef<void>;
+        using tuple_type = std::tuple<void>;
     };
+
+    template<class T, class U>
+    using append = typename Append<T, U>::type;
+
+    template<class T>
+    using toTuple = typename ConvertToTuple<T>::type;
+
+    template<class T>
+    using fromTuple = typename ConvertFromTuple<T>::type;
 }

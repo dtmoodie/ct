@@ -1,8 +1,26 @@
 #pragma once
 #include <type_traits>
 #include <vector>
+#include <ostream>
+
 namespace ct
 {
+    template <class T>
+    struct StreamWritable {
+        template <class U>
+        static constexpr auto check(std::ostream* os, U* val) -> decltype(*os << *val, uint32_t())
+        {
+            return 0;
+        }
+
+        template <class U>
+        static constexpr uint8_t check(...)
+        {
+            return 0;
+        }
+        static const bool value = sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(uint32_t);
+    };
+
     template< bool B, class T, class F >
     using conditional_t = typename std::conditional<B, T, F>::type;
 
@@ -36,7 +54,8 @@ namespace ct
     template<class T, class O = void>
     using enable_indexable = typename std::enable_if<remove_reference_t<T>::IsIndexable, O>::type;
 
-    template<class T> struct Indexable
+    template<class T> 
+    struct Indexable
     {
         enum
         {

@@ -1,0 +1,3 @@
+#add_executable(test_ct_hash main.cpp)
+#set_target_properties(test_ct_hash PROPERTIES FOLDER Tests/ct)
+#target_link_libraries(test_ct_hash ct)

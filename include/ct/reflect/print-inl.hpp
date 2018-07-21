@@ -15,24 +15,6 @@ namespace std
 
 namespace ct
 {
-    namespace detail
-    {
-        template <class T>
-        struct stream_writable {
-            template <class U>
-            static constexpr auto check(std::ostream* os, U* val) -> decltype(*os << *val, uint32_t())
-            {
-                return 0;
-            }
-
-            template <class U>
-            static constexpr uint8_t check(...)
-            {
-                return 0;
-            }
-            static const bool value = sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(uint32_t);
-        };
-    }
 
     template<class T, int I>
     struct CanWrite
