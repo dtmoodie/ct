@@ -1,19 +1,10 @@
+#include "../common.hpp"
+
 #include <ct/String.hpp>
 #include <type_traits>
 #include <iostream>
 
 static constexpr const char* getString() { return "asdf"; }
-
-template<int I> struct ctv
-{ 
-    enum{value = I}; 
-};
-
-#ifdef DEBUG_CONSTEXPR_OUTPUT
-    #define STATIC_EQUAL(LHS, RHS) if(ctv<(LHS)>::value != ctv<(RHS)>::value) {std::cout << #LHS << " (" << LHS << ")"  << " != " << #RHS << " (" << RHS << ")";}
-#else
-    #define STATIC_EQUAL(LHS, RHS) static_assert(ctv<(LHS)>::value == ctv<(RHS)>::value, #LHS " != " #RHS)
-#endif
 
 int main()
 {

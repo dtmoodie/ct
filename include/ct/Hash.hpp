@@ -1,5 +1,5 @@
 #pragma once
-#include "detail/HashImpl.hpp"
+#include "HashImpl.hpp"
 
 namespace ct
 {
