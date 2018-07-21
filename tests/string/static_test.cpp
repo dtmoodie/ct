@@ -1,19 +1,30 @@
 #include <ct/String.hpp>
 #include <type_traits>
+#include <iostream>
 
 static constexpr const char* getString() { return "asdf"; }
 
+template<int I> struct ctv
+{ 
+    enum{value = I}; 
+};
+
+#ifdef DEBUG_CONSTEXPR_OUTPUT
+    #define STATIC_EQUAL(LHS, RHS) if(ctv<(LHS)>::value != ctv<(RHS)>::value) {std::cout << #LHS << " (" << LHS << ")"  << " != " << #RHS << " (" << RHS << ")";}
+#else
+    #define STATIC_EQUAL(LHS, RHS) static_assert(ctv<(LHS)>::value == ctv<(RHS)>::value, #LHS " != " #RHS)
+#endif
 
 int main()
 {
-    static_assert(std::integral_constant<int, ct::strLen("asdf")>::value == 4, "strlen(\"asdf\") == 4");
-    static_assert(std::integral_constant<int, ct::strLen(getString())>::value == 4, "strlen(getString()) == 4");
+    STATIC_EQUAL(ct::strLen("asdf"), 4);
+    STATIC_EQUAL(ct::strLen(getString()), 4);
 
-    static_assert(ct::findFirst("asdf:asdf") == 4, "findFirst(\"asdf:asdf\") == 4");
-    static_assert(ct::findLast("asdf:asdf") == 4, "findLast(\"asdf:asdf\") == 4");
-    static_assert(ct::findLast("asdf:asdf", 'a') == 5, "findLast(\"asdf:asdf\", 'a') == 5");
-    static_assert("asdf:asdf"[4] == ':', "\"asdf:asdf\"[4] == ':'");
-    static_assert(ct::classNameIdx("TestHash::getName()") == 8, "ct::classNameIdx(\"TestHash::getName()\") == 8");
+    STATIC_EQUAL(ct::findFirst("asdf:asdf"), 4);
+    STATIC_EQUAL(ct::findLast("asdf:asdf"), 4);
+    STATIC_EQUAL(ct::findLast("asdf:asdf", 'a'), 5);
+    STATIC_EQUAL("asdf:asdf"[4],  ':');
+    STATIC_EQUAL(ct::classNameIdx("TestHash::getName()"), 8);
     
     return 0;
 }

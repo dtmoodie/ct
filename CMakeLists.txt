@@ -20,6 +20,7 @@ ENDMACRO()
 
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
+    option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
     add_library(ct INTERFACE)
 
     target_include_directories(ct 

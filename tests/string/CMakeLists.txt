@@ -1,3 +1,6 @@
+if(DEBUG_TEST_FAILURE)
+    add_definitions(-DDEBUG_CONSTEXPR_OUTPUT)
+endif()
 if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
     add_executable(test_ct_string_runtime boost_test.cpp)
     target_link_libraries(test_ct_string_runtime ct ${Boost_LIBRARIES})
