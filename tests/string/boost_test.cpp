@@ -10,24 +10,9 @@
 
 using namespace ct;
 
-template<uint32_t N> struct ctv
-{
-    const static uint32_t value = N;
-};
-template<uint32_t N> const uint32_t ctv<N>::value;
-
-static constexpr const char* getString() { return "asdf"; }
-
 BOOST_AUTO_TEST_CASE(string)
 {
-    static_assert(ctv<ct::strLen("asdf")>::value == 4, "strlen(\"asdf\") == 4");
-    static_assert(ctv<ct::strLen(getString())>::value == 4, "strlen(getString()) == 4");
-    static_assert(ct::findFirst("asdf:asdf") == 4, "findFirst(\"asdf:asdf\") == 4");
-    static_assert(ct::findFirst("asdf:asdf") == 4, "findFirst(\"asdf:asdf\") == 4");
-    static_assert(ct::findLast("asdf:asdf") == 4, "findLast(\"asdf:asdf\") == 4");
-    static_assert(ct::findLast("asdf:asdf", 'a') == 5, "findLast(\"asdf:asdf\", 'a') == 5");
-    static_assert("asdf:asdf"[4] == ':', "\"asdf:asdf\"[4] == ':'");
-    static_assert(ct::classNameIdx("TestHash::getName()") == 8, "asdf");
+    
     
     /*ctv<ctcrc32("test_string")>::value;
     ctv<classNameIdx("test_string:")>::value;
