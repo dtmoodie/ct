@@ -31,6 +31,8 @@ build_script:
 - sh: make
 
 test_script:
+- cmd: cd tests
+- cmd: dir
 - cmd: test_ct_string_static
 - cmd: test_ct_type_traits
 - cmd: test_ct_variadic_typedef
