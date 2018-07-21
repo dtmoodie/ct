@@ -1,0 +1,9 @@
+dist: trusty
+sudo: false
+
+script:
+- mkdir build
+- cd build
+- cmake ..
+- make
+- ./wip_reflect
