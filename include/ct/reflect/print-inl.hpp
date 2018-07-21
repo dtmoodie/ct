@@ -66,12 +66,12 @@ namespace ct
     }
 
     template<class Options = PrintOptions, class T>
-    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<0>)
+    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<0U>)
     {
         printValue<0, Options>(os, obj);
     }
 
-    template<class Options = PrintOptions, int I, class T>
+    template<class Options = PrintOptions, index_t I, class T>
     void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<I> idx)
     {
         printStructHelper<Options>(os, obj, --idx);
