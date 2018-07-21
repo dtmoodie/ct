@@ -43,6 +43,8 @@ test_script:
    variadic_typedef\debug\test_ct_variadic_typedef.exe
  
    type_trait_detectors\debug\test_ct_type_traits.exe
+   
+   reflect\debug\test_ct_reflect_print.exe
 
 
 - sh: >-
@@ -57,3 +59,5 @@ test_script:
    variadic_typedef/test_ct_variadic_typedef
  
    type_trait_detectors/test_ct_type_traits
+      
+   reflect/test_ct_reflect_print
