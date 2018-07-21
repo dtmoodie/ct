@@ -14,7 +14,6 @@ before_install:
  - sudo apt-get install -y libopencv-core-dev
 
 script:
- - apt-get install
  - git clone https://github.com/USCiLab/cereal
  - mkdir build
  - cd build
