@@ -191,6 +191,14 @@ namespace ct
         using type = typename accessor_type::GetType;
     };
 
+    template<class T, index_t I>
+    struct GetterTraits
+    {
+
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::GetterTraits_t;
+    };
+
 }
 
 #define REFLECT_BEGIN(TYPE) \

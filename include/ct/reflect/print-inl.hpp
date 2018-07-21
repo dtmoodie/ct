@@ -28,7 +28,7 @@ namespace ct
     struct ShouldWrite
     {
         using DType = typename GetterType<T, I>::type;
-        using GetterTraits = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetterTraits_t;
+        using GetterTraits = typename ct::GetterTraits<T, I>::type;
         enum{
             is_calculated = std::is_same<GetterTraits, CalculatedValue>::value,
             is_writable   = CanWrite<T, I>::value,
