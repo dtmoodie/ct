@@ -1,9 +1,15 @@
 dist: trusty
 sudo: false
 
+language: cpp
+compiler: gcc
+
+cache:
+  apt: true
+
 script:
-- mkdir build
-- cd build
-- cmake ..
-- make
-- ./wip_reflect
+ - mkdir build
+ - cd build
+ - cmake ..
+ - make
+ - ./wip_reflect
