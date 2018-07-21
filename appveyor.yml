@@ -1,15 +1,21 @@
 version: 1.0.{build}
 image:
 - Previous Visual Studio 2017
+- Visual Studio 2017
+- Visual Studio 2015
 - Ubuntu
+- Previous Ubuntu
+
 clone_depth: 1
 before_build:
+- git clone https://github.com/USCiLab/cereal
+
 - cmd: >-
    if not exist "build" mkdir build
 
    cd build
 
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=../cereal/include
 
 - sh: >-
     mkdir -p build

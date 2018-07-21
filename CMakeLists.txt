@@ -50,8 +50,17 @@ if(NOT TARGET ct)
         if(OpenCV_FOUND)
             add_definitions(-DHAVE_OPENCV)
         endif()
-        if(cereal_FOUND)
-            add_definitions(-DHAVE_CEREAL)
+        if(NOT cereal_INCLUDE_DIR)
+            if(cereal_FOUND)
+                add_definitions(-DHAVE_CEREAL)
+            endif()
+        else()
+            add_library(cereal INTERFACE)
+                target_include_directories(cereal INTERFACE
+                    $<BUILD_INTERFACE:${cereal_INCLUDE_DIR}>
+                    $<INSTALL_INTERFACE:include>
+                )
+            set(cereal_FOUND ON)
         endif()
 
         if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
