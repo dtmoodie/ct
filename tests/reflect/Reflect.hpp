@@ -1,54 +1,52 @@
 #pragma once
 #include "Data.hpp"
 
-
 namespace ct
 {
-    namespace reflect
-    {
-        REFLECT_DATA_START(ReflectedStruct)
-            REFLECT_DATA_MEMBER(x)
-            REFLECT_DATA_MEMBER(y)
-            REFLECT_DATA_MEMBER(z)
-            REFLECT_DATA_MEMBER(id)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(ReflectedStruct)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+        PUBLIC_ACCESS(id)
+    REFLECT_END;
 
-        REFLECT_DATA_START(Composite)
-            REFLECT_DATA_MEMBER(a)
-            REFLECT_DATA_MEMBER(b)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(Composite)
+        PUBLIC_ACCESS(a)
+        PUBLIC_ACCESS(b)
+    REFLECT_END;
 
-        REFLECT_DATA_START(TestA)
-            REFLECT_DATA_MEMBER(x)
-            REFLECT_DATA_MEMBER(y)
-            REFLECT_DATA_MEMBER(z)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(TestA)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-        REFLECT_DATA_START(TestB)
-            REFLECT_DATA_MEMBER(x)
-            REFLECT_DATA_MEMBER(y)
-            REFLECT_DATA_MEMBER(z)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(TestB)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-        REFLECT_DATA_START(TestC)
-            REFLECT_DATA_MEMBER(y)
-            REFLECT_DATA_MEMBER(x)
-            REFLECT_DATA_MEMBER(z)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(TestC)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-        REFLECT_DATA_DERIVED(Inherited, ReflectedStruct)
-            REFLECT_DATA_MEMBER(w)
-        REFLECT_DATA_END;
+    REFLECT_DERIVED(Inherited, ReflectedStruct)
+        PUBLIC_ACCESS(w)
+    REFLECT_END;
 
-        REFLECT_DATA_START(TestVec)
-            REFLECT_DATA_MEMBER(vec)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(TestVec)
+        PUBLIC_ACCESS(vec)
+    REFLECT_END;
+
 #if __cplusplus <= 201103
-        REFLECT_DATA_START(InternallyReflected)
-            REFLECT_DATA_MEMBER(x)
-            REFLECT_DATA_MEMBER(y)
-            REFLECT_DATA_MEMBER(z)
-        REFLECT_DATA_END;
+    REFLECT_BEGIN(InternallyReflected)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 #endif
-    }
+    
 }

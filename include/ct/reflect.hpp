@@ -1,6 +1,7 @@
 #pragma once
+#include <ct/Indexer.hpp>
+
 #include <utility>
-#include <ct/detail/counter.hpp>
 
 namespace ct
 {
@@ -196,25 +197,42 @@ namespace ct
         static constexpr int I0 = Reflect<BASE>::REFLECTION_COUNT; \
         static constexpr int REFLECT_COUNT_START = __COUNTER__; \
         template<int I> \
-        static auto getAccessor(ct::_counter_<I> idx) -> typename std::enable_if<I >= 0 && I < Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getAccessor(idx))>::type \
+        static auto getAccessor(ct::Indexer<I> idx) -> typename std::enable_if<I >= 0 && I < Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getAccessor(idx))>::type \
             {return Reflect<BASE>::getAccessor(idx);}
+
+#define REFLECT_INTERNAL_START(TYPE) \
+    static constexpr int INTERNALLY_REFLECTED = 1; \
+    static constexpr const char* getName(){return #TYPE;} \
+    static constexpr const uint32_t I0 = 0; \
+    static constexpr const uint32_t REFLECT_COUNT_START = __COUNTER__; \
+    using DataType = TYPE;
 
 
 #define PUBLIC_ACCESS(NAME) \
     static ct::Accessor<const decltype(DataType::NAME)&(*)(const DataType&), decltype(DataType::NAME)&(*)(DataType&)> \
-        getAccessor(ct::_counter_<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>){\
+        getAccessor(ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>){\
             return {#NAME, \
                 [](const DataType& obj)-> const decltype(DataType::NAME)&{return obj.NAME;  }, \
                 [](DataType& obj)-> decltype(DataType::NAME)&{ return obj.NAME; }};}
 
+#define REFLECT_INTERNAL_MEMBER(TYPE, NAME) \
+    TYPE NAME; \
+    public: PUBLIC_ACCESS(NAME)
+
+
 #define ACCESSOR(NAME, GETTER, SETTER) \
-    static auto getAccessor(ct::_counter_<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor(#NAME, GETTER, SETTER)) { return ct::makeAccessor(#NAME, GETTER, SETTER); }
+    static auto getAccessor(ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor(#NAME, GETTER, SETTER)) { return ct::makeAccessor(#NAME, GETTER, SETTER); }
 
 #define MEMBER_FUNCTION(NAME, FPTR) \
-    static auto getAccessor(ct::_counter_<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor<CalculatedValue>(#NAME, FPTR)) { return ct::makeAccessor<CalculatedValue>(#NAME, FPTR); }
+    static auto getAccessor(ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor<CalculatedValue>(#NAME, FPTR)) { return ct::makeAccessor<CalculatedValue>(#NAME, FPTR); }
 
 #define REFLECT_END \
     static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
     static constexpr const int REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
-    static constexpr ct::_counter_<REFLECTION_COUNT-1> end(){return ct::_counter_<REFLECTION_COUNT-1>{};} \
+    static constexpr ct::Indexer<REFLECTION_COUNT-1> end(){return ct::Indexer<REFLECTION_COUNT-1>{};} \
     }
+
+#define REFLECT_INTERNAL_END  \
+    static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
+    static constexpr const int REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
+    static constexpr ct::Indexer<REFLECTION_COUNT - 1> end() { return ct::Indexer<REFLECTION_COUNT - 1>{}; }

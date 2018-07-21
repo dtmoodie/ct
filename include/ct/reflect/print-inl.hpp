@@ -19,15 +19,15 @@ namespace ct
     template<class T, int I>
     struct CanWrite
     {
-        using DType = typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::GetType;
+        using DType = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetType;
         enum{value = detail::stream_writable<DType>::value};
     };
 
     template<class T, class O, int I>
     struct ShouldWrite
     {
-        using DType = typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::GetType;
-        using GetterTraits = typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::GetterTraits_t;
+        using DType = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetType;
+        using GetterTraits = typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::GetterTraits_t;
         enum{
             is_calculated = std::is_same<GetterTraits, CalculatedValue>::value,
             is_writable   = CanWrite<T, I>::value,
@@ -43,7 +43,7 @@ namespace ct
         // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
         // stream writable and your print options do not allow that via the error_on_nonprintable flag
 
-        auto accessor = Reflect<T>::getAccessor(ct::_counter_<I>{});
+        auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
 
         if(Options::print_name)
         {
@@ -59,19 +59,19 @@ namespace ct
     {
         if(ShouldWrite<T, Options, I>::is_writable == false && Options::error_on_nonprintable == false)
         {
-            auto accessor = Reflect<T>::getAccessor(ct::_counter_<I>{});
+            auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
             Options::onUnprintable(os, accessor.getName(), accessor.get(data));
         }
     }
 
     template<class Options = PrintOptions, class T>
-    void printStructHelper(std::ostream& os, const T& obj, const ct::_counter_<0>)
+    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<0>)
     {
         printValue<0, Options>(os, obj);
     }
 
     template<class Options = PrintOptions, int I, class T>
-    void printStructHelper(std::ostream& os, const T& obj, const ct::_counter_<I> idx)
+    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<I> idx)
     {
         printStructHelper<Options>(os, obj, --idx);
         os << Options::value_separator;

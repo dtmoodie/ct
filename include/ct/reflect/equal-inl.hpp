@@ -5,7 +5,7 @@
 namespace ct
 {
     template<class T>
-    bool equalHelper(const T& lhs, const T& rhs, const ct::_counter_<0> idx)
+    bool equalHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx)
     {
         auto accessor = Reflect<T>::getAccessor(idx);
         if(accessor.get(lhs) != accessor.get(rhs))
@@ -16,7 +16,7 @@ namespace ct
     }
 
     template<class T, int I>
-    bool equalHelper(const T& lhs, const T& rhs, const ct::_counter_<I> idx)
+    bool equalHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx)
     {
         auto accessor = Reflect<T>::getAccessor(idx);
         if(accessor.get(lhs) != accessor.get(rhs))

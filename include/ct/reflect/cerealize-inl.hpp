@@ -7,26 +7,26 @@ namespace ct
 {
 
     template<class AR, class T, int I>
-    auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::SetType, void>::value>::type
+    auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::SetType, void>::value>::type
     {
-        auto accessor = Reflect<T>::getAccessor(ct::_counter_<I>{});
+        auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
         ar(cereal::make_nvp(accessor.getName(), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
     }
 
     template<class AR, class T, int I>
-    auto loadValue(AR&, T&) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(ct::_counter_<I>{}))::SetType, void>::value>::type
+    auto loadValue(AR&, T&) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::SetType, void>::value>::type
     {
 
     }
 
     template<class AR, class T>
-    void loadStructHelper(AR& ar,  T& obj, const ct::_counter_<0>)
+    void loadStructHelper(AR& ar,  T& obj, const ct::Indexer<0>)
     {
         loadValue<AR, T, 0>(ar, obj);
     }
 
     template<int I,  class AR, class T>
-    void loadStructHelper(AR& ar,  T&obj, const ct::_counter_<I> idx)
+    void loadStructHelper(AR& ar,  T&obj, const ct::Indexer<I> idx)
     {
         loadStructHelper(ar, obj, --idx);
         loadValue<AR, T, I>(ar, obj);
@@ -39,26 +39,26 @@ namespace ct
     }
 
     template<class AR, class T, int I>
-    auto saveValue(AR&, const T&, const ct::_counter_<I> idx) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
+    auto saveValue(AR&, const T&, const ct::Indexer<I> idx) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
     {
 
     }
 
     template<class AR, class T, int I>
-    auto saveValue(AR& ar, const T& obj, const ct::_counter_<I> idx) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
+    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(idx);
         ar(cereal::make_nvp(accessor.getName(), accessor.get(obj)));
     }
 
     template<class AR, class T>
-    void saveStructHelper(AR& ar, const T& obj, const ct::_counter_<0> idx)
+    void saveStructHelper(AR& ar, const T& obj, const ct::Indexer<0> idx)
     {
         saveValue<AR, T, 0>(ar, obj, idx);
     }
 
     template<int I, class AR, class T>
-    void saveStructHelper(AR& ar, const T& obj, const ct::_counter_<I> idx)
+    void saveStructHelper(AR& ar, const T& obj, const ct::Indexer<I> idx)
     {
         saveStructHelper(ar, obj, --idx);
         saveValue<AR, T, I>(ar, obj, idx);
