@@ -1,4 +1,6 @@
-dist: trusty
+dist:
+ - trusty
+
 sudo: false
 
 language: cpp
@@ -7,7 +9,12 @@ compiler: gcc
 cache:
   apt: true
 
+before_install:
+ - sudo apt-get install libboost-test-dev
+ - sudo apt-get install libopencv-core-dev
+
 script:
+ - apt-get install
  - git clone https://github.com/USCiLab/cereal
  - mkdir build
  - cd build
