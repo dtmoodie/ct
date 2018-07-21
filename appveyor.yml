@@ -31,12 +31,29 @@ build_script:
 - sh: make
 
 test_script:
-- cmd: cd tests
-- cmd: dir
-- cmd: test_ct_string_static
-- cmd: test_ct_type_traits
-- cmd: test_ct_variadic_typedef
+- cmd: >-
+   cd tests
+   
+   hash/debug/test_ct_string_hash.exe
+   
+   hash/debug/test_ct_object_hash.exe
+   
+   string/debug/test_ct_string_static.exe
+   
+   variadic_typedef/debug/test_ct_variadic_typedef.exe
+ 
+   type_trait_detectors/debug/test_ct_type_traits.exe
 
-- sh: ./test_ct_string_static
-- sh: ./test_ct_type_traits
-- sh: ./test_ct_variadic_typedef
+
+- sh: >-
+   cd tests
+   
+   hash/test_ct_string_hash
+   
+   hash/test_ct_object_hash
+   
+   string/test_ct_string_static
+   
+   variadic_typedef/test_ct_variadic_typedef
+ 
+   type_trait_detectors/test_ct_type_traits

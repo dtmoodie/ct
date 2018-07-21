@@ -19,7 +19,10 @@ script:
  - cd build
  - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include
  - make
- - ls -alh
- -  ./test_ct_string_static
- -  ./test_ct_type_traits
- -  ./test_ct_variadic_typedef
+ - cd tests
+ - hash/test_ct_string_hash
+ - hash/test_ct_object_hash
+ - string/test_ct_string_static
+ - variadic_typedef/test_ct_variadic_typedef
+ - type_trait_detectors/test_ct_type_traits
+ 
