@@ -10,8 +10,8 @@ cache:
   apt: true
 
 before_install:
- - sudo apt-get install libboost-test-dev
- - sudo apt-get install libopencv-core-dev
+ - sudo apt-get install -y libboost-test-dev
+ - sudo apt-get install -y libopencv-core-dev
 
 script:
  - apt-get install
