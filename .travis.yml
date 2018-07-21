@@ -19,4 +19,6 @@ script:
  - cd build
  - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include
  - make
- - ./wip_reflect
+ -  ./test_ct_string_static
+ -  ./test_ct_type_traits
+ -  ./test_ct_variadic_typedef

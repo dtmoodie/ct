@@ -31,5 +31,10 @@ build_script:
 - sh: make
 
 test_script:
-- cmd: wip_reflect
-- sh: ./wip_reflect
+- cmd: test_ct_string_static
+- cmd: test_ct_type_traits
+- cmd: test_ct_variadic_typedef
+
+- sh: ./test_ct_string_static
+- sh: ./test_ct_type_traits
+- sh: ./test_ct_variadic_typedef
