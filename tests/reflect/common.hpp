@@ -8,9 +8,9 @@ void testTypes(Tester& tester)
     //tester.test<ReflectedStruct>();
     //tester.test<Inherited>();
     //tester.test<Composite>();
-    tester.test<TestA>();
-    tester.test<TestB>();
-    tester.test<TestC>();
+    tester.template test<TestA>();
+    tester.template test<TestB>();
+    tester.template test<TestC>();
     //tester.test<TestVec>();
     //tester.test<InternallyReflected>();
 }
