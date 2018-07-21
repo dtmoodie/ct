@@ -181,10 +181,10 @@ namespace ct
     using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
 
 
-    template<class T, uint8_t I>
+    template<class T, index_t I>
     using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
 
-    template<class T, uint8_t I>
+    template<class T, index_t I>
     struct GetterType
     {
         using accessor_type = AccessorType<T, I>;
@@ -197,26 +197,26 @@ namespace ct
     template<> struct Reflect<TYPE>{ \
         using DataType = TYPE; \
         static constexpr const char* getName(){return #TYPE;} \
-        static const bool SPECIALIZED = true; \
-        static const int I0 = 0; \
-        static constexpr int REFLECT_COUNT_START = __COUNTER__;
+        static constexpr const bool SPECIALIZED = true; \
+        static constexpr const index_t I0 = 0; \
+        static constexpr const index_t REFLECT_COUNT_START = __COUNTER__;
 
 #define REFLECT_DERIVED(TYPE, BASE) \
     template<> struct Reflect<TYPE>: private Reflect<BASE>{ \
         using DataType = TYPE; \
         static constexpr const char* getName(){return #TYPE;} \
-        static const bool SPECIALIZED = true; \
-        static constexpr int I0 = Reflect<BASE>::REFLECTION_COUNT; \
-        static constexpr int REFLECT_COUNT_START = __COUNTER__; \
-        template<int I> \
+        static constexpr const bool SPECIALIZED = true; \
+        static constexpr const ct::index_t I0 = Reflect<BASE>::REFLECTION_COUNT; \
+        static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__; \
+        template<ct::index_t I> \
         static auto getAccessor(ct::Indexer<I> idx) -> typename std::enable_if<I >= 0 && I < Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getAccessor(idx))>::type \
             {return Reflect<BASE>::getAccessor(idx);}
 
 #define REFLECT_INTERNAL_START(TYPE) \
-    static constexpr int INTERNALLY_REFLECTED = 1; \
+    static constexpr ct::index_t INTERNALLY_REFLECTED = 1; \
     static constexpr const char* getName(){return #TYPE;} \
-    static constexpr const uint32_t I0 = 0; \
-    static constexpr const uint32_t REFLECT_COUNT_START = __COUNTER__; \
+    static constexpr const ct::index_t I0 = 0; \
+    static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__; \
     using DataType = TYPE;
 
 
@@ -239,13 +239,13 @@ namespace ct
     static auto getAccessor(ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor<CalculatedValue>(#NAME, FPTR)) { return ct::makeAccessor<CalculatedValue>(#NAME, FPTR); }
 
 #define REFLECT_END \
-    static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
-    static constexpr const int REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
+    static constexpr const index_t REFLECT_COUNT_END = __COUNTER__; \
+    static constexpr const index_t REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
     static constexpr ct::Indexer<REFLECTION_COUNT-1> end(){return ct::Indexer<REFLECTION_COUNT-1>{};} \
     }
 
 #define REFLECT_INTERNAL_END  \
-    static constexpr const int REFLECT_COUNT_END = __COUNTER__; \
-    static constexpr const int REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
+    static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__; \
+    static constexpr const ct::index_t REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
     static constexpr ct::Indexer<REFLECTION_COUNT - 1> end() { return ct::Indexer<REFLECTION_COUNT - 1>{}; }
 
