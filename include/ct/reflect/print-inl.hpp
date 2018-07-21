@@ -1,4 +1,5 @@
 #pragma once
+#include <ct/TypeTraits.hpp>
 #include "print.hpp"
 #include "reflect.hpp"
 #include <cstdint>
@@ -20,7 +21,7 @@ namespace ct
     struct CanWrite
     {
         using DType = typename GetterType<T, I>::type;
-        enum{value = detail::stream_writable<DType>::value};
+        enum{value = StreamWritable<DType>::value};
     };
 
     template<class T, class O, int I>
