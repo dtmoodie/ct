@@ -15,14 +15,14 @@ before_build:
 
    cd build
 
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=../cereal/include
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include
 
 - sh: >-
     mkdir -p build
 
     cd build
 
-    cmake ..
+    cmake .. -Dcereal_INCLUDE_DIR=$APPVEYOR_BUILD_FOLDER/cereal/include
 
 build_script:
 - cmd: >-
