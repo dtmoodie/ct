@@ -53,6 +53,7 @@ int main()
         // TODO move to hash unit test
         const auto accessor = ct::Reflect<Inherited>::getAccessor(ct::Indexer<0>{});
         ctv < ct::ctcrc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value;
+        STATIC_EQUAL(ct::ctcrc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::ctcrc32("x"));
     }
     
 }

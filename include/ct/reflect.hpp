@@ -148,11 +148,8 @@ namespace ct
         using GetterTraits_t = GetterTraits;
         using SetterTraits_t = SetterTraits;
 
-        constexpr Accessor(const char* name, T0 getter, T1 setter):
-            m_name(name), Getter<T0>(getter), Setter<T1>(setter){}
-        const char* getName() const{return m_name;}
-    private:
-        const char* m_name;
+        constexpr Accessor(T0 getter, T1 setter):
+            Getter<T0>(getter), Setter<T1>(setter){}
     };
 
     template<class T0, class GetterTraits>
@@ -162,23 +159,20 @@ namespace ct
         using SetterTraits_t = void;
         using SetType = void;
 
-        constexpr Accessor(const char* name, T0 getter):
-            m_name(name), Getter<T0>(getter){}
-        const char* getName() const{return m_name;}
-    private:
-        const char* m_name;
+        constexpr Accessor(T0 getter):
+            Getter<T0>(getter){}
     };
 
     template<class GetterTraits = DefaultGetterTraits, class SetterTraits = DefaultSetterTraits, class T0, class T1>
-    constexpr Accessor<T0, T1, GetterTraits, SetterTraits> makeAccessor(const char* name, T0 getter, T1 setter)
+    constexpr Accessor<T0, T1, GetterTraits, SetterTraits> makeAccessor(T0 getter, T1 setter)
     {
-        return Accessor<T0, T1, GetterTraits, SetterTraits>(name, getter, setter);
+        return Accessor<T0, T1, GetterTraits, SetterTraits>(getter, setter);
     }
 
     template<class GetterTraits = DefaultGetterTraits, class T0>
-    constexpr Accessor<T0, void, GetterTraits, void> makeAccessor(const char* name, T0 getter)
+    constexpr Accessor<T0, void, GetterTraits, void> makeAccessor(T0 getter)
     {
-        return Accessor<T0, void, GetterTraits, void>(name, getter);
+        return Accessor<T0, void, GetterTraits, void>(getter);
     }
 
     template<class T>
@@ -201,7 +195,6 @@ namespace ct
     template<class T, index_t I>
     struct GetterTraits
     {
-
         using accessor_type = AccessorType<T, I>;
         using type = typename accessor_type::GetterTraits_t;
     };
@@ -241,7 +234,7 @@ namespace ct
 #define PUBLIC_ACCESS_(NAME, N) \
     static ct::Accessor<const decltype(DataType::NAME)&(*)(const DataType&), decltype(DataType::NAME)&(*)(DataType&)> \
         getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>){\
-            return {#NAME, \
+            return {\
                 [](const DataType& obj)-> const decltype(DataType::NAME)&{return obj.NAME;  }, \
                 [](DataType& obj)-> decltype(DataType::NAME)&{ return obj.NAME; }};} \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>){ return #NAME; }
@@ -253,11 +246,11 @@ namespace ct
 #define ACCESSOR(NAME, GETTER, SETTER) ACCESSOR_(NAME, GETTER, SETER, __COUNTER__)
 
 #define ACCESSOR_(NAME, GETTER, SETTER, N) \
-    static auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor(#NAME, GETTER, SETTER)) { return ct::makeAccessor(#NAME, GETTER, SETTER); } \
+    static constexpr auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor(GETTER, SETTER)) { return ct::makeAccessor(GETTER, SETTER); } \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define MEMBER_FUNCTION(NAME, FPTR) \
-    static auto getAccessor(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor<CalculatedValue>(#NAME, FPTR)) { return ct::makeAccessor<CalculatedValue>(#NAME, FPTR); }
+    static auto getAccessor(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>) -> decltype(ct::makeAccessor<CalculatedValue>(FPTR)) { return ct::makeAccessor<CalculatedValue>(FPTR); }
 
 #define REFLECT_END \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__; \

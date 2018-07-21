@@ -48,7 +48,7 @@ namespace ct
 
         if(Options::print_name)
         {
-            os << accessor.getName() << Options::name_separator;
+            os << Reflect<T>::getName(ct::Indexer<I>{}) << Options::name_separator;
         }
 
         os << accessor.get(obj);
@@ -61,7 +61,7 @@ namespace ct
         if(ShouldWrite<T, Options, I>::is_writable == false && Options::error_on_nonprintable == false)
         {
             auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
-            Options::onUnprintable(os, accessor.getName(), accessor.get(data));
+            Options::onUnprintable(os, Reflect<T>::getName(ct::Indexer<I>{}), accessor.get(data));
         }
     }
 

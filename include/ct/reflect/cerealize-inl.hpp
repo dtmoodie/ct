@@ -10,7 +10,7 @@ namespace ct
     auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::SetType, void>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
-        ar(cereal::make_nvp(accessor.getName(), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
+        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
     }
 
     template<class AR, class T, int I>
@@ -48,7 +48,7 @@ namespace ct
     auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(idx);
-        ar(cereal::make_nvp(accessor.getName(), accessor.get(obj)));
+        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), accessor.get(obj)));
     }
 
     template<class AR, class T>
