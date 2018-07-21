@@ -1,5 +1,6 @@
 #include "common.hpp"
 #include "../common.hpp"
+#include <ct/Hash.hpp>
 
 int main()
 {
@@ -48,6 +49,10 @@ int main()
         using type = ct::AccessorType<Inherited, 4>;
         STATIC_EQUAL((std::is_same<type::GetType, double>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 4>::type, double>::value), true);
+
+        // TODO move to hash unit test
+        const auto accessor = ct::Reflect<Inherited>::getAccessor(ct::Indexer<0>{});
+        ctv < ct::ctcrc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value;
     }
     
 }
