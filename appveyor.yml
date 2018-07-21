@@ -34,15 +34,15 @@ test_script:
 - cmd: >-
    cd tests
    
-   hash/debug/test_ct_string_hash.exe
+   hash\debug\test_ct_string_hash.exe
    
-   hash/debug/test_ct_object_hash.exe
+   hash\debug\test_ct_object_hash.exe
    
-   string/debug/test_ct_string_static.exe
+   string\debug\test_ct_string_static.exe
    
-   variadic_typedef/debug/test_ct_variadic_typedef.exe
+   variadic_typedef\debug\test_ct_variadic_typedef.exe
  
-   type_trait_detectors/debug/test_ct_type_traits.exe
+   type_trait_detectors\debug\test_ct_type_traits.exe
 
 
 - sh: >-
