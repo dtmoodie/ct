@@ -7,14 +7,14 @@ namespace ct
 {
 
     template<class AR, class T, index_t I>
-    auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::SetType, void>::value>::type
+    auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename ct::SetterType<T, I>::type, void>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
         ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
     }
 
     template<class AR, class T, index_t I>
-    auto loadValue(AR&, T&) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(ct::Indexer<I>{}))::SetType, void>::value>::type
+    auto loadValue(AR&, T&) -> typename std::enable_if<std::is_same<typename ct::SetterType<T, I>::type, void>::value>::type
     {
 
     }
@@ -39,13 +39,13 @@ namespace ct
     }
 
     template<class AR, class T, index_t I>
-    auto saveValue(AR&, const T&, const ct::Indexer<I> idx) -> typename std::enable_if<std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
+    auto saveValue(AR&, const T&, const ct::Indexer<I> idx) -> typename std::enable_if<std::is_same<typename GetterTraits<T, I>::type, CalculatedValue>::value>::type
     {
 
     }
 
     template<class AR, class T, index_t I>
-    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> typename std::enable_if<!std::is_same<typename decltype(Reflect<T>::getAccessor(idx))::GetterTraits_t, CalculatedValue>::value>::type
+    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> typename std::enable_if<!std::is_same<typename GetterTraits<T, I>::type, CalculatedValue>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(idx);
         ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), accessor.get(obj)));

@@ -39,6 +39,7 @@ struct CerealizationTester
             if(!ct::compare(data, loaded_data, DebugEqual()))
             {
                 std::cout << "Failed cerealization" << std::endl;
+                std::abort();
             }
 
         }

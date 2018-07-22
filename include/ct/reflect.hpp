@@ -193,6 +193,13 @@ namespace ct
     };
 
     template<class T, index_t I>
+    struct SetterType
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::SetType;
+    };
+
+    template<class T, index_t I>
     struct GetterTraits
     {
         using accessor_type = AccessorType<T, I>;
