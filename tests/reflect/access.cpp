@@ -2,8 +2,14 @@
 #include "../common.hpp"
 #include <ct/Hash.hpp>
 
+ct::enable_if_reflected<TestA, void> testEnabledFunction()
+{
+
+}
+
 int main()
 {
+    testEnabledFunction();
     {
         TestA a{ 0,1,2 };
         ct::Reflect<TestA>::getAccessor(ct::Indexer<0>{});

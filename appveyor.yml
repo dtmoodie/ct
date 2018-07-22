@@ -46,6 +46,9 @@ test_script:
    
    reflect\debug\test_ct_reflect_print.exe
 
+    reflect\debug\test_ct_reflect_access.exe
+
+    reflect\debug\test_ct_reflect_compare.exe
 
 - sh: >-
    cd tests
@@ -61,3 +64,7 @@ test_script:
    type_trait_detectors/test_ct_type_traits
       
    reflect/test_ct_reflect_print
+
+   reflect/test_ct_reflect_access
+
+   reflect/test_ct_reflect_compare

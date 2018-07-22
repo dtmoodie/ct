@@ -7,3 +7,7 @@ set_target_properties(test_ct_reflect_access PROPERTIES FOLDER Tests/ct)
 add_executable(test_ct_reflect_print ${hdr} print.cpp)
 target_link_libraries(test_ct_reflect_print ct)
 set_target_properties(test_ct_reflect_print PROPERTIES FOLDER Tests/ct)
+
+add_executable(test_ct_reflect_compare ${hdr} compare.cpp)
+target_link_libraries(test_ct_reflect_compare ct)
+set_target_properties(test_ct_reflect_compare PROPERTIES FOLDER Tests/ct)

@@ -1,6 +1,31 @@
 #pragma once
 #include "Data.hpp"
 #include "Reflect.hpp"
+#include <ostream>
+#include <vector>
+
+namespace std
+{
+    template<class T>
+    ostream& operator << (ostream& os, const std::vector<T>& vec)
+    {
+        if (!vec.empty())
+        {
+            os << '[';
+            for (size_t i = 0; i < vec.size(); ++i)
+            {
+                if (i != 0)
+                    os << ' ';
+                os << vec[i];
+            }
+            os << ']';
+        }else
+        {
+            os << "[empty]";
+        }
+        return os;
+    }
+}
 
 template<class Tester>
 void testTypes(Tester& tester)

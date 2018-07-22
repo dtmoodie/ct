@@ -26,3 +26,5 @@ script:
  - variadic_typedef/test_ct_variadic_typedef
  - type_trait_detectors/test_ct_type_traits
  - reflect/test_ct_reflect_print
+ - reflect/test_ct_reflect_access
+ - reflect/test_ct_reflect_compare
