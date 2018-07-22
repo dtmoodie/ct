@@ -8,16 +8,16 @@ namespace ct
 {
     template<std::size_t Tlen>
     constexpr uint32_t hashClassName(const char(&str)[Tlen]) {
-        return ctcrc32Range(str, classNameIdx(str) + 1);
+        return crc32Range(str, classNameIdx(str) + 1);
     }
     constexpr uint32_t hashClassNameHelper(const char* str)
     {
-        return ctcrc32Range(str, classNameIdx(str));
+        return crc32Range(str, classNameIdx(str));
     }
     constexpr uint32_t hashClassName(const char* str)
     {
 #ifdef _MSC_VER
-        return ctcrc32Range(str, classNameIdx(str));
+        return crc32Range(str, classNameIdx(str));
 #else
         return hashClassNameHelper(str + ct::findLast(str, ' ') + 1);
 #endif
@@ -34,7 +34,7 @@ namespace ct
 static constexpr uint32_t getHash() {return ct::hashClassName(CT_STRUCT_MAGIC_FUNCTION);}
 
 #define DECLARE_MODULE_HASH(N) \
-static constexpr uint32_t getHash() {return ct::ctcrc32(CT_STRUCT_MAGIC_FUNCTION) ^ N;} \
+static constexpr uint32_t getHash() {return ct::crc32(CT_STRUCT_MAGIC_FUNCTION) ^ N;} \
 enum : uint32_t {hash = getHash()};
 
 namespace ct
@@ -81,5 +81,5 @@ namespace ct
         return{ std::forward<T>(value) };
     }
 }
-#define CT_MAKE_HASHED(var) ct::makeHashed<ctcrc32(#var)>(var)
+#define CT_MAKE_HASHED(var) ct::makeHashed<crc32(#var)>(var)
 

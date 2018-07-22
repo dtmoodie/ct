@@ -1,7 +1,8 @@
 #pragma once
 #include <ct/Indexer.hpp>
-
+#include <ct/Hash.hpp>
 #include <utility>
+#include <cstdint>
 
 namespace ct
 {
@@ -205,7 +206,6 @@ namespace ct
         using accessor_type = AccessorType<T, I>;
         using type = typename accessor_type::GetterTraits_t;
     };
-
 }
 
 #define REFLECT_BEGIN(TYPE) \

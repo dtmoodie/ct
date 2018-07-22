@@ -95,14 +95,14 @@ namespace ct
             return 0xFFFFFFFF;
         }
 
-        constexpr uint32_t ctcrc32(const char* str, std::size_t len)
+        constexpr uint32_t crc32(const char* str, std::size_t len)
         {
-            return len == static_cast<std::size_t>(-1) ? 0xFFFFFFFF : ctCombine_crc32(str, ctcrc32(str, len - 1), len);
+            return len == static_cast<std::size_t>(-1) ? 0xFFFFFFFF : ctCombine_crc32(str, crc32(str, len - 1), len);
         }
 
-        constexpr uint32_t ctcrc32(const char* str)
+        constexpr uint32_t crc32(const char* str)
         {
-            return ctcrc32(str, ct::strLen(str) - 1);
+            return crc32(str, ct::strLen(str) - 1);
         }
     } // namespace detail
 } // namespace ct
