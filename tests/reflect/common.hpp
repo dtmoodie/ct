@@ -3,6 +3,21 @@
 #include "Reflect.hpp"
 #include <ostream>
 #include <vector>
+#include <iostream>
+
+struct DebugEqual
+{
+    template<class T>
+    bool test(const char* name, const T& lhs, const T& rhs) const
+    {
+        if(lhs != rhs)
+        {
+            std::cout << name << " values not equal: " << lhs << " != " << rhs << std::endl;
+            return false;
+        }
+        return true;
+    }
+};
 
 namespace std
 {

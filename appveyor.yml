@@ -50,6 +50,8 @@ test_script:
 
     reflect\debug\test_ct_reflect_compare.exe
 
+    reflect\debug\test_ct_reflect_cerealize.exe
+
 - sh: >-
    cd tests
    
@@ -68,3 +70,6 @@ test_script:
    reflect/test_ct_reflect_access
 
    reflect/test_ct_reflect_compare
+
+
+    reflect/test_ct_reflect_cerealize

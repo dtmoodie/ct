@@ -28,3 +28,4 @@ script:
  - reflect/test_ct_reflect_print
  - reflect/test_ct_reflect_access
  - reflect/test_ct_reflect_compare
+ - reflect/test_ct_reflect_cerealize
