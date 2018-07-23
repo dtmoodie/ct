@@ -13,13 +13,16 @@ namespace ct
     template<class T>
     constexpr uint32_t hashTypeHelper(const uint32_t hash, Indexer<0U> idx)
     {
-        return (hash ^ std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{})>::value) ^ TypeHash<typename GetterType<T, 0U>::type>::value;
+        using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{})>;
+
+        return (hash ^ name_hash_t::value) ^ TypeHash<typename GetterType<T, 0U>::type>::value;
     }
 
     template<class T, index_t I>
     constexpr uint32_t hashTypeHelper(const uint32_t hash, Indexer<I> idx)
     {
-        return hashTypeHelper<T>((hash ^ std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>::value) ^ TypeHash<typename GetterType<T, I>::type>::value, --idx);
+        using name_hash_t = std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
+        return hashTypeHelper<T>((hash ^ name_hash_t::value) ^ TypeHash<typename GetterType<T, I>::type>::value, --idx);
     }
 
     template<class T>
