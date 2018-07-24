@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <ct/Hash.hpp>
 
-#define DECL_HASHED_TYPE(TYPE) template<> struct TypeHash<TYPE, void>{ static constexpr const uint32_t value = crc32(#TYPE); static constexpr const char* name = #TYPE;}
+#define DECL_HASHED_TYPE(TYPE) template<> struct TypeHash<TYPE, void>{ static constexpr const char* name = #TYPE; static constexpr const uint32_t value = crc32(name); }
 
 namespace ct
 {
@@ -15,7 +15,7 @@ namespace ct
 
     // same for this type so long as the structure is the same
     template<class T>
-    constexpr uint32_t hashType();
+    constexpr uint32_t hashStruct();
 
     // same for this type if the values of all accessible data members is the same
     template<class T>

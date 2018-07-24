@@ -6,29 +6,13 @@ namespace ct
     template<class T>
     struct TypeHash<T, ct::enable_if_reflected<T>>
     {
-        static constexpr const uint32_t value = hashType<T>();
+        static constexpr const uint32_t value = hashStruct<T>();
     };
 
-
     template<class T>
-    constexpr uint32_t hashTypeHelper(const uint32_t hash, Indexer<0U> idx)
+    constexpr uint32_t hashStruct()
     {
-        using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
-
-        return (hash ^ name_hash_t::value) ^ TypeHash<typename GetterType<T, 0U>::type>::value;
-    }
-
-    template<class T, index_t I>
-    constexpr uint32_t hashTypeHelper(const uint32_t hash, Indexer<I> idx)
-    {
-        using name_hash_t = typename  std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>;
-        return hashTypeHelper<T>((hash ^ name_hash_t::value) ^ TypeHash<typename GetterType<T, I>::type>::value, --idx);
-    }
-
-    template<class T>
-    constexpr uint32_t hashType()
-    {
-        return crc32(Reflect<T>::getName()) ^ hashTypeHelper<T>(0U, Reflect<T>::end());
+        return crc32(Reflect<T>::getName()) ^ hashMembers<T>();
     }
 
     template<class T>
@@ -37,10 +21,30 @@ namespace ct
 
     }
 
+    template<class T, index_t I>
+    constexpr uint32_t hashMember()
+    {
+        return std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>::value ^ TypeHash<typename GetterType<T, I>::type>::value;
+    }
+
+    template<class T>
+    constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<0U> /*idx*/)
+    {
+        using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
+        return (hash ^ hashMember<T, 0U>());
+    }
+
+    template<class T, index_t I>
+    constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<I> idx)
+    {
+        //using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>;
+        return hashMemberHelper<T>((hash ^ hashMember<T, I>()), --idx);
+    }
+
     template<class T>
     constexpr uint32_t hashMembers()
     {
-
+        return hashMemberHelper<T>(0U, Reflect<T>::end());
     }
 
     template<class T>
