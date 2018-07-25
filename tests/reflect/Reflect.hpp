@@ -42,6 +42,14 @@ namespace ct
         PUBLIC_ACCESS(vec)
     REFLECT_END;
 
+    REFLECT_BEGIN(PrivateMutableAccess)
+        ACCESSOR("x",&DataType::getX, &DataType::mutateX)
+    REFLECT_END;
+
+    REFLECT_BEGIN(PrivateGetAndSet)
+        ACCESSOR("x",&DataType::getX, &DataType::setX)
+    REFLECT_END;
+
 #if __cplusplus <= 201103
     REFLECT_BEGIN(InternallyReflected)
         PUBLIC_ACCESS(x)

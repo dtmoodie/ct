@@ -43,6 +43,24 @@ struct TestVec
     std::vector<float> vec;
 };
 
+struct PrivateMutableAccess
+{
+public:
+    const float& getX() const {return x;}
+    float& mutateX(){return x;}
+private:
+    float x;
+};
+
+struct PrivateGetAndSet
+{
+public:
+    const float& getX() const {return x;}
+    void setX(const float val) {x = val;}
+private:
+    float x;
+};
+
 // Doesn't work with C++11 :/
 #if __cplusplus > 201103 || _MSC_VER > 1800
 

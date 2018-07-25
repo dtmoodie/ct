@@ -1,10 +1,32 @@
 #include "common.hpp"
 #include "../common.hpp"
 #include <ct/Hash.hpp>
+#include "ct/reflect/print.hpp"
 
 ct::enable_if_reflected<TestA, void> testEnabledFunction()
 {
 
+}
+
+template<class T>
+void mulImpl(T& obj, const ct::Indexer<0> idx)
+{
+    auto accessor = ct::Reflect<T>::getAccessor(idx);
+    accessor.set(obj) *= 2;
+}
+
+template<class T, ct::index_t I>
+void mulImpl(T& obj, const ct::Indexer<I> idx)
+{
+    auto accessor = ct::Reflect<T>::getAccessor(idx);
+    accessor.set(obj) *= 2;
+    mulImpl(obj, --idx);
+}
+
+template<class T>
+void mul(T& obj)
+{
+    mulImpl(obj, ct::Reflect<T>::end());
 }
 
 int main()
@@ -61,5 +83,14 @@ int main()
         ctv < ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value;
         STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::crc32("x"));
     }
+    PrivateGetAndSet pgs;
+    pgs.setX(2);
+    ct::printStruct(std::cout, pgs);
+    mul(pgs);
+    ct::printStruct(std::cout, pgs);
+    PrivateMutableAccess pms;
+    pms.mutateX() = 2;
+    mul(pms);
+    ct::printStruct(std::cout, pms);
     
 }

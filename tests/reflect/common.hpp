@@ -79,4 +79,14 @@ void testTypes(Tester& tester)
         data.vec = { 0,1,2,3,4 };
         tester.test(data);
     }
+    {
+        PrivateMutableAccess pma;
+        pma.mutateX() = 4;
+        tester.test(pma);
+    }
+    {
+        PrivateGetAndSet pgs;
+        pgs.setX(5.2);
+        tester.test(pgs);
+    }
 }
