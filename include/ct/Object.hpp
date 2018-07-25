@@ -1,7 +1,7 @@
 #pragma once
 #include "Hash.hpp"
 #include "String.hpp"
-#include <ct/detail/TypeTraits.hpp>
+#include <ct/TypeTraits.hpp>
 #include <type_traits>
 
 namespace ct

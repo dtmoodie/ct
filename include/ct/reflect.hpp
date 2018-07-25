@@ -92,7 +92,7 @@ namespace ct
     template<class T, class D>
     struct Setter<D&(T::*)()>
     {
-        using SetType = D;
+        using SetType = D&;
         constexpr Setter(D&(T::*setter)()): m_setter(setter){}
 
         void set(T& obj, D&& data) const
@@ -111,7 +111,7 @@ namespace ct
     template<class T, class D>
     struct Setter<D&(*)(T&)>
     {
-        using SetType = D;
+        using SetType = D&;
 
         constexpr Setter(D&(*setter)(T&)): m_setter(setter){}
 
@@ -182,6 +182,9 @@ namespace ct
     template<class T, class U = void>
     using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
 
+    template<class T, class U = void>
+    using enable_if_not_reflected = typename std::enable_if<!Reflect<T>::SPECIALIZED, U>::type;
+
 
     template<class T, index_t I>
     using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
@@ -206,6 +209,25 @@ namespace ct
         using accessor_type = AccessorType<T, I>;
         using type = typename accessor_type::GetterTraits_t;
     };
+    template<index_t I, class T>
+    constexpr const char* getName()
+    {
+        return Reflect<T>::getName(ct::Indexer<I>{});
+    }
+
+    template<index_t I, class T>
+    typename GetterType<T, I>::type get(const T& obj)
+    {
+        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
+        return accessor.get(obj);
+    }
+
+    template<index_t I, class T>
+    typename SetterType<T, I>::type set(T& obj)
+    {
+        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
+        return accessor.set(obj);
+    }
 }
 
 #define REFLECT_BEGIN(TYPE) \
@@ -228,6 +250,15 @@ namespace ct
             {return Reflect<BASE>::getAccessor(idx);} \
         template<ct::index_t I> \
         static constexpr auto getName(const ct::Indexer<I> idx) -> typename std::enable_if<I >= 0 && I < Reflect<BASE>::REFLECTION_COUNT, const char*>::type {return Reflect<BASE>::getName(idx);}
+
+#define REFLECT_TEMPLATED_START(TYPE) \
+    template<class...Args> struct Reflect<TYPE<Args...>>{ \
+        using DataType = TYPE<Args...>; \
+        static constexpr const char* getName(){return #TYPE;} \
+        static constexpr const bool SPECIALIZED = true; \
+        static constexpr const index_t I0 = 0; \
+        static constexpr const index_t REFLECT_COUNT_START = __COUNTER__;
+
 
 #define REFLECT_INTERNAL_START(TYPE) \
     static constexpr ct::index_t INTERNALLY_REFLECTED = 1; \
@@ -262,11 +293,13 @@ namespace ct
 #define REFLECT_END \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__; \
     static constexpr const index_t REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
-    static constexpr ct::Indexer<REFLECTION_COUNT-1> end(){return ct::Indexer<REFLECTION_COUNT-1>{};} \
+    static constexpr const index_t N = REFLECTION_COUNT - 1; \
+    static constexpr ct::Indexer<N> end(){return ct::Indexer<N>{};} \
     }
 
 #define REFLECT_INTERNAL_END  \
     static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__; \
     static constexpr const ct::index_t REFLECTION_COUNT = I0 + REFLECT_COUNT_END - REFLECT_COUNT_START - 1; \
-    static constexpr ct::Indexer<REFLECTION_COUNT - 1> end() { return ct::Indexer<REFLECTION_COUNT - 1>{}; }
+    static constexpr const index_t N = REFLECTION_COUNT - 1; \
+    static constexpr ct::Indexer<N> end() { return ct::Indexer<N>{}; }
 
