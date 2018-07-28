@@ -18,7 +18,8 @@ namespace ct
     template<class T>
     uint32_t hashValues(const T& data)
     {
-
+        // TODO
+        return 0;
     }
 
     template<class T, index_t I>
@@ -30,7 +31,7 @@ namespace ct
     template<class T>
     constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<0U> /*idx*/)
     {
-        using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
+        //using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
         return (hash ^ hashMember<T, 0U>());
     }
 
@@ -50,6 +51,7 @@ namespace ct
     template<class T>
     uint32_t hashMemberValues(const T& data)
     {
-
+        // TODO
+        return 0;
     }
 }

@@ -2,7 +2,7 @@
 #include <cstdint>
 namespace ct
 {
-    using index_t = uint8_t;
+    using index_t = int16_t;
     template <index_t N>
     struct Indexer
     {

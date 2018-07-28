@@ -12,6 +12,25 @@ namespace std
         ct::printStruct(os, obj);
         return os;
     }
+
+    template<class T>
+    ostream& operator<<(ostream& os, const vector<T>& vec)
+    {
+        if(vec.empty())
+        {
+            os << "[empty]";
+        }else
+        {
+            os << "[";
+            for(size_t i = 0; i < vec.size(); ++i)
+            {
+                if(i != 0) os << ' ';
+                os << vec[i];
+            }
+            os << ']';
+        }
+        return os;
+    }
 }
 
 namespace ct

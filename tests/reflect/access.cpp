@@ -33,7 +33,7 @@ int main()
 {
     testEnabledFunction();
     {
-        TestA a{ 0,1,2 };
+        //TestA a{ 0,1,2 };
         ct::Reflect<TestA>::getAccessor(ct::Indexer<0>{});
     }
     {
@@ -80,7 +80,7 @@ int main()
 
         // TODO move to hash unit test
         const auto accessor = ct::Reflect<Inherited>::getAccessor(ct::Indexer<0>{});
-        ctv < ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value;
+        STATIC_NE(ctv < ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value, 0);
         STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::crc32("x"));
     }
     PrivateGetAndSet pgs;

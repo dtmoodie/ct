@@ -47,23 +47,28 @@ private:
 };
 
 template<class T, class D>
-struct Setter<D&(*)(T&)>
+struct Setter<D(*)(T&)>
 {
-    using SetType = D&;
+    using SetType = D;
 
-    constexpr Setter(D&(*setter)(T&)): m_setter(setter){}
+    constexpr Setter(D(*setter)(T&)): m_setter(setter){}
 
-    constexpr void set(T& obj, D&& data) const
+    void set(T& obj, typename std::decay<D>::type&& data) const
     {
         m_setter(obj) = std::move(data);
     }
 
-    constexpr D& set(T& obj) const
+    void set(T& obj, const typename std::decay<D>::type& data) const
+    {
+        m_setter(obj) = data;
+    }
+
+    D set(T& obj) const
     {
         return m_setter(obj);
     }
 private:
-    D&(*m_setter)(T&);
+    D(*m_setter)(T&);
 };
 
 template<class T, class D>
@@ -73,7 +78,7 @@ struct Setter<void(*)(T&, D)>
 
     constexpr Setter(void(*setter)(T&, D)):m_setter(setter){}
 
-    constexpr void set(T& obj, D&& data) const
+    void set(T& obj, D&& data) const
     {
         m_setter(obj, std::forward(data));
     }

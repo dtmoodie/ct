@@ -1,10 +1,10 @@
 #pragma once
-
+#include <cstdint>
 
 // forces a compile time value
-template<int I> struct ctv
+template<uint32_t I> struct ctv
 {
-    static constexpr const int value = I;
+    static constexpr const uint32_t value = I;
 };
 
 
