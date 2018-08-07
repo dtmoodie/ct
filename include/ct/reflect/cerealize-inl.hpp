@@ -1,7 +1,9 @@
 #pragma once
 #include "cerealize.hpp"
 #include <cereal/cereal.hpp>
+
 #include <ct/reflect.hpp>
+#include <ct/TypeTraits.hpp>
 
 namespace ct
 {
@@ -10,7 +12,7 @@ namespace ct
     auto loadValue(AR& ar, T& obj) -> typename std::enable_if<!std::is_same<typename ct::SetterType<T, I>::type, void>::value>::type
     {
         auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
-        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), static_cast<typename decltype(accessor)::SetType&>(accessor.set(obj))));
+        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), static_cast<typename ReferenceType<typename decltype(accessor)::SetType>::Type>(accessor.set(obj))));
     }
 
     template<class AR, class T, index_t I>

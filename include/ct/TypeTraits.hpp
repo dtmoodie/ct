@@ -5,6 +5,13 @@
 
 namespace ct
 {
+    template<class T>
+    struct ReferenceType
+    {
+        using Type = T&;
+        using ConstType = const T&;
+    };
+
     template <class T>
     struct StreamWritable {
         template <class U>
