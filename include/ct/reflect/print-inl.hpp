@@ -14,7 +14,7 @@ namespace std
     }
 
     template<class T>
-    ostream& operator<<(ostream& os, const vector<T>& vec)
+    auto operator<<(ostream& os, const vector<T>& vec) -> typename std::enable_if<ct::StreamWritable<T>::value, ostream&>::type
     {
         if(vec.empty())
         {
