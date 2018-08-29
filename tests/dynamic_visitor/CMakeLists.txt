@@ -1,6 +1,6 @@
 file(GLOB hdr "*.hpp")
 
-add_executable(test_ct_dynamic_access ${hdr} print.cpp JSONPrinter.cpp)
+add_executable(test_ct_dynamic_access ${hdr} print.cpp JSONPrinter.cpp BinaryReader.cpp BinaryWriter.cpp)
 target_link_libraries(test_ct_dynamic_access ct)
 set_target_properties(test_ct_dynamic_access PROPERTIES FOLDER Tests/ct)
 

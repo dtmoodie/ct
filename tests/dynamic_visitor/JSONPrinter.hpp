@@ -32,6 +32,7 @@ namespace ct
             bool writing_struct = false;
             bool prev_elem = false;
         };
+
         template<class T>
         void writePod(T* ptr, const std::string& name, const size_t cnt);
 
@@ -39,6 +40,7 @@ namespace ct
         virtual IDynamicVisitor& endContainer() override;
         void indent();
 
+    private:
         std::unordered_map<std::string, std::unique_ptr<ct::IDataContainer>> m_cache;
         std::ostream& m_os;
         std::vector<State> m_state;
