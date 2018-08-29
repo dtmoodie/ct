@@ -273,15 +273,13 @@ namespace ct
         {
             auto traits = makeTraits(val);
             using base = typename decltype(traits)::base;
-
             (*this)(static_cast<base*>(&traits), name);
-            return *this;
         }else
         {
             ArrayContainerTrait<T> traits(val, cnt);
             (*this)(static_cast<IContainerTraits*>(&traits), name);
-            return *this;
         }
+        return *this;
     }
 
 }
