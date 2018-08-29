@@ -99,6 +99,27 @@ namespace ct
     template<class T, class E = void>
     struct TTraits;
 
+    template<class T, class E = void>
+    struct IsPrimitive: public std::false_type
+    {
+    };
+
+    template<class T>
+    struct IsPrimitive<T, typename std::enable_if<std::is_same<T, int8_t>::value ||
+            std::is_same<T, uint8_t>::value ||
+            std::is_same<T, int16_t>::value ||
+            std::is_same<T, uint16_t>::value ||
+            std::is_same<T, int32_t>::value ||
+            std::is_same<T, uint32_t>::value ||
+            std::is_same<T, int64_t>::value ||
+            std::is_same<T, uint64_t>::value ||
+            std::is_same<T, float>::value ||
+            std::is_same<T, double>::value ||
+            std::is_same<T, void>::value>::type>: public std::true_type
+    {
+
+    };
+
     struct IDynamicVisitor
     {
         virtual ~IDynamicVisitor(){}
@@ -183,12 +204,29 @@ namespace ct
     };
 
     template<class T>
-    struct TTraits<std::vector<T>>: public IContainerTraits
+    struct TTraits<std::vector<T>, void>: public IContainerTraits
     {
-        TTraits(const std::vector<T>& vec):
+        using base = IContainerTraits;
+
+        TTraits(std::vector<T>* vec):
             m_vec(vec)
         {
         }
+
+        virtual void visit(IDynamicVisitor* visitor) override
+        {
+            if(IsPrimitive<T>::value)
+            {
+                (*visitor)(m_vec->data(), "", m_vec->size());
+            }else
+            {
+                for(size_t i = 0; i < m_vec->size(); ++i)
+                {
+                    (*visitor)(&(*m_vec)[i]);
+                }
+            }
+        }
+
         virtual TypeInfo keyType() const override
         {
             return TypeInfo(typeid(void));
@@ -215,10 +253,10 @@ namespace ct
         }
         virtual size_t numValues() const override
         {
-            return m_vec.size();
+            return m_vec->size();
         }
     private:
-        const std::vector<T>& m_vec;
+        std::vector<T>* m_vec;
     };
 
     template<class T>

@@ -157,15 +157,22 @@ IDynamicVisitor& DynamicPrintVisitor::operator()(IStructTraits* val, const std::
         m_os << ",\n";
     }
     indent();
-    if(name.empty())
+    if(!m_state.back().writing_array)
     {
-        m_os << "value" << m_state.back().unnamed_count;
-        ++(m_state.back().unnamed_count);
+        if(name.empty())
+        {
+            m_os << "value" << m_state.back().unnamed_count;
+            ++(m_state.back().unnamed_count);
+        }else
+        {
+            m_os << name;
+        }
+        m_os  << ":{\n";
     }else
     {
-        m_os << name;
+        m_os  << "{\n";
     }
-    m_os  << ":{\n";
+
 
     m_state.back().prev_elem = false;
     IDynamicVisitor::operator()(val, name);

@@ -83,11 +83,11 @@ namespace ct
         {
             return std::is_pod<T>::value;
         }
-        virtual const void* ptr() const
+        virtual const void* ptr() const override
         {
             return m_ptr;
         }
-        virtual void* ptr()
+        virtual void* ptr() override
         {
             return m_ptr;
         }
@@ -107,7 +107,10 @@ int main()
 
         Composite c1;
         visitor(&c1, "composite");
-
+        {
+            std::vector<TestC> vec{{0,1,2}, {2,3,4}, {4,5,6}};
+            visitor(&vec, "vec");
+        }
     }
 
     std::cout << std::endl;
