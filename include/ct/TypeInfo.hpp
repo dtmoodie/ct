@@ -70,17 +70,17 @@ namespace ct
     bool TypeInfo::operator==(const std::type_info& rhs) const { return this->pInfo_ == &rhs; }
     bool TypeInfo::operator!=(const std::type_info& rhs) const { return !(*this == rhs); }
 
-    bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) { return (lhs.get() == rhs.get()) != 0; }
+    inline bool operator==(const TypeInfo& lhs, const TypeInfo& rhs) { return (lhs.get() == rhs.get()) != 0; }
 
-    bool operator<(const TypeInfo& lhs, const TypeInfo& rhs) { return lhs.before(rhs); }
+    inline bool operator<(const TypeInfo& lhs, const TypeInfo& rhs) { return lhs.before(rhs); }
 
-    bool operator!=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs == rhs); }
+    inline bool operator!=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs == rhs); }
 
-    bool operator>(const TypeInfo& lhs, const TypeInfo& rhs) { return rhs < lhs; }
+    inline bool operator>(const TypeInfo& lhs, const TypeInfo& rhs) { return rhs < lhs; }
 
-    bool operator<=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs > rhs); }
+    inline bool operator<=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs > rhs); }
 
-    bool operator>=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs < rhs); }
+    inline bool operator>=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs < rhs); }
 
 }
 

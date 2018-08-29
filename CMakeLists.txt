@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+
 file(GLOB_RECURSE hdr "include/*.hpp")
 
 MACRO(SUBDIRLIST result curdir)

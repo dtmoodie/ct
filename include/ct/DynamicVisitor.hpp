@@ -25,19 +25,22 @@ namespace ct
     };
 
     struct IDynamicVisitor;
-    struct IStructTraits
+    struct ITraits
     {
-        virtual ~IStructTraits() = default;
+        virtual ~ITraits() = default;
         virtual void visit(IDynamicVisitor* visitor) = 0;
+    };
+
+    struct IStructTraits: public ITraits
+    {
         virtual size_t size() const = 0;
         virtual bool triviallySerializable() const = 0;
         virtual const void* ptr() const = 0;
         virtual void* ptr() = 0;
     };
 
-    struct IContainerTraits
+    struct IContainerTraits: public ITraits
     {
-        virtual ~IContainerTraits() = default;
         virtual TypeInfo keyType() const = 0;
         virtual TypeInfo valueType() const = 0;
         virtual bool isContinuous() const = 0;
@@ -48,6 +51,52 @@ namespace ct
     };
 
     template<class T>
+    struct ArrayContainerTrait: public IContainerTraits
+    {
+        T* m_ptr;
+        size_t m_size;
+        ArrayContainerTrait(T* ptr, const size_t size):
+            m_ptr(ptr),
+            m_size(size)
+        {}
+        virtual void visit(IDynamicVisitor* visitor) override
+        {
+            for(size_t i = 0; i < m_size; ++i)
+            {
+                (*visitor)(m_ptr + i);
+            }
+        }
+        virtual TypeInfo keyType() const override
+        {
+            return TypeInfo(typeid(void));
+        }
+        virtual TypeInfo valueType() const override
+        {
+            return TypeInfo(typeid(T));
+        }
+        virtual bool isContinuous() const override
+        {
+            return true;
+        }
+        virtual bool podValues() const override
+        {
+            return std::is_pod<T>::value;
+        }
+        virtual bool podKeys() const override
+        {
+            return false;
+        }
+        virtual size_t numKeys() const override
+        {
+            return 0U;
+        }
+        virtual size_t numValues() const override
+        {
+            return m_size;
+        }
+    };
+
+    template<class T, class E = void>
     struct TTraits;
 
     struct IDynamicVisitor
@@ -67,18 +116,19 @@ namespace ct
         virtual IDynamicVisitor& operator()(double* val,         const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(void* binary,        const std::string& name = "", const size_t num_bytes = 1) = 0;
 
-        virtual IDynamicVisitor& startContainer(IContainerTraits&) = 0;
-        virtual IDynamicVisitor& endContainer() = 0;
-
-        virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "", const size_t cnt = 1)
+        virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "")
         {
             namespaces.push_back(name.c_str());
-            for(size_t i = 0; i < cnt; ++i)
-            {
-                val[i].visit(this);
-            }
+            val->visit(this);
             namespaces.pop_back();
             return *this;
+        }
+
+        virtual IDynamicVisitor& operator()(IContainerTraits* val, const std::string& name = "")
+        {
+            startContainer(*val, name);
+            val->visit(this);
+            endContainer();
         }
 
         template<class T>
@@ -126,6 +176,8 @@ namespace ct
             return ss.str();
         }
     protected:
+        virtual IDynamicVisitor& startContainer(IContainerTraits&, const std::string& name) = 0;
+        virtual IDynamicVisitor& endContainer() = 0;
         virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name) = 0;
         std::vector<const char*> namespaces;
     };
@@ -170,25 +222,27 @@ namespace ct
     };
 
     template<class T>
-    TTraits<T> makeTraits(T& container)
+    TTraits<T> makeTraits(T* val)
     {
-        return TTraits<T>(container);
-    }
-
-    template<class T>
-    void visit(IDynamicVisitor& visitor, std::vector<T>* val, const std::string& name = "", const size_t cnt = 1)
-    {
-        auto traits = makeTraits(*val);
-        visitor.startContainer(traits);
-        visitor(val->data(), name, val->size());
-        visitor.endContainer();
+        return TTraits<T>(val);
     }
 
     template<class T>
     IDynamicVisitor& IDynamicVisitor::operator()(T* val, const std::string& name, const size_t cnt)
     {
-        visit(*this, val, name, cnt);
-        return *this;
+        if(cnt == 1)
+        {
+            auto traits = makeTraits(val);
+            using base = typename decltype(traits)::base;
+
+            (*this)(static_cast<base*>(&traits), name);
+            return *this;
+        }else
+        {
+            ArrayContainerTrait<T> traits(val, cnt);
+            (*this)(static_cast<IContainerTraits*>(&traits), name);
+            return *this;
+        }
     }
 
 }
