@@ -1,3 +1,4 @@
+#include "../common.hpp"
 #include <ct/Hash.hpp>
 #include <ct/Object.hpp>
 

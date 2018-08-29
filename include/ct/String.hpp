@@ -1,5 +1,5 @@
 #pragma once
-#include "detail/StringImpl.hpp"
+#include "StringImpl.hpp"
 #include <cstddef>
 namespace ct
 {
