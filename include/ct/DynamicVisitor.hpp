@@ -150,6 +150,7 @@ namespace ct
             startContainer(*val, name);
             val->visit(this);
             endContainer();
+            return *this;
         }
 
         template<class T>
