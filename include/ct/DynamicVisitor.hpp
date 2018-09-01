@@ -35,6 +35,7 @@ namespace ct
     {
         virtual size_t size() const = 0;
         virtual bool triviallySerializable() const = 0;
+        virtual bool isPrimitiveType() const = 0;
         virtual const void* ptr() const = 0;
         virtual void* ptr() = 0;
     };
@@ -48,6 +49,8 @@ namespace ct
         virtual bool podKeys() const = 0;
         virtual size_t numKeys() const = 0;
         virtual size_t numValues() const = 0;
+        virtual void setKeys(const size_t num) = 0;
+        virtual void setValues(const size_t num) = 0;
     };
 
     template<class T>
@@ -94,6 +97,14 @@ namespace ct
         {
             return m_size;
         }
+        void setKeys(const size_t)
+        {
+
+        }
+        void setValues(const size_t)
+        {
+
+        }
     };
 
     template<class T, class E = void>
@@ -125,6 +136,7 @@ namespace ct
         virtual ~IDynamicVisitor(){}
         template<class T>
         IDynamicVisitor& operator()(T* val, const std::string& name = "", const size_t cnt = 1);
+        virtual IDynamicVisitor& operator()(char* val,           const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(int8_t* val,         const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(uint8_t* val,        const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(int16_t* val,        const std::string& name = "", const size_t cnt = 1) = 0;
@@ -136,6 +148,7 @@ namespace ct
         virtual IDynamicVisitor& operator()(float* val,          const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(double* val,         const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(void* binary,        const std::string& name = "", const size_t num_bytes = 1) = 0;
+        virtual bool reading() const = 0;
 
         virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "")
         {
@@ -255,6 +268,14 @@ namespace ct
         virtual size_t numValues() const override
         {
             return m_vec->size();
+        }
+        void setKeys(const size_t)
+        {
+
+        }
+        void setValues(const size_t num)
+        {
+            m_vec->resize(num);
         }
     private:
         std::vector<T>* m_vec;
