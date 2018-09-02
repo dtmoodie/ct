@@ -17,7 +17,13 @@ BinaryReader::~BinaryReader()
 template<class T>
 IDynamicVisitor& BinaryReader::readBinary(T* ptr, const size_t cnt)
 {
+    m_is.read(reinterpret_cast<char*>(ptr), cnt * sizeof(T));
     return *this;
+}
+
+IDynamicVisitor& BinaryReader::operator()(char* ptr, const std::string& name, const size_t cnt)
+{
+    return readBinary(ptr, cnt);
 }
 
 IDynamicVisitor& BinaryReader::operator()(int8_t* ptr,         const std::string& name, const size_t cnt)
@@ -72,10 +78,35 @@ IDynamicVisitor& BinaryReader::operator()(double* ptr,         const std::string
 
 IDynamicVisitor& BinaryReader::operator()(void* ptr,        const std::string& , const size_t cnt)
 {
-        return readBinary(ptr, cnt);
+    return readBinary(reinterpret_cast<char*>(ptr), cnt);
 }
 
 IDynamicVisitor& BinaryReader::operator()(IStructTraits* val, const std::string& name)
+{
+    val->visit(this);
+    return *this;
+}
+
+bool BinaryReader::reading() const
+{
+    return false;
+}
+
+bool BinaryReader::isTextVisitor() const
+{
+    return false;
+}
+
+IDynamicVisitor& BinaryReader::startContainer(IContainerTraits& trait, const std::string& name)
+{
+    uint64_t size = 0;
+    readBinary(&size);
+    trait.setValues(size);
+    trait.setKeys(size);
+    return *this;
+}
+
+IDynamicVisitor& BinaryReader::endContainer()
 {
     return *this;
 }

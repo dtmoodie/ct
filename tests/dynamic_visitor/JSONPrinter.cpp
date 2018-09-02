@@ -25,21 +25,23 @@ void JSONPrinter::writePod(T *val, const std::string &name, const size_t cnt) {
       indent();
     }
     m_os << name << ":" << *val;
-    if (m_state.back().writing_value) {
+    /*if (m_state.back().writing_value) {
       newline();
       m_os << "}";
+    }*/
+    if (m_state.back().writing_value) {
+        m_os << "}";
+        m_state.pop_back();
+        //m_state.back().writing_key = true;
+        //m_state.back().writing_value = false;
     }
     if (m_state.back().writing_key) {
       m_state.back().writing_key = false;
-      m_state.back().writing_value = true;
-      m_state.push_back(State());
-    }
-    if (m_state.back().writing_value) {
-      m_os << "}";
-      m_state.pop_back();
-      m_state.back().writing_key = true;
       m_state.back().writing_value = false;
+      m_state.push_back(State());
+      m_state.back().writing_value = true;
     }
+    
   }
 
   m_state.back().prev_elem = true;
@@ -63,6 +65,8 @@ JSONPrinter::~JSONPrinter() {
 }
 
 bool JSONPrinter::reading() const { return true; }
+
+bool JSONPrinter::isTextVisitor() const { return true; }
 
 IDynamicVisitor &JSONPrinter::operator()(char *ptr, const std::string &name,
                                          const size_t cnt) {
@@ -206,7 +210,9 @@ IDynamicVisitor &JSONPrinter::operator()(IStructTraits *val,
   }
 
   m_state.back().prev_elem = false;
+  m_state.push_back(State());
   IDynamicVisitor::operator()(val, name);
+  m_state.pop_back();
   newline();
   indent();
   m_os << "}";
@@ -237,7 +243,8 @@ void JSONPrinter::writeName(const std::string &name) {
 
 void JSONPrinter::indent() {
   if (m_whitespace) {
-    for (size_t i = 0; i < namespaces.size() + 1; ++i) {
+      const size_t indent = namespaces.size() + 1;
+    for (size_t i = 0; i < indent; ++i) {
       m_os << "  ";
     }
   }

@@ -149,6 +149,7 @@ namespace ct
         virtual IDynamicVisitor& operator()(double* val,         const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(void* binary,        const std::string& name = "", const size_t num_bytes = 1) = 0;
         virtual bool reading() const = 0;
+        virtual bool isTextVisitor() const = 0;
 
         virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "")
         {

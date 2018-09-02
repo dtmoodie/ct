@@ -1,8 +1,11 @@
 #include "../reflect/Data.hpp"
 #include "../reflect/Reflect.hpp"
 #include "JSONPrinter.hpp"
+#include "BinaryWriter.hpp"
+#include "BinaryReader.hpp"
 #include <ct/TypeTraits.hpp>
 #include <ct/reflect.hpp>
+#include <fstream>
 #include <map>
 struct Vec {
   float x, y, z;
@@ -64,21 +67,28 @@ struct TTraits<T, ct::enable_if_reflected<T>> : public IStructTraits {
   virtual void *ptr() override { return m_ptr; }
 };
 
-template <> struct TTraits<std::string, void> : public IStructTraits {
-  using base = IStructTraits;
+template <> struct TTraits<std::string, void> : public IContainerTraits {
+  using base = IContainerTraits;
   std::string *m_ptr;
+  size_t num_to_read = 0;
   TTraits(std::string *ptr) : m_ptr(ptr) {}
   virtual void visit(ct::IDynamicVisitor *visitor) override {
     (*visitor)(&(*m_ptr)[0], "", m_ptr->size());
   }
+  virtual TypeInfo keyType() const override { return TypeInfo(typeid(void)); }
+  virtual TypeInfo valueType() const override { return TypeInfo(typeid(char)); }
+  virtual bool isContinuous() const override { return false; }
+  virtual bool podValues() const override { return true; }
+  virtual bool podKeys() const override { return false; }
+  virtual size_t numKeys() const override { return 0; }
+  virtual size_t numValues() const override { return m_ptr->size(); }
 
-  virtual bool isPrimitiveType() const override { return false; }
-
-  virtual size_t size() const override { return sizeof(std::string); }
-
-  virtual bool triviallySerializable() const override { return false; }
-  virtual const void *ptr() const override { return m_ptr; }
-  virtual void *ptr() override { return m_ptr; }
+  virtual void setKeys(const size_t) override { 
+      
+  }
+  virtual void setValues(const size_t num) override {
+      m_ptr->resize(num);
+  }
 };
 
 template <class K, class V>
@@ -124,10 +134,28 @@ struct TTraits<std::map<std::string, V>, void> : public IContainerTraits {
     uint64_t size = m_ptr->size();
     IDynamicVisitor &visitor = *visitor_;
     if (visitor.reading()) {
+        const bool is_text = visitor.isTextVisitor();
       for (auto itr = m_ptr->begin(); itr != m_ptr->end(); ++itr) {
-        visitor(&itr->second, itr->first);
+          if (is_text)
+          {
+              visitor(&itr->second, itr->first);
+          }
+          else
+          {
+              std::string key = itr->first;
+              visitor(&key);
+              visitor(&itr->second);
+          }
       }
     } else {
+        for (size_t i = 0; i < num_to_read; ++i)
+        {
+            std::string key;
+            visitor(&key);
+            V val;
+            visitor(&val);
+            (*m_ptr)[std::move(key)] = std::move(val);
+        }
     }
   }
 
@@ -196,4 +224,49 @@ int main() {
   }
 
   std::cout << std::endl;
+
+  {
+      std::ofstream ofs("test.bin", std::ios::binary | std::ios::out);
+      ct::BinaryWriter bar(ofs);
+      ct::IDynamicVisitor &visitor = bar;
+      int val = 0;
+      float pi = 3.14;
+      visitor(&val, "value0");
+      visitor(&pi, "pi");
+      std::vector<float> vec{ 0.0f, 0.1f, 0.2f, 0.3f };
+      visitor(&vec);
+      std::map<std::string, Vec> vecmap;
+      vecmap["asdf"] = { 0,1,2 };
+      vecmap["sdfg"] = { 0,1,4 };
+      visitor(&vecmap);
+      ofs.close();
+  }
+  {
+      std::ifstream ifs("test.bin", std::ios::binary | std::ios::in);
+      if (ifs)
+      {
+          ifs.seekg(std::ios::beg);
+          auto start = ifs.tellg();
+          ifs.seekg(std::ios::end);
+          auto end = ifs.tellg();
+          std::cout << "size: " << end - start << std::endl;
+          ifs.seekg(std::ios::beg);
+          
+          ct::BinaryReader bar(ifs);
+          ct::IDynamicVisitor &visitor = bar;
+          int val = 1;
+          float pi = 0;
+          visitor(&val, "value0");
+          visitor(&pi, "pi");
+          std::vector<float> vec;
+          visitor(&vec);
+          std::map<std::string, Vec> vecmap;
+          visitor(&vecmap);
+          std::cout << val << std::endl;
+          std::cout << pi << std::endl;
+          
+            
+          
+      }
+  }
 }

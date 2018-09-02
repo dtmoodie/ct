@@ -39,7 +39,7 @@ public:
   accessCache(const std::string &name) override;
 
   virtual bool reading() const override;
-
+  virtual bool isTextVisitor() const;
 protected:
   struct State {
     uint32_t unnamed_count = 0;

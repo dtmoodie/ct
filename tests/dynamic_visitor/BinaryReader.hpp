@@ -10,6 +10,7 @@ namespace ct
         BinaryReader(std::istream& in);
         virtual ~BinaryReader() override;
 
+        virtual IDynamicVisitor& operator()(char* ptr, const std::string& name, const size_t cnt) override;
         virtual IDynamicVisitor& operator()(int8_t* ptr,         const std::string& name, const size_t cnt) override;
         virtual IDynamicVisitor& operator()(uint8_t* ptr,        const std::string& name, const size_t cnt) override;
         virtual IDynamicVisitor& operator()(int16_t* ptr,        const std::string& name, const size_t cnt) override;
@@ -23,11 +24,17 @@ namespace ct
         virtual IDynamicVisitor& operator()(double* ,         const std::string& , const size_t cnt) override;
         virtual IDynamicVisitor& operator()(void* ,        const std::string& , const size_t cnt) override;
         virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "") override;
-        virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name) override;
 
+        virtual bool reading() const;
+        virtual bool isTextVisitor() const;
+
+        virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name) override;
+    protected:
+        virtual IDynamicVisitor& startContainer(IContainerTraits&, const std::string& name);
+        virtual IDynamicVisitor& endContainer();
     private:
         template<class T>
-        IDynamicVisitor& readBinary(T* ptr, const size_t cnt);
+        IDynamicVisitor& readBinary(T* ptr, const size_t cnt = 1);
 
         std::unordered_map<std::string, std::unique_ptr<ct::IDataContainer>> m_cache;
         std::istream& m_is;
