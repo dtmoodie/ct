@@ -5,20 +5,17 @@
 #include <ct/reflect/compare.hpp>
 #include <ct/reflect/print.hpp>
 
-#include <cereal/cereal.hpp>
-#include <cereal/types/vector.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/vector.hpp>
 
-template<class Read, class Write>
+template <class Read, class Write>
 struct CerealizationTester
 {
-    CerealizationTester(const std::string path):
-        m_path(path)
-    {
+    CerealizationTester(const std::string path) : m_path(path) {}
 
-    }
-
-    template<class T>
+    template <class T>
     void test(const T& data)
     {
         {
@@ -36,15 +33,13 @@ struct CerealizationTester
             Read archive(ifs);
             T loaded_data;
             archive(cereal::make_nvp("data", loaded_data));
-            if(!ct::compare(data, loaded_data, DebugEqual()))
+            if (!ct::compare(data, loaded_data, DebugEqual()))
             {
                 std::cout << "Failed cerealization" << std::endl;
                 std::abort();
             }
-
         }
         std::cout << std::endl;
-
     }
     std::string m_path;
 };
@@ -53,5 +48,4 @@ int main()
 {
     CerealizationTester<cereal::JSONInputArchive, cereal::JSONOutputArchive> json_tester("test.json");
     testTypes(json_tester);
-
 }

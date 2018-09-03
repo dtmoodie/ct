@@ -1,11 +1,12 @@
-#include "common.hpp"
 #include "Reflect.hpp"
+#include "common.hpp"
+#include <ct/reflect/print-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 #include <iostream>
 
 struct Printer
 {
-    template<class T>
+    template <class T>
     void test(T& data)
     {
         std::cout << "\n====================\n";
