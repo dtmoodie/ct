@@ -44,6 +44,7 @@ namespace ct
     {
         virtual TypeInfo keyType() const = 0;
         virtual TypeInfo valueType() const = 0;
+        virtual TypeInfo containerType() const = 0;
         virtual bool isContinuous() const = 0;
         virtual bool podValues() const = 0;
         virtual bool podKeys() const = 0;
@@ -77,6 +78,12 @@ namespace ct
         {
             return TypeInfo(typeid(T));
         }
+
+        virtual TypeInfo containerType() const override
+        {
+            return TypeInfo(typeid(T[]));
+        }
+
         virtual bool isContinuous() const override
         {
             return true;
@@ -131,6 +138,15 @@ namespace ct
 
     };
 
+    struct VisitorTraits
+    {
+        // if true, the name field of the () operator is used to search for the provided data
+        bool supports_named_access;
+        // If this is true, read data from external source and put into the visited struct
+        // else read data from struct and put into output
+        bool reader;
+    };
+
     struct IDynamicVisitor
     {
         virtual ~IDynamicVisitor(){}
@@ -148,8 +164,7 @@ namespace ct
         virtual IDynamicVisitor& operator()(float* val,          const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(double* val,         const std::string& name = "", const size_t cnt = 1) = 0;
         virtual IDynamicVisitor& operator()(void* binary,        const std::string& name = "", const size_t num_bytes = 1) = 0;
-        virtual bool reading() const = 0;
-        virtual bool isTextVisitor() const = 0;
+        virtual VisitorTraits traits() const = 0;
 
         virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "")
         {
@@ -159,13 +174,7 @@ namespace ct
             return *this;
         }
 
-        virtual IDynamicVisitor& operator()(IContainerTraits* val, const std::string& name = "")
-        {
-            startContainer(*val, name);
-            val->visit(this);
-            endContainer();
-            return *this;
-        }
+        virtual IDynamicVisitor& operator()(IContainerTraits* val, const std::string& name = "") = 0;
 
         template<class T>
         void pushCach(T&& val, const std::string& name)
@@ -212,8 +221,6 @@ namespace ct
             return ss.str();
         }
     protected:
-        virtual IDynamicVisitor& startContainer(IContainerTraits&, const std::string& name) = 0;
-        virtual IDynamicVisitor& endContainer() = 0;
         virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name) = 0;
         std::vector<const char*> namespaces;
     };
@@ -250,6 +257,7 @@ namespace ct
         {
             return TypeInfo(typeid(T));
         }
+        virtual TypeInfo containerType() const {return TypeInfo(typeid(std::vector<T>));}
         virtual bool isContinuous() const override
         {
             return true;

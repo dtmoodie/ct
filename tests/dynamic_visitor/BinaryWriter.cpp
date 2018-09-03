@@ -87,32 +87,25 @@ IDynamicVisitor& BinaryWriter::operator()(IStructTraits* val, const std::string&
     return *this;
 }
 
+IDynamicVisitor& BinaryWriter::operator()(IContainerTraits* val, const std::string& name)
+{
+    uint64_t num_vals = val->numValues();
+    writeBinary(&num_vals);
+    val->visit(this);
+    return *this;
+}
+
 std::unique_ptr<IDataContainer>& BinaryWriter::accessCache(const std::string& name)
 {
     return m_cache[name];
 }
 
-IDynamicVisitor& BinaryWriter::startContainer(IContainerTraits & trait,
-    const std::string &name)
+VisitorTraits BinaryWriter::traits() const
 {
-    uint64_t num_vals = trait.numValues();
-    writeBinary(&num_vals);
-    return *this;
-}
-
-IDynamicVisitor& BinaryWriter::endContainer()
-{
-    return *this;
-}
-
-bool BinaryWriter::reading() const
-{
-    return true;
-}
-
-bool BinaryWriter::isTextVisitor() const
-{
-    return false;
+    VisitorTraits out;
+    out.reader = false;
+    out.supports_named_access = false;
+    return out;
 }
 
 }

@@ -10,11 +10,63 @@
 #include <ct/reflect.hpp>
 #include <ct/reflect/compare-inl.hpp>
 
+#include <ct/reflect/cerealize.hpp>
+#include <ct/reflect/compare.hpp>
+#include <ct/reflect/print.hpp>
+
 #include <ct/reflect/compare-container-inl.hpp>
+
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/vector.hpp>
 
 #include <cassert>
 #include <fstream>
 #include <map>
+
+namespace cereal
+{
+//! Saving for std::map<std::string, std::string> for text based archives
+// Note that this shows off some internal cereal traits such as EnableIf,
+// which will only allow this template to be instantiated if its predicates
+// are true
+template <class Archive,
+          class T,
+          class C,
+          class A,
+          traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae>
+inline void save(Archive& ar, std::map<std::string, T, C, A> const& map)
+{
+    for (const auto& i : map)
+        ar(cereal::make_nvp(i.first, i.second));
+}
+
+//! Loading for std::map<std::string, std::string> for text based archives
+template <class Archive,
+          class T,
+          class C,
+          class A,
+          traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae>
+inline void load(Archive& ar, std::map<std::string, T, C, A>& map)
+{
+    map.clear();
+
+    auto hint = map.begin();
+    while (true)
+    {
+        const auto namePtr = ar.getNodeName();
+
+        if (!namePtr)
+            break;
+
+        std::string key = namePtr;
+        T value;
+        ar(value);
+        hint = map.emplace_hint(hint, std::move(key), std::move(value));
+    }
+}
+} // namespace cereal
 
 struct Vec
 {
@@ -89,6 +141,8 @@ struct TTraits<std::string, void> : public IContainerTraits
     virtual void visit(ct::IDynamicVisitor* visitor) override { (*visitor)(&(*m_ptr)[0], "", m_ptr->size()); }
     virtual TypeInfo keyType() const override { return TypeInfo(typeid(void)); }
     virtual TypeInfo valueType() const override { return TypeInfo(typeid(char)); }
+
+    virtual TypeInfo containerType() const { return TypeInfo(typeid(std::string)); }
     virtual bool isContinuous() const override { return false; }
     virtual bool podValues() const override { return true; }
     virtual bool podKeys() const override { return false; }
@@ -97,6 +151,65 @@ struct TTraits<std::string, void> : public IContainerTraits
 
     virtual void setKeys(const size_t) override {}
     virtual void setValues(const size_t num) override { m_ptr->resize(num); }
+};
+
+template <class T1, class T2>
+struct TTraits<std::pair<T1, T2>, void> : public IStructTraits
+{
+    using base = IStructTraits;
+    std::pair<T1, T2>* m_ptr;
+    TTraits(std::pair<T1, T2>* ptr) : m_ptr(ptr) {}
+
+    virtual void visit(ct::IDynamicVisitor* visitor) override
+    {
+        (*visitor)(&m_ptr->first, "first");
+        (*visitor)(&m_ptr->second, "second");
+    }
+    virtual size_t size() const { return sizeof(std::pair<T1, T2>); }
+    virtual bool triviallySerializable() const { return std::is_pod<T1>::value && std::is_pod<T2>::value; }
+    virtual bool isPrimitiveType() const { return false; }
+    virtual const void* ptr() const { return m_ptr; }
+    virtual void* ptr() { return m_ptr; }
+};
+
+template <class K, class V>
+struct KVP
+{
+    K key;
+    V value;
+
+    KVP& operator=(const std::pair<const K, V>& other)
+    {
+        key = other.first;
+        value = other.second;
+        return *this;
+    }
+
+    KVP& operator=(const std::pair<K, V>& other)
+    {
+        key = other.first;
+        value = other.second;
+        return *this;
+    }
+};
+
+template <class T1, class T2>
+struct TTraits<KVP<T1, T2>, void> : public IStructTraits
+{
+    using base = IStructTraits;
+    KVP<T1, T2>* m_ptr;
+    TTraits(KVP<T1, T2>* ptr) : m_ptr(ptr) {}
+
+    virtual void visit(ct::IDynamicVisitor* visitor) override
+    {
+        (*visitor)(&m_ptr->key, "key");
+        (*visitor)(&m_ptr->value, "value");
+    }
+    virtual size_t size() const { return sizeof(KVP<T1, T2>); }
+    virtual bool triviallySerializable() const { return std::is_pod<T1>::value && std::is_pod<T2>::value; }
+    virtual bool isPrimitiveType() const { return false; }
+    virtual const void* ptr() const { return m_ptr; }
+    virtual void* ptr() { return m_ptr; }
 };
 
 template <class K, class V>
@@ -111,13 +224,15 @@ struct TTraits<std::map<K, V>, void> : public IContainerTraits
     {
         uint64_t size = m_ptr->size();
         IDynamicVisitor& visitor = *visitor_;
-        if (visitor.reading())
+        const auto trait = visitor.traits();
+        if (!trait.reader)
         {
             for (auto itr = m_ptr->begin(); itr != m_ptr->end(); ++itr)
             {
-                K key = itr->first;
-                visitor(&key, "key");
-                visitor(&itr->second, "value");
+                KVP<K, V> pair;
+                pair = *itr;
+                visitor(&pair);
+                // visitor(&itr->second, "value");
             }
         }
         else
@@ -135,6 +250,7 @@ struct TTraits<std::map<K, V>, void> : public IContainerTraits
 
     virtual TypeInfo keyType() const override { return TypeInfo(typeid(K)); }
     virtual TypeInfo valueType() const override { return TypeInfo(typeid(V)); }
+    virtual TypeInfo containerType() const { return TypeInfo(typeid(std::map<K, V>)); }
     virtual bool isContinuous() const override { return false; }
     virtual bool podValues() const override { return std::is_pod<V>::value; }
     virtual bool podKeys() const override { return std::is_pod<K>::value; }
@@ -157,12 +273,12 @@ struct TTraits<std::map<std::string, V>, void> : public IContainerTraits
     {
         uint64_t size = m_ptr->size();
         IDynamicVisitor& visitor = *visitor_;
-        if (visitor.reading())
+        const auto trait = visitor.traits();
+        if (!trait.reader)
         {
-            const bool is_text = visitor.isTextVisitor();
             for (auto itr = m_ptr->begin(); itr != m_ptr->end(); ++itr)
             {
-                if (is_text)
+                if (trait.supports_named_access)
                 {
                     visitor(&itr->second, itr->first);
                 }
@@ -189,6 +305,7 @@ struct TTraits<std::map<std::string, V>, void> : public IContainerTraits
 
     virtual TypeInfo keyType() const override { return TypeInfo(typeid(std::string)); }
     virtual TypeInfo valueType() const override { return TypeInfo(typeid(V)); }
+    virtual TypeInfo containerType() const { return TypeInfo(typeid(std::map<std::string, V>)); }
     virtual bool isContinuous() const override { return false; }
     virtual bool podValues() const override { return std::is_pod<V>::value; }
     virtual bool podKeys() const override { return std::is_pod<std::string>::value; }
@@ -227,8 +344,42 @@ struct TestBinary
     }
 };
 
+struct TestJson
+{
+    template <class T>
+    void test(const T& data)
+    {
+        T tmp = data;
+        std::stringstream ss;
+        {
+            ct::JSONWriter printer(ss);
+            ct::IDynamicVisitor& visitor = printer;
+            visitor(&tmp);
+        }
+        ss.seekg(std::ios::beg);
+        std::cout << "------------------------------\nDynamic\n";
+        std::cout << ss.str() << std::endl;
+        std::cout << "------------------------------\nStatic\n";
+        {
+            cereal::JSONOutputArchive ar(std::cout);
+            ar(tmp);
+        }
+        cereal::JSONInputArchive ar(ss);
+        T tmp1;
+        ar(tmp1);
+        if (!ct::compare(tmp, tmp1, DebugEqual()))
+        {
+            std::cout << "Failed to load from json " << ct::Reflect<T>::getName() << " correctly";
+            throw std::runtime_error("Json serialization failed");
+        }
+    }
+};
+
 int main()
 {
     TestBinary tester;
     testTypes(tester);
+
+    TestJson test_json;
+    testTypes(test_json);
 }
