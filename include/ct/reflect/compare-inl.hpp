@@ -28,12 +28,12 @@ bool compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const C
     return compareHelper(lhs, rhs, --idx, cmp);
 }
 
-template <class T, class Comparator = Equal>
+template <class T, class Comparator>
 auto compare(const T& lhs, const T& rhs, const Comparator& cmp) -> ct::enable_if_reflected<T, bool>
 {
     return compareHelper(lhs, rhs, Reflect<T>::end(), cmp);
 }
-template <class T, class Comparator = Equal>
+template <class T, class Comparator>
 auto compare(const T& lhs, const T& rhs, const Comparator& cmp) -> ct::enable_if_not_reflected<T, bool>
 {
     return cmp.test(lhs, rhs);
