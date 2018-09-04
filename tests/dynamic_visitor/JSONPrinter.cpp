@@ -115,6 +115,7 @@ IDynamicVisitor& JSONWriter::operator()(IContainerTraits* val, const std::string
     {
         m_ar.finishNode();
     }
+    return *this;
 }
 
 VisitorTraits JSONWriter::traits() const
