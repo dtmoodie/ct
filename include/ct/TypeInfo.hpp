@@ -1,5 +1,5 @@
 #pragma once
-#include <hash_fun.h>
+#include <functional>
 #include <string>
 #include <typeinfo>
 namespace ct
