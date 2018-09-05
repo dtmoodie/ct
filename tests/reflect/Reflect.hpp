@@ -1,6 +1,6 @@
 #pragma once
-#include <ct/reflect.hpp>
 #include "Data.hpp"
+#include <ct/reflect.hpp>
 
 namespace ct
 {
@@ -43,11 +43,11 @@ namespace ct
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateMutableAccess)
-        ACCESSOR("x",&DataType::getX, &DataType::mutateX)
+        ACCESSOR("x", &DataType::getX, &DataType::mutateX)
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateGetAndSet)
-        ACCESSOR("x",&DataType::getX, &DataType::setX)
+        ACCESSOR("x", &DataType::getX, &DataType::setX)
     REFLECT_END;
 
 #if __cplusplus <= 201103
@@ -57,5 +57,13 @@ namespace ct
         PUBLIC_ACCESS(z)
     REFLECT_END;
 #endif
-    
+
+    REFLECT_BEGIN(PointerOwner)
+        PUBLIC_ACCESS(ptr)
+    REFLECT_END;
+
+    REFLECT_BEGIN(WeirdWeakOwnerShip)
+        PUBLIC_ACCESS(struct_vec)
+        PUBLIC_ACCESS(pointer_owners)
+    REFLECT_END;
 }

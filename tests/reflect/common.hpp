@@ -124,4 +124,8 @@ void testTypes(Tester& tester)
         std::shared_ptr<ReflectedStruct> data = std::make_shared<ReflectedStruct>();
         tester.test(data);
     }
+    {
+        WeirdWeakOwnerShip data;
+        tester.test(data);
+    }
 }

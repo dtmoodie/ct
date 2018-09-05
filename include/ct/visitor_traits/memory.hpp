@@ -50,13 +50,63 @@ namespace ct
             }
         }
 
-        virtual size_t size() const override {}
-        virtual bool triviallySerializable() const override {}
+        virtual size_t size() const override { return sizeof(T*); }
+        virtual bool triviallySerializable() const override { return false; }
         virtual bool isPrimitiveType() const override { return false; }
         virtual TypeInfo type() const override { return TypeInfo(typeid(T)); }
         virtual const void* ptr() const override { return nullptr; }
         virtual void* ptr() override { return nullptr; }
       private:
         std::shared_ptr<T>* m_ptr;
+    };
+
+    template <class T>
+    struct TTraits<T*, void> : public IStructTraits
+    {
+        using base = IStructTraits;
+
+        TTraits(T** ptr) : m_ptr(ptr) {}
+        virtual void visit(IDynamicVisitor* visitor) override
+        {
+            uint64_t id = 0;
+            auto visitor_trait = visitor->traits();
+            if (visitor_trait.reader)
+            {
+                (*visitor)(&id, "id");
+                if (id != 0)
+                {
+                    auto ptr = visitor->getPointer<T>(id);
+                    if (!ptr)
+                    {
+                        *m_ptr = new T();
+                        (*visitor)(*m_ptr, "data");
+                        visitor->setSerializedPointer(*m_ptr, id);
+                    }
+                    else
+                    {
+                        *m_ptr = ptr;
+                    }
+                }
+            }
+            else
+            {
+                id = uint64_t(*m_ptr);
+                auto ptr = visitor->getPointer<T>(id);
+                (*visitor)(&id, "id");
+                if (*m_ptr && ptr == nullptr)
+                {
+                    (*visitor)(*m_ptr, "data");
+                }
+            }
+        }
+
+        virtual size_t size() const override { return sizeof(T*); }
+        virtual bool triviallySerializable() const override { return false; }
+        virtual bool isPrimitiveType() const override { return false; }
+        virtual TypeInfo type() const override { return TypeInfo(typeid(T)); }
+        virtual const void* ptr() const override { return nullptr; }
+        virtual void* ptr() override { return nullptr; }
+      private:
+        T** m_ptr;
     };
 }

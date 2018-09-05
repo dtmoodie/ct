@@ -411,6 +411,7 @@ struct TestJson
             throw std::runtime_error("Json serialization failed");
         }
     }
+
     template <class T>
     void test(const std::shared_ptr<T>& data)
     {

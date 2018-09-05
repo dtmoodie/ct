@@ -45,20 +45,42 @@ struct TestVec
 
 struct PrivateMutableAccess
 {
-public:
-    const float& getX() const {return x;}
-    float& mutateX(){return x;}
-private:
+  public:
+    const float& getX() const { return x; }
+    float& mutateX() { return x; }
+  private:
     float x;
 };
 
 struct PrivateGetAndSet
 {
-public:
-    const float& getX() const {return x;}
-    void setX(const float val) {x = val;}
-private:
+  public:
+    const float& getX() const { return x; }
+    void setX(const float val) { x = val; }
+  private:
     float x;
+};
+
+struct PointerOwner
+{
+    PointerOwner(const PointerOwner&) = default;
+    PointerOwner(PointerOwner&&) = default;
+    PointerOwner(ReflectedStruct* ptr_ = nullptr) : ptr(ptr_) {}
+    ReflectedStruct* ptr;
+};
+
+struct WeirdWeakOwnerShip
+{
+    WeirdWeakOwnerShip(const size_t cnt = 10)
+    {
+        struct_vec.resize(cnt);
+        for (size_t i = 0; i < cnt; ++i)
+        {
+            pointer_owners.push_back(&struct_vec[i]);
+        }
+    }
+    std::vector<ReflectedStruct> struct_vec;
+    std::vector<PointerOwner> pointer_owners;
 };
 
 // Doesn't work with C++11 :/
@@ -76,6 +98,13 @@ struct InternallyReflected
 #else
 struct InternallyReflected
 {
-    float x,y,z;
+    float x, y, z;
 };
 #endif
+namespace cereal
+{
+    template <class AR>
+    void serialize(AR&, ReflectedStruct*)
+    {
+    }
+}
