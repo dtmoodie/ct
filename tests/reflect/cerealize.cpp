@@ -8,6 +8,7 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
 template <class Read, class Write>

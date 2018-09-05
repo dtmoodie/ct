@@ -1,13 +1,13 @@
 #pragma once
+#include <hash_fun.h>
 #include <string>
 #include <typeinfo>
-
 namespace ct
 {
     class TypeInfo
     {
       public:
-        template<class T>
+        template <class T>
         static TypeInfo create()
         {
             return TypeInfo(typeid(T));
@@ -26,6 +26,8 @@ namespace ct
 
         inline bool operator==(const std::type_info& rhs) const;
         inline bool operator!=(const std::type_info& rhs) const;
+
+        inline const std::type_info* ptr() const;
 
       private:
         const std::type_info* pInfo_;
@@ -50,22 +52,15 @@ namespace ct
         pInfo_ = &typeid(Void);
     }
 
-    TypeInfo::TypeInfo(const std::type_info& ti) : pInfo_(&ti) { }
+    TypeInfo::TypeInfo(const std::type_info& ti) : pInfo_(&ti) {}
 
-    bool TypeInfo::before(const TypeInfo& rhs) const
-    {
-        return pInfo_->before(*rhs.pInfo_) != 0;
-    }
+    bool TypeInfo::before(const TypeInfo& rhs) const { return pInfo_->before(*rhs.pInfo_) != 0; }
 
-    const std::type_info& TypeInfo::get() const
-    {
-        return *pInfo_;
-    }
+    const std::type_info& TypeInfo::get() const { return *pInfo_; }
 
-    std::string TypeInfo::name() const
-    {
-        return pInfo_->name();
-    }
+    std::string TypeInfo::name() const { return pInfo_->name(); }
+
+    inline const std::type_info* TypeInfo::ptr() const { return pInfo_; }
 
     bool TypeInfo::operator==(const std::type_info& rhs) const { return this->pInfo_ == &rhs; }
     bool TypeInfo::operator!=(const std::type_info& rhs) const { return !(*this == rhs); }
@@ -81,6 +76,18 @@ namespace ct
     inline bool operator<=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs > rhs); }
 
     inline bool operator>=(const TypeInfo& lhs, const TypeInfo& rhs) { return !(lhs < rhs); }
-
 }
 
+namespace std
+{
+    template <>
+    struct hash<ct::TypeInfo>
+    {
+        using argument_type = ct::TypeInfo;
+        using result_type = std::size_t;
+        result_type operator()(argument_type const& s) const noexcept
+        {
+            return std::hash<const std::type_info*>{}(s.ptr());
+        }
+    };
+}

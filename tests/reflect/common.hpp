@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <ostream>
 #include <vector>
 
@@ -17,6 +18,28 @@ struct DebugEqual
         if (lhs != rhs)
         {
             std::cout << name << " values not equal: " << lhs << " != " << rhs << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    template <class T>
+    bool test(const char* name, const std::shared_ptr<T>& lhs, const std::shared_ptr<T>& rhs) const
+    {
+        if (lhs != rhs)
+        {
+            std::cout << name << " values not equal: " << lhs << " != " << rhs << std::endl;
+            return false;
+        }
+        return true;
+    }
+
+    template <class T>
+    bool test(const std::shared_ptr<T>& lhs, const std::shared_ptr<T>& rhs) const
+    {
+        if ((lhs && rhs) && (*lhs != *rhs))
+        {
+            std::cout << " values not equal: " << lhs << " != " << rhs << std::endl;
             return false;
         }
         return true;
@@ -96,5 +119,9 @@ void testTypes(Tester& tester)
         obj.vec = {0, 3, 4, 5};
         mapvec[10] = obj;
         tester.test(mapvec);
+    }
+    {
+        std::shared_ptr<ReflectedStruct> data = std::make_shared<ReflectedStruct>();
+        tester.test(data);
     }
 }
