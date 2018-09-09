@@ -23,9 +23,10 @@ if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
     file(GLOB_RECURSE src "src/*")
+    include_directories(include)
     add_library(ct SHARED ${src})
 
-    target_include_directories(ct 
+    target_include_directories(ct
         INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
