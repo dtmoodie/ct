@@ -8,79 +8,79 @@ namespace ct
     BinaryWriter::~BinaryWriter() {}
 
     template <class T>
-    IDynamicVisitor& BinaryWriter::writeBinary(T* ptr, const std::string&, const size_t cnt)
+    IWriteVisitor& BinaryWriter::writeBinary(const T* ptr, const std::string&, const size_t cnt)
     {
         const size_t size = sizeof(T) * cnt;
-        m_os.write(reinterpret_cast<char*>(ptr), static_cast<std::streamsize>(size));
+        m_os.write(reinterpret_cast<const char*>(ptr), static_cast<std::streamsize>(size));
         return *this;
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(char* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const char* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(int8_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const int8_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(uint8_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const uint8_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(int16_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const int16_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(uint16_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const uint16_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(int32_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const int32_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(uint32_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const uint32_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(int64_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const int64_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(uint64_t* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const uint64_t* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(float* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const float* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(double* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const double* ptr, const std::string& name, const size_t cnt)
     {
         return writeBinary(ptr, name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(void* ptr, const std::string& name, const size_t cnt)
+    IWriteVisitor& BinaryWriter::operator()(const void* ptr, const std::string& name, const size_t cnt)
     {
-        return writeBinary(reinterpret_cast<char*>(ptr), name, cnt);
+        return writeBinary(reinterpret_cast<const char*>(ptr), name, cnt);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(IStructTraits* val, const std::string& name)
+    IWriteVisitor& BinaryWriter::operator()(const IStructTraits* val, const std::string& name)
     {
-        return DynamicVisitor::operator()(val, name);
+        return WriteCache::operator()(val, name);
     }
 
-    IDynamicVisitor& BinaryWriter::operator()(IContainerTraits* val, const std::string&)
+    IWriteVisitor& BinaryWriter::operator()(const IContainerTraits* val, const std::string&)
     {
         uint64_t num_vals = val->numValues();
         writeBinary(&num_vals);

@@ -8,78 +8,78 @@ namespace ct
     BinaryReader::~BinaryReader() {}
 
     template <class T>
-    IDynamicVisitor& BinaryReader::readBinary(T* ptr, const size_t cnt)
+    IReadVisitor& BinaryReader::readBinary(T* ptr, const size_t cnt)
     {
         m_is.read(reinterpret_cast<char*>(ptr), cnt * sizeof(T));
         return *this;
     }
 
-    IDynamicVisitor& BinaryReader::operator()(char* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(char* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(int8_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(int8_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(uint8_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(uint8_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(int16_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(int16_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(uint16_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(uint16_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(int32_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(int32_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(uint32_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(uint32_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(int64_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(int64_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(uint64_t* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(uint64_t* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(float* ptr, const std::string& name, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(float* ptr, const std::string& name, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(double* ptr, const std::string&, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(double* ptr, const std::string&, const size_t cnt)
     {
         return readBinary(ptr, cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(void* ptr, const std::string&, const size_t cnt)
+    IReadVisitor& BinaryReader::operator()(void* ptr, const std::string&, const size_t cnt)
     {
         return readBinary(reinterpret_cast<char*>(ptr), cnt);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(IStructTraits* val, const std::string& name)
+    IReadVisitor& BinaryReader::operator()(IStructTraits* val, const std::string& name)
     {
-        return DynamicVisitor::operator()(val, name);
+        return ReadCache::operator()(val, name);
     }
 
-    IDynamicVisitor& BinaryReader::operator()(IContainerTraits* val, const std::string& name)
+    IReadVisitor& BinaryReader::operator()(IContainerTraits* val, const std::string& name)
     {
         uint64_t size = 0;
         readBinary(&size);

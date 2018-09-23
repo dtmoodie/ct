@@ -9,7 +9,7 @@ namespace ct
         using base = IStructTraits;
 
         TTraits(std::shared_ptr<T>* ptr) : m_ptr(ptr) {}
-        virtual void visit(IDynamicVisitor* visitor) override
+        virtual void visit(IReadVisitor* visitor) override
         {
             uint64_t id = 0;
             auto visitor_trait = visitor->traits();
@@ -38,15 +38,19 @@ namespace ct
                     }
                 }
             }
-            else
+        }
+
+        virtual void visit(IWriteVisitor* visitor) const override
+        {
+            uint64_t id = 0;
+            auto visitor_trait = visitor->traits();
+
+            id = uint64_t(m_ptr->get());
+            auto ptr = visitor->getPointer<T>(id);
+            (*visitor)(&id, "id");
+            if (*m_ptr && ptr == nullptr)
             {
-                id = uint64_t(m_ptr->get());
-                auto ptr = visitor->getPointer<T>(id);
-                (*visitor)(&id, "id");
-                if (*m_ptr && ptr == nullptr)
-                {
-                    (*visitor)(m_ptr->get(), "data");
-                }
+                (*visitor)(m_ptr->get(), "data");
             }
         }
 
@@ -61,42 +65,77 @@ namespace ct
     };
 
     template <class T>
+    struct TTraits<const std::shared_ptr<T>, void> : public IStructTraits
+    {
+        using base = IStructTraits;
+
+        TTraits(const std::shared_ptr<T>* ptr) : m_ptr(ptr) {}
+        virtual void visit(IReadVisitor*) override {}
+
+        virtual void visit(IWriteVisitor* visitor) const override
+        {
+            uint64_t id = 0;
+            auto visitor_trait = visitor->traits();
+
+            id = uint64_t(m_ptr->get());
+            auto ptr = visitor->getPointer<T>(id);
+            (*visitor)(&id, "id");
+            if (*m_ptr && ptr == nullptr)
+            {
+                (*visitor)(m_ptr->get(), "data");
+            }
+        }
+
+        virtual size_t size() const override { return sizeof(T*); }
+        virtual bool triviallySerializable() const override { return false; }
+        virtual bool isPrimitiveType() const override { return false; }
+        virtual TypeInfo type() const override { return TypeInfo(typeid(T)); }
+        virtual const void* ptr() const override { return nullptr; }
+        virtual void* ptr() override { return nullptr; }
+      private:
+        const std::shared_ptr<T>* m_ptr;
+    };
+
+    template <class T>
     struct TTraits<T*, void> : public IStructTraits
     {
         using base = IStructTraits;
 
         TTraits(T** ptr) : m_ptr(ptr) {}
-        virtual void visit(IDynamicVisitor* visitor) override
+
+        virtual void visit(IReadVisitor* visitor) override
         {
             uint64_t id = 0;
             auto visitor_trait = visitor->traits();
-            if (visitor_trait.reader)
+
+            (*visitor)(&id, "id");
+            if (id != 0)
             {
-                (*visitor)(&id, "id");
-                if (id != 0)
+                auto ptr = visitor->getPointer<T>(id);
+                if (!ptr)
                 {
-                    auto ptr = visitor->getPointer<T>(id);
-                    if (!ptr)
-                    {
-                        *m_ptr = new T();
-                        (*visitor)(*m_ptr, "data");
-                        visitor->setSerializedPointer(*m_ptr, id);
-                    }
-                    else
-                    {
-                        *m_ptr = ptr;
-                    }
+                    *m_ptr = new T();
+                    (*visitor)(*m_ptr, "data");
+                    visitor->setSerializedPointer(*m_ptr, id);
+                }
+                else
+                {
+                    *m_ptr = ptr;
                 }
             }
-            else
+        }
+
+        virtual void visit(IWriteVisitor* visitor) const override
+        {
+            uint64_t id = 0;
+            auto visitor_trait = visitor->traits();
+
+            id = uint64_t(*m_ptr);
+            auto ptr = visitor->getPointer<T>(id);
+            (*visitor)(&id, "id");
+            if (*m_ptr && ptr == nullptr)
             {
-                id = uint64_t(*m_ptr);
-                auto ptr = visitor->getPointer<T>(id);
-                (*visitor)(&id, "id");
-                if (*m_ptr && ptr == nullptr)
-                {
-                    (*visitor)(*m_ptr, "data");
-                }
+                (*visitor)(*m_ptr, "data");
             }
         }
 
@@ -108,5 +147,38 @@ namespace ct
         virtual void* ptr() override { return nullptr; }
       private:
         T** m_ptr;
+    };
+
+    template <class T>
+    struct TTraits<T* const, void> : public IStructTraits
+    {
+        using base = IStructTraits;
+
+        TTraits(T* const* ptr) : m_ptr(ptr) {}
+
+        virtual void visit(IReadVisitor*) override {}
+
+        virtual void visit(IWriteVisitor* visitor) const override
+        {
+            uint64_t id = 0;
+            auto visitor_trait = visitor->traits();
+
+            id = uint64_t(*m_ptr);
+            auto ptr = visitor->getPointer<T>(id);
+            (*visitor)(&id, "id");
+            if (*m_ptr && ptr == nullptr)
+            {
+                (*visitor)(*m_ptr, "data");
+            }
+        }
+
+        virtual size_t size() const override { return sizeof(T*); }
+        virtual bool triviallySerializable() const override { return false; }
+        virtual bool isPrimitiveType() const override { return false; }
+        virtual TypeInfo type() const override { return TypeInfo(typeid(T)); }
+        virtual const void* ptr() const override { return nullptr; }
+        virtual void* ptr() override { return nullptr; }
+      private:
+        T* const* m_ptr;
     };
 }

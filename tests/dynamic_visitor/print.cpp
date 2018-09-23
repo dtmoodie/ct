@@ -9,6 +9,7 @@
 #include <ct/TypeTraits.hpp>
 #include <ct/reflect.hpp>
 #include <ct/reflect/compare-inl.hpp>
+#include <ct/visitor_traits/map.hpp>
 #include <ct/visitor_traits/memory.hpp>
 #include <ct/visitor_traits/vector.hpp>
 
@@ -27,6 +28,7 @@
 #include <cassert>
 #include <fstream>
 #include <map>
+#include <type_traits>
 
 namespace cereal
 {
@@ -87,7 +89,12 @@ namespace ct
         virtual size_t size() const { return sizeof(Vec); }
         virtual bool isPrimitiveType() const override { return false; }
         virtual bool triviallySerializable() const { return std::is_pod<Vec>::value; }
-        virtual void visit(ct::IDynamicVisitor* visitor) override
+        virtual void visit(ct::IReadVisitor* visitor) override
+        {
+            (*visitor) (&m_vec->x, "x") (&m_vec->y, "y")(&m_vec->z, "z");
+        }
+
+        virtual void visit(ct::IWriteVisitor* visitor) const override
         {
             (*visitor) (&m_vec->x, "x") (&m_vec->y, "y")(&m_vec->z, "z");
         }
@@ -96,21 +103,43 @@ namespace ct
     };
 
     template <class T, index_t I>
-    void visitValue(IDynamicVisitor& visitor, T& obj)
+    void visitValue(IReadVisitor& visitor, T& obj)
     {
         auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
         using RefType = typename ReferenceType<typename decltype(accessor)::SetType>::Type;
         visitor(&static_cast<RefType>(accessor.set(obj)), Reflect<T>::getName(ct::Indexer<I>{}));
     }
 
+    template <class T, index_t I>
+    void visitValue(IWriteVisitor& visitor, const T& obj)
+    {
+        auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
+        using RefType = typename ReferenceType<typename decltype(accessor)::GetType>::ConstType;
+        RefType ref = static_cast<RefType>(accessor.get(obj));
+        visitor(&ref, Reflect<T>::getName(ct::Indexer<I>{}));
+    }
+
     template <class T>
-    void visitHelper(IDynamicVisitor& visitor, T& obj, const Indexer<0>)
+    void visitHelper(IReadVisitor& visitor, T& obj, const Indexer<0>)
     {
         visitValue<T, 0>(visitor, obj);
     }
 
     template <class T, index_t I>
-    void visitHelper(IDynamicVisitor& visitor, T& obj, const Indexer<I>)
+    void visitHelper(IReadVisitor& visitor, T& obj, const Indexer<I>)
+    {
+        visitHelper(visitor, obj, Indexer<I - 1>{});
+        visitValue<T, I>(visitor, obj);
+    }
+
+    template <class T>
+    void visitHelper(IWriteVisitor& visitor, const T& obj, const Indexer<0>)
+    {
+        visitValue<T, 0>(visitor, obj);
+    }
+
+    template <class T, index_t I>
+    void visitHelper(IWriteVisitor& visitor, const T& obj, const Indexer<I>)
     {
         visitHelper(visitor, obj, Indexer<I - 1>{});
         visitValue<T, I>(visitor, obj);
@@ -123,7 +152,8 @@ namespace ct
         T* m_ptr;
         TTraits(T* ptr) : m_ptr(ptr) {}
 
-        virtual void visit(ct::IDynamicVisitor* visitor) override { visitHelper(*visitor, *m_ptr, Reflect<T>::end()); }
+        virtual void visit(ct::IReadVisitor* visitor) override { visitHelper(*visitor, *m_ptr, Reflect<T>::end()); }
+        virtual void visit(ct::IWriteVisitor* visitor) const override {}
 
         virtual bool isPrimitiveType() const override { return false; }
 
@@ -134,26 +164,26 @@ namespace ct
         virtual void* ptr() override { return m_ptr; }
     };
 
-    template <>
-    struct TTraits<std::string, void> : public IContainerTraits
+    template <class T>
+    struct TTraits<const T, ct::enable_if_reflected<T>> : public IStructTraits
     {
-        using base = IContainerTraits;
-        std::string* m_ptr;
-        size_t num_to_read = 0;
-        TTraits(std::string* ptr) : m_ptr(ptr) {}
-        virtual void visit(ct::IDynamicVisitor* visitor) override { (*visitor)(&(*m_ptr)[0], "", m_ptr->size()); }
-        virtual TypeInfo keyType() const override { return TypeInfo(typeid(void)); }
-        virtual TypeInfo valueType() const override { return TypeInfo(typeid(char)); }
+        using base = IStructTraits;
+        const T* m_ptr;
+        TTraits(const T* ptr) : m_ptr(ptr) {}
 
-        virtual TypeInfo type() const { return TypeInfo(typeid(std::string)); }
-        virtual bool isContinuous() const override { return false; }
-        virtual bool podValues() const override { return true; }
-        virtual bool podKeys() const override { return false; }
-        virtual size_t numKeys() const override { return 0; }
-        virtual size_t numValues() const override { return m_ptr->size(); }
+        virtual void visit(ct::IReadVisitor* visitor) override {}
+        virtual void visit(ct::IWriteVisitor* visitor) const override
+        {
+            visitHelper(*visitor, *m_ptr, Reflect<T>::end());
+        }
 
-        virtual void setKeys(const size_t) override {}
-        virtual void setValues(const size_t num) override { m_ptr->resize(num); }
+        virtual bool isPrimitiveType() const override { return false; }
+
+        virtual size_t size() const override { return sizeof(T); }
+        virtual TypeInfo type() const { return TypeInfo(typeid(T)); }
+        virtual bool triviallySerializable() const override { return std::is_pod<T>::value; }
+        virtual const void* ptr() const override { return m_ptr; }
+        virtual void* ptr() override { return nullptr; }
     };
 
     template <class T1, class T2>
@@ -174,150 +204,6 @@ namespace ct
         virtual const void* ptr() const { return m_ptr; }
         virtual void* ptr() { return m_ptr; }
     };
-
-    template <class K, class V>
-    struct KVP
-    {
-        K key;
-        V value;
-
-        KVP& operator=(const std::pair<const K, V>& other)
-        {
-            key = other.first;
-            value = other.second;
-            return *this;
-        }
-
-        KVP& operator=(const std::pair<K, V>& other)
-        {
-            key = other.first;
-            value = other.second;
-            return *this;
-        }
-    };
-
-    template <class T1, class T2>
-    struct TTraits<KVP<T1, T2>, void> : public IStructTraits
-    {
-        using base = IStructTraits;
-        KVP<T1, T2>* m_ptr;
-        TTraits(KVP<T1, T2>* ptr) : m_ptr(ptr) {}
-
-        virtual void visit(ct::IDynamicVisitor* visitor) override
-        {
-            (*visitor)(&m_ptr->key, "key");
-            (*visitor)(&m_ptr->value, "value");
-        }
-        virtual size_t size() const { return sizeof(KVP<T1, T2>); }
-        virtual bool triviallySerializable() const { return std::is_pod<T1>::value && std::is_pod<T2>::value; }
-        virtual bool isPrimitiveType() const { return false; }
-        virtual TypeInfo type() const { return TypeInfo(typeid(KVP<T1, T2>)); }
-        virtual const void* ptr() const { return m_ptr; }
-        virtual void* ptr() { return m_ptr; }
-    };
-
-    template <class K, class V>
-    struct TTraits<std::map<K, V>, void> : public IContainerTraits
-    {
-        using base = IContainerTraits;
-        std::map<K, V>* m_ptr;
-        size_t num_to_read = 0;
-        TTraits(std::map<K, V>* ptr) : m_ptr(ptr) {}
-
-        virtual void visit(IDynamicVisitor* visitor_) override
-        {
-            uint64_t size = m_ptr->size();
-            IDynamicVisitor& visitor = *visitor_;
-            const auto trait = visitor.traits();
-            if (!trait.reader)
-            {
-                for (auto itr = m_ptr->begin(); itr != m_ptr->end(); ++itr)
-                {
-                    KVP<K, V> pair;
-                    pair = *itr;
-                    visitor(&pair);
-                    // visitor(&itr->second, "value");
-                }
-            }
-            else
-            {
-                for (size_t i = 0; i < num_to_read; ++i)
-                {
-                    K key;
-                    V val;
-                    visitor(&key, "key");
-                    visitor(&val, "value");
-                    (*m_ptr)[std::move(key)] = std::move(val);
-                }
-            }
-        }
-
-        virtual TypeInfo keyType() const override { return TypeInfo(typeid(K)); }
-        virtual TypeInfo valueType() const override { return TypeInfo(typeid(V)); }
-        virtual TypeInfo type() const { return TypeInfo(typeid(std::map<K, V>)); }
-        virtual bool isContinuous() const override { return false; }
-        virtual bool podValues() const override { return std::is_pod<V>::value; }
-        virtual bool podKeys() const override { return std::is_pod<K>::value; }
-        virtual size_t numKeys() const override { return m_ptr->size(); }
-        virtual size_t numValues() const override { return m_ptr->size(); }
-
-        virtual void setKeys(const size_t num) override { num_to_read = num; }
-        virtual void setValues(const size_t) override {}
-    };
-
-    template <class V>
-    struct TTraits<std::map<std::string, V>, void> : public IContainerTraits
-    {
-        using base = IContainerTraits;
-        std::map<std::string, V>* m_ptr;
-        size_t num_to_read = 0;
-        TTraits(std::map<std::string, V>* ptr) : m_ptr(ptr) {}
-
-        virtual void visit(IDynamicVisitor* visitor_) override
-        {
-            uint64_t size = m_ptr->size();
-            IDynamicVisitor& visitor = *visitor_;
-            const auto trait = visitor.traits();
-            if (!trait.reader)
-            {
-                for (auto itr = m_ptr->begin(); itr != m_ptr->end(); ++itr)
-                {
-                    if (trait.supports_named_access)
-                    {
-                        visitor(&itr->second, itr->first);
-                    }
-                    else
-                    {
-                        std::string key = itr->first;
-                        visitor(&key);
-                        visitor(&itr->second);
-                    }
-                }
-            }
-            else
-            {
-                for (size_t i = 0; i < num_to_read; ++i)
-                {
-                    std::string key;
-                    visitor(&key);
-                    V val;
-                    visitor(&val);
-                    (*m_ptr)[std::move(key)] = std::move(val);
-                }
-            }
-        }
-
-        virtual TypeInfo keyType() const override { return TypeInfo(typeid(std::string)); }
-        virtual TypeInfo valueType() const override { return TypeInfo(typeid(V)); }
-        virtual TypeInfo type() const { return TypeInfo(typeid(std::map<std::string, V>)); }
-        virtual bool isContinuous() const override { return false; }
-        virtual bool podValues() const override { return std::is_pod<V>::value; }
-        virtual bool podKeys() const override { return std::is_pod<std::string>::value; }
-        virtual size_t numKeys() const override { return m_ptr->size(); }
-        virtual size_t numValues() const override { return m_ptr->size(); }
-        virtual void setKeys(const size_t num) override { num_to_read = num; }
-        virtual void setValues(const size_t) override {}
-    };
 }
 
 struct TestBinary
@@ -328,14 +214,14 @@ struct TestBinary
         {
             std::ofstream ofs("test.bin", std::ios::binary | std::ios::out);
             ct::BinaryWriter bar(ofs);
-            ct::IDynamicVisitor& visitor = bar;
+            ct::IWriteVisitor& visitor = bar;
             T tmp = data;
             visitor(&tmp, "value0");
         }
         {
             std::ifstream ifs("test.bin", std::ios::binary | std::ios::in);
             ct::BinaryReader bar(ifs);
-            ct::IDynamicVisitor& visitor = bar;
+            ct::IReadVisitor& visitor = bar;
 
             T tmp;
             visitor(&tmp, "value0");
@@ -353,7 +239,7 @@ struct TestBinary
         {
             std::ofstream ofs("test.bin", std::ios::binary | std::ios::out);
             ct::BinaryWriter bar(ofs);
-            ct::IDynamicVisitor& visitor = bar;
+            ct::IWriteVisitor& visitor = bar;
             std::shared_ptr<T> tmp = data;
             visitor(&tmp, "value0");
             visitor(&tmp, "value1");
@@ -361,7 +247,7 @@ struct TestBinary
         {
             std::ifstream ifs("test.bin", std::ios::binary | std::ios::in);
             ct::BinaryReader bar(ifs);
-            ct::IDynamicVisitor& visitor = bar;
+            ct::IReadVisitor& visitor = bar;
 
             std::shared_ptr<T> tmp;
             std::shared_ptr<T> tmp2;
@@ -390,7 +276,7 @@ struct TestJson
         std::stringstream ss;
         {
             ct::JSONWriter printer(ss);
-            ct::IDynamicVisitor& visitor = printer;
+            ct::IWriteVisitor& visitor = printer;
             visitor(&tmp);
         }
         ss.seekg(std::ios::beg);
@@ -419,7 +305,7 @@ struct TestJson
         std::stringstream ss;
         {
             ct::JSONWriter printer(ss);
-            ct::IDynamicVisitor& visitor = printer;
+            ct::IWriteVisitor& visitor = printer;
             visitor(&tmp);
         }
         ss.seekg(std::ios::beg);
@@ -435,6 +321,11 @@ struct TestJson
 
 int main()
 {
+    {
+        using Accessor_t = decltype(ct::Reflect<WeirdWeakOwnerShip>::getAccessor(ct::Indexer<1>{}));
+        using Get_t = Accessor_t::RetType;
+        static_assert(std::is_same<const std::vector<PointerOwner>&, Get_t>::value, "asdf");
+    }
     TestBinary tester;
     testTypes(tester);
 
@@ -446,7 +337,7 @@ int main()
 
     {
         ct::JSONWriter writer(std::cout);
-        ct::IDynamicVisitor& visitor = writer;
+        ct::IWriteVisitor& visitor = writer;
         visitor(&shared_ptr);
         visitor(&shared_ptr);
     }

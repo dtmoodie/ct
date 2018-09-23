@@ -125,7 +125,7 @@ void testTypes(Tester& tester)
         tester.test(data);
     }
     {
-        WeirdWeakOwnerShip data;
-        tester.test(data);
+        // WeirdWeakOwnerShip data;
+        // tester.test(data);
     }
 }

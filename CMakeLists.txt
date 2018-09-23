@@ -32,6 +32,16 @@ if(NOT TARGET ct)
             $<INSTALL_INTERFACE:include>
     )
 
+    set_target_properties(ct
+        PROPERTIES
+            CXX_STANDARD 11
+    )
+
+    set_target_properties(ct
+        PROPERTIES
+            CXX_STANDARD_REQUIRED ONx
+    )
+
     set(CT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
 
     export(TARGETS ct

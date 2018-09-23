@@ -23,10 +23,13 @@ namespace ct
     };
 
     struct IDynamicVisitor;
+    struct IReadVisitor;
+    struct IWriteVisitor;
     struct ITraits
     {
         virtual ~ITraits() = default;
-        virtual void visit(IDynamicVisitor* visitor) = 0;
+        virtual void visit(IReadVisitor* visitor) = 0;
+        virtual void visit(IWriteVisitor* visitor) const = 0;
         virtual TypeInfo type() const = 0;
     };
 
@@ -86,24 +89,8 @@ namespace ct
     struct IDynamicVisitor
     {
         virtual ~IDynamicVisitor();
-        template <class T>
-        IDynamicVisitor& operator()(T* val, const std::string& name = "", const size_t cnt = 1);
-        virtual IDynamicVisitor& operator()(char* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(int8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(uint8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(int16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(uint16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(int32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(uint32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(int64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(uint64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(float* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(double* val, const std::string& name = "", const size_t cnt = 1) = 0;
-        virtual IDynamicVisitor& operator()(void* binary, const std::string& name = "", const size_t num_bytes = 1) = 0;
-        virtual VisitorTraits traits() const = 0;
 
-        virtual IDynamicVisitor& operator()(IStructTraits* val, const std::string& name = "") = 0;
-        virtual IDynamicVisitor& operator()(IContainerTraits* val, const std::string& name = "") = 0;
+        virtual VisitorTraits traits() const = 0;
 
         template <class T>
         void pushCach(T&& val, const std::string& name, const uint64_t id = 0);
@@ -114,26 +101,95 @@ namespace ct
         template <class T>
         T popCache(const std::string& name, const uint64_t id = 0);
 
+      protected:
+        virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name, const uint64_t id = 0) = 0;
+    };
+
+    struct IReadVisitor : public virtual IDynamicVisitor
+    {
+        virtual IReadVisitor& operator()(char* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(int8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(uint8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(int16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(uint16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(int32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(uint32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(int64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(uint64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(float* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(double* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IReadVisitor& operator()(void* binary, const std::string& name = "", const size_t num_bytes = 1) = 0;
+
+        template <class T>
+        IReadVisitor& operator()(T* val, const std::string& name = "", const size_t cnt = 1);
+        virtual IReadVisitor& operator()(IStructTraits* val, const std::string& name = "") = 0;
+        virtual IReadVisitor& operator()(IContainerTraits* val, const std::string& name = "") = 0;
+
         template <class T>
         T* getPointer(const uint64_t id);
+
         template <class T>
         void setSerializedPointer(T* ptr, const uint64_t id);
 
       protected:
         virtual void* getPointer(const TypeInfo type, const uint64_t id) = 0;
         virtual void setSerializedPointer(const TypeInfo type, const uint64_t id, void* ptr) = 0;
-        virtual std::unique_ptr<IDataContainer>& accessCache(const std::string& name, const uint64_t id = 0) = 0;
+    };
+
+    struct IWriteVisitor : public virtual IDynamicVisitor
+    {
+        virtual IWriteVisitor& operator()(const char* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const int8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const uint8_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const int16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const uint16_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const int32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const uint32_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const int64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const uint64_t* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const float* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const double* val, const std::string& name = "", const size_t cnt = 1) = 0;
+        virtual IWriteVisitor& operator()(const void* binary, const std::string& name = "", const size_t bytes = 1) = 0;
+
+        template <class T>
+        IWriteVisitor& operator()(const T* val, const std::string& name = "", const size_t cnt = 1);
+
+        virtual IWriteVisitor& operator()(const IStructTraits* val, const std::string& name = "") = 0;
+        virtual IWriteVisitor& operator()(const IContainerTraits* val, const std::string& name = "") = 0;
+
+        template <class T>
+        const T* getPointer(const uint64_t id);
+
+        template <class T>
+        void setSerializedPointer(const T* ptr, const uint64_t id);
+
+      protected:
+        virtual const void* getPointer(const TypeInfo type, const uint64_t id) = 0;
+        virtual void setSerializedPointer(const TypeInfo type, const uint64_t id, const void* ptr) = 0;
     };
 
     template <class T>
-    T* IDynamicVisitor::getPointer(const uint64_t id)
+    T* IReadVisitor::getPointer(const uint64_t id)
     {
         void* ptr = getPointer(TypeInfo(typeid(T)), id);
         return static_cast<T*>(ptr);
     }
 
     template <class T>
-    void IDynamicVisitor::setSerializedPointer(T* ptr, const uint64_t id)
+    void IReadVisitor::setSerializedPointer(T* ptr, const uint64_t id)
+    {
+        setSerializedPointer(TypeInfo(typeid(T)), id, ptr);
+    }
+
+    template <class T>
+    const T* IWriteVisitor::getPointer(const uint64_t id)
+    {
+        const void* ptr = getPointer(TypeInfo(typeid(T)), id);
+        return static_cast<const T*>(ptr);
+    }
+
+    template <class T>
+    void IWriteVisitor::setSerializedPointer(const T* ptr, const uint64_t id)
     {
         setSerializedPointer(TypeInfo(typeid(T)), id, ptr);
     }
@@ -173,13 +229,19 @@ namespace ct
     }
 
     template <class T>
-    TTraits<T> makeTraits(T* val)
+    TTraits<T> makeTraits(T* const val)
     {
         return TTraits<T>(val);
     }
 
     template <class T>
-    IDynamicVisitor& IDynamicVisitor::operator()(T* val, const std::string& name, const size_t cnt)
+    TTraits<const T> makeTraits(const T* val)
+    {
+        return TTraits<const T>(val);
+    }
+
+    template <class T>
+    IReadVisitor& IReadVisitor::operator()(T* val, const std::string& name, const size_t cnt)
     {
         if (cnt == 1)
         {
@@ -190,6 +252,24 @@ namespace ct
         else
         {
             ArrayContainerTrait<T> traits(val, cnt);
+            using base = typename decltype(traits)::base;
+            (*this)(static_cast<base*>(&traits), name);
+        }
+        return *this;
+    }
+
+    template <class T>
+    IWriteVisitor& IWriteVisitor::operator()(const T* val, const std::string& name, const size_t cnt)
+    {
+        if (cnt == 1)
+        {
+            auto traits = makeTraits(val);
+            using base = typename decltype(traits)::base;
+            (*this)(static_cast<base*>(&traits), name);
+        }
+        else
+        {
+            ArrayContainerTrait<const T> traits(val, cnt);
             using base = typename decltype(traits)::base;
             (*this)(static_cast<base*>(&traits), name);
         }
