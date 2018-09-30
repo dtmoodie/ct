@@ -52,7 +52,6 @@ test_script:
 
     reflect\debug\test_ct_reflect_cerealize.exe
 
-    dynamic_visitor\debug\test_ct_dynamic_access.exe
 
 - sh: >-
    cd tests
@@ -75,4 +74,3 @@ test_script:
 
    reflect/test_ct_reflect_cerealize
 
-   dynamic_visitor/test_ct_dynamic_access
