@@ -43,7 +43,7 @@ if(NOT TARGET ct)
     ) # ignored
 
     install(EXPORT ct FILE ct-config.cmake
-        DESTINATION share/cmake/ct
+        DESTINATION share/ct
     )
     install(DIRECTORY include/ct DESTINATION include)
 
