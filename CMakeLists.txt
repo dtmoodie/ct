@@ -22,24 +22,14 @@ ENDMACRO()
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
-    file(GLOB_RECURSE src "src/*")
+
     include_directories(include)
-    add_library(ct SHARED ${src})
+    add_library(ct INTERFACE)
 
     target_include_directories(ct
         INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
-    )
-
-    set_target_properties(ct
-        PROPERTIES
-            CXX_STANDARD 11
-    )
-
-    set_target_properties(ct
-        PROPERTIES
-            CXX_STANDARD_REQUIRED ONx
     )
 
     set(CT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
@@ -69,7 +59,7 @@ if(NOT TARGET ct)
             add_definitions(-DHAVE_OPENCV)
             include_directories(${OpenCV_INCLUDE_DIRS})
         endif()
-        
+
         if(NOT cereal_INCLUDE_DIR)
             find_package(cereal QUIET)
             if(cereal_FOUND)
@@ -79,13 +69,13 @@ if(NOT TARGET ct)
             include_directories(${cereal_INCLUDE_DIR})
             set(cereal_FOUND ON)
         endif()
-        
+
         if(cereal_FOUND)
             message(STATUS "cereal: found, building cereal tests")
         else()
             message(STATUS "cereal: not found, not building cereal tests")
         endif()
-        
+
         if(OpenCV_FOUND)
             message(STATUS "OpenCV: found, building OpenCV tests")
         else()
@@ -99,14 +89,14 @@ if(NOT TARGET ct)
         else()
             message(STATUS "Boost unit test: not found, not buildng most tests")
         endif()
-        
+
         include(CTest)
         enable_testing()
         SUBDIRLIST(tests "${CMAKE_CURRENT_LIST_DIR}/tests")
         foreach(test ${tests})
             add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests/${test})
         endforeach()
-        
+
     endif(BUILD_TESTS)
 endif()
 
