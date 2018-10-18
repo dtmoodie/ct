@@ -106,7 +106,7 @@ namespace ct
         printValue<I, Options>(os, obj);
     }
 
-    template <class Options = PrintOptions, class T>
+    template <class Options, class T>
     auto printStruct(std::ostream& os, const T& obj) -> ct::enable_if_reflected<T>
     {
         os << Options::object_begin;
