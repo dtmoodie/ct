@@ -29,4 +29,3 @@ script:
  - reflect/test_ct_reflect_access
  - reflect/test_ct_reflect_compare
  - reflect/test_ct_reflect_cerealize
- - dynamic_visitor/test_ct_dynamic_access
