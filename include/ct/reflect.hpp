@@ -1,66 +1,92 @@
 #pragma once
 #include "reflect/accessor.hpp"
-#include <cstdint>
+
 #include <ct/Hash.hpp>
 #include <ct/Indexer.hpp>
+
+#include <cstdint>
 #include <utility>
 namespace ct
 {
-template <class T>
-struct Reflect
-{
-    static const bool SPECIALIZED = false;
-    static constexpr const char* getName() { return ""; }
-};
+    template <class T>
+    struct Reflect
+    {
+        static const bool SPECIALIZED = false;
+        static constexpr const char* getName() { return ""; }
+    };
 
-template <class T, class U = void>
-using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
+    template <class T, class U = void>
+    using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
 
-template <class T, class U = void>
-using enable_if_not_reflected = typename std::enable_if<!Reflect<T>::SPECIALIZED, U>::type;
+    template <class T, class U = void>
+    using enable_if_not_reflected = typename std::enable_if<!Reflect<T>::SPECIALIZED, U>::type;
 
-template <class T, index_t I>
-using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
+    template <class T, index_t I>
+    using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
 
-template <class T, index_t I>
-struct GetterType
-{
-    using accessor_type = AccessorType<T, I>;
-    using type = typename accessor_type::GetType;
-};
+    template <class T, index_t I>
+    struct GetterType
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::GetType;
+    };
 
-template <class T, index_t I>
-struct SetterType
-{
-    using accessor_type = AccessorType<T, I>;
-    using type = typename accessor_type::SetType;
-};
+    template <class T, index_t I>
+    struct SetterType
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::SetType;
+    };
 
-template <class T, index_t I>
-struct GetterTraits
-{
-    using accessor_type = AccessorType<T, I>;
-    using type = typename accessor_type::GetterTraits_t;
-};
-template <index_t I, class T>
-constexpr const char* getName()
-{
-    return Reflect<T>::getName(ct::Indexer<I>{});
-}
+    template <class T, index_t I>
+    struct GetterTraits
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::GetterTraits_t;
+    };
 
-template <index_t I, class T>
-typename GetterType<T, I>::type get(const T& obj)
-{
-    auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
-    return accessor.get(obj);
-}
+    template <class T, index_t I>
+    struct SetterTraits
+    {
+        using accessor_type = AccessorType<T, I>;
+        using type = typename accessor_type::SetterTraits_t;
+    };
 
-template <index_t I, class T>
-auto set(T& obj) -> decltype(Reflect<T>::getAccessor(Indexer<I>{}).set(obj))
-{
-    auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
-    return accessor.set(obj);
-}
+    template <index_t I, class T>
+    constexpr const char* getName()
+    {
+        return Reflect<T>::getName(ct::Indexer<I>{});
+    }
+
+    template <index_t I, class T>
+    typename GetterType<T, I>::type get(const T& obj)
+    {
+        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
+        return accessor.get(obj);
+    }
+
+    template <index_t I, class T>
+    auto set(T& obj) -> decltype(Reflect<T>::getAccessor(Indexer<I>{}).set(obj))
+    {
+        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
+        return accessor.set(obj);
+    }
+
+    template <class T, index_t I, class U = void>
+    using enable_if_member_getter =
+        typename std::enable_if<std::is_same<typename GetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+
+    template <class T, index_t I, class U = void>
+    using enable_if_member_setter =
+        typename std::enable_if<std::is_same<typename SetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+
+    template <class T, index_t I, class U = void>
+    using disable_if_member_getter =
+        typename std::enable_if<!std::is_same<typename GetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+
+    template <class T, index_t I, class U = void>
+    using disable_if_member_setter =
+        typename std::enable_if<!std::is_same<typename SetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
 }
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
 #if _MSC_VER
