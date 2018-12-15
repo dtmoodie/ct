@@ -20,7 +20,7 @@ struct Setter<void(T::*)(D)>
 
     AccessToken<void(T::*)(D)> set(T& obj) const
     {
-        return {obj, m_setter};
+        return AccessToken<void(T::*)(D)>(obj, m_setter);
     }
 
 private:
@@ -85,7 +85,7 @@ struct Setter<void(*)(T&, D)>
 
     AccessToken<void(*)(T&, D)> set(T& obj) const
     {
-        return {obj, m_setter};
+        return AccessToken<void(*)(T&, D)>(obj, m_setter);
     }
 
 private:
