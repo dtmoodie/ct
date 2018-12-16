@@ -4,7 +4,12 @@
 // Check if we have constexpr support
 
 #ifdef __CUDA_ARCH__
-
+#include <cuda_runtime_api.h>
+    #if CUDART_VERSION == 6500
+        #define CTCONSTEXPR const
+    #else
+        #define CTCONSTEXPR constexpr
+    #endif
 
 #else
 
