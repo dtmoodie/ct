@@ -1,7 +1,6 @@
 #pragma once
 namespace ct
 {
-
     template <class AR, class T>
     void loadStruct(AR& ar, T& obj);
 
@@ -92,10 +91,44 @@ namespace ct
 
 namespace cereal
 {
+
+    template <class AR, class T>
+    auto saveDispatcher(AR& ar, const T& data) ->
+        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == false ||
+                                 ct::Reflect<T>::N > 0)>::type
+    {
+        ct::saveStruct(ar, data);
+    }
+
+    template <class AR, class T>
+    auto saveDispatcher(AR& ar, const T& data) ->
+        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == true &&
+                                 ct::Reflect<T>::N == 0)>::type
+    {
+        auto accessor = ct::Reflect<T>::getAccessor(ct::Indexer<0>{});
+        ar(accessor.get(data));
+    }
+
     template <class AR, class T>
     auto save(AR& ar, const T& data) -> ct::enable_if_reflected<T>
     {
         ct::saveStruct(ar, data);
+    }
+
+    template <class AR, class T>
+    auto loadDispatcher(AR& ar, T& data) ->
+        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == false ||
+                                 ct::Reflect<T>::N > 0)>::type
+    {
+        ct::loadStruct(ar, data);
+    }
+
+    template <class AR, class T>
+    auto loadDispatcher(AR& ar, T& data) ->
+        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == true &&
+                                 ct::Reflect<T>::N == 0)>::type
+    {
+        ct::loadValue<AR, T, 0>(ar, data);
     }
 
     template <class AR, class T>

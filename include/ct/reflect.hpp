@@ -78,7 +78,7 @@ namespace ct
 
     template <class T, index_t I, class U = void>
     using enable_if_member_setter =
-        typename std::enable_if<std::is_same<typename SetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+        typename std::enable_if<std::is_same<typename SetterTraits<T, I>::type, DefaultSetterTraits>::value, U>::type;
 
     template <class T, index_t I, class U = void>
     using disable_if_member_getter =
@@ -86,8 +86,9 @@ namespace ct
 
     template <class T, index_t I, class U = void>
     using disable_if_member_setter =
-        typename std::enable_if<!std::is_same<typename SetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
-}
+        typename std::enable_if<!std::is_same<typename SetterTraits<T, I>::type, DefaultSetterTraits>::value, U>::type;
+} // namespace ct
+
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
 #if _MSC_VER
 #define CT_PP_CAT_I(a, b) a##b
