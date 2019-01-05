@@ -23,6 +23,20 @@ namespace ct
     };
 
     template <class T, class D>
+    struct Getter<D (T::*)(), typename std::enable_if<!std::is_member_object_pointer<D (T::*)()>::value>::type>
+    {
+        using GetType = typename std::decay<D>::type;
+        using RetType = D;
+        using GetterType = MemberAccessorGetterType;
+
+        constexpr Getter(D (T::*getter)()) : m_getter(getter) {}
+
+        D get(T& obj) const { return (obj.*m_getter)(); }
+
+        D (T::*m_getter)();
+    };
+
+    template <class T, class D>
     struct Getter<D (*)(const T&), void>
     {
         using GetType = typename std::decay<D>::type;

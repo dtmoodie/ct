@@ -136,7 +136,11 @@ namespace cpgf
                     os << "& ";
                 }
             }
-            os << ")\n";
+            os << ")";
+            if(method->getItemType().isConstFunction())
+                os << " const\n";
+            else
+                os << "\n";
         }
         const auto num_fields = cls->getFieldCount();
         os << "Fields: " << num_fields << "\n";
