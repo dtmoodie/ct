@@ -10,34 +10,11 @@ namespace ct
         using GetterTraits_t = GetterTraits;
         using SetterTraits_t = SetterTraits;
 
+        using GetterType_t = typename Getter<T0>::GetterType;
+        using SetterType_t = typename Setter<T1>::SetterType;
+
         constexpr Accessor(T0 getter, T1 setter):
             Getter<T0>(getter), Setter<T1>(setter){}
-    };
-
-    template<class T0, class T, class T1, class GetterTraits, class SetterTraits>
-    struct Accessor<T0, void(T::*)(T1), GetterTraits,SetterTraits> : public Getter<T0>
-    {
-        using GetterTraits_t = GetterTraits;
-        using SetterTraits_t = SetterTraits;
-        using SetType = T1;
-
-        constexpr Accessor(T0 getter, void(T::*setter)(T1)):
-            Getter<T0>(getter), m_setter(setter){}
-
-
-
-        void set(T& obj, T1&& data) const
-        {
-            (obj.*m_setter)(std::forward(data));
-        }
-
-        AccessToken<void(T::*)(T1)> set(T& obj) const
-        {
-            return {obj, m_setter, Getter<T0>::get(obj)};
-        }
-
-    private:
-        void(T::*m_setter)(T1);
     };
 
     template<class T0, class GetterTraits>
@@ -46,6 +23,8 @@ namespace ct
         using GetterTraits_t = GetterTraits;
         using SetterTraits_t = void;
         using SetType = void;
+        using GetterType_t = typename Getter<T0>::GetterType;
+        using SetterType_t = void;
 
         constexpr Accessor(T0 getter):
             Getter<T0>(getter){}
