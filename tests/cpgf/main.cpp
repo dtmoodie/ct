@@ -25,7 +25,8 @@ namespace ct
 
         MEMBER_FUNCTION(data, static_cast<const T*(DataType::*)()const>(&DataType::data))
         MEMBER_FUNCTION(data, static_cast<T*(DataType::*)()>(&DataType::data))
-
+        MEMBER_FUNCTION(rows)
+        MEMBER_FUNCTION(cols)
     REFLECT_END;
 
 }

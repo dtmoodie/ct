@@ -405,7 +405,7 @@ namespace ct
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 
-#define MEMBER_FUNCTION_(NAME, FPTR, N) \
+#define MEMBER_FUNCTION_IMPL(NAME, FPTR, N) \
     static auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                             \
         ->decltype(ct::makeAccessor<CalculatedValue>(FPTR))                                                            \
     {                                                                                                                  \
@@ -413,8 +413,11 @@ namespace ct
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
-#define MEMBER_FUNCTION(NAME, FPTR) MEMBER_FUNCTION_(NAME, FPTR, __COUNTER__)
+#define MEMBER_FUNCTION_2(NAME, FPTR) MEMBER_FUNCTION_IMPL(NAME, FPTR, __COUNTER__)
 
+#define MEMBER_FUNCTION_1(NAME) MEMBER_FUNCTION_IMPL(NAME, &DataType::NAME, __COUNTER__)
+
+#define MEMBER_FUNCTION(...) CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__)
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \

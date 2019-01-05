@@ -108,7 +108,20 @@ namespace cpgf
             {
                 result_name = result.getBaseType().getStdTypeInfo().name();
             }
+            if(result.isConst())
+            {
+                os << "const ";
+            }
+
             os << result_name;
+            if(result.isReference())
+            {
+                os << "&";
+            }
+            if(result.isPointer())
+            {
+                os << "*";
+            }
 
             const auto& name = method->getName();
             os << " " << name << "(";
@@ -138,9 +151,13 @@ namespace cpgf
             }
             os << ")";
             if(method->getItemType().isConstFunction())
+            {
                 os << " const\n";
+            }
             else
+            {
                 os << "\n";
+            }
         }
         const auto num_fields = cls->getFieldCount();
         os << "Fields: " << num_fields << "\n";

@@ -14,7 +14,7 @@ if(cpgf_FOUND)
     endif()
 
 
-    include_directories(${cpgf_INCLUDE})
+    include_directories(${cpgf_INCLUDE_DIRS})
     add_executable(test_ct_cpgf main.cpp)
     target_link_libraries(test_ct_cpgf ${cpgf_LIBRARY})
 endif()
