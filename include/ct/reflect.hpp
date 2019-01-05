@@ -413,7 +413,13 @@ namespace ct
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
+
+
 #define MEMBER_FUNCTION_2(NAME, FPTR) MEMBER_FUNCTION_IMPL(NAME, FPTR, __COUNTER__)
+
+#define MEMBER_FUNCTION_3(NAME, FPTR1, FPTR2) \
+    MEMBER_FUNCTION_IMPL(NAME, FPTR1, __COUNTER__) \
+    MEMBER_FUNCTION_IMPL(NAME, FPTR2, __COUNTER__)
 
 #define MEMBER_FUNCTION_1(NAME) MEMBER_FUNCTION_IMPL(NAME, &DataType::NAME, __COUNTER__)
 
