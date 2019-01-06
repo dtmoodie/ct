@@ -387,12 +387,8 @@ namespace ct
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
-#ifdef _MSC_VER
 #define REFLECT_INTERNAL_MEMBER(...)                                                                                   \
     CT_PP_CAT(CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
-#else
-#define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
-#endif
 
 #define ACCESSOR(NAME, GETTER, SETTER) ACCESSOR_(NAME, GETTER, SETTER, __COUNTER__)
 
@@ -423,7 +419,7 @@ namespace ct
 
 #define MEMBER_FUNCTION_1(NAME) MEMBER_FUNCTION_IMPL(NAME, &DataType::NAME, __COUNTER__)
 
-#define MEMBER_FUNCTION(...) CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__)
+#define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \
