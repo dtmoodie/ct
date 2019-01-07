@@ -1,5 +1,7 @@
 #pragma once
+#include "accessor_traits.hpp"
 #include "access_token.hpp"
+
 #include <utility>
 
 namespace ct
@@ -11,6 +13,8 @@ template<class T, class D>
 struct Setter<void(T::*)(D)>
 {
     using SetType = D;
+    using SetterType = MemberAccessorSetterType;
+
     constexpr Setter(void(T::*setter)(D)):m_setter(setter){}
 
     void set(T& obj, D&& data) const
@@ -23,7 +27,6 @@ struct Setter<void(T::*)(D)>
         return AccessToken<void(T::*)(D)>(obj, m_setter);
     }
 
-private:
     void(T::*m_setter)(D);
 };
 
@@ -31,6 +34,8 @@ template<class T, class D>
 struct Setter<D&(T::*)()>
 {
     using SetType = D&;
+    using SetterType = MemberAccessorSetterType;
+
     constexpr Setter(D&(T::*setter)()): m_setter(setter){}
 
     void set(T& obj, D&& data) const
@@ -42,7 +47,7 @@ struct Setter<D&(T::*)()>
     {
         return (obj.*m_setter)();
     }
-private:
+
     D&(T::*m_setter)();
 };
 
@@ -50,6 +55,7 @@ template<class T, class D>
 struct Setter<D(*)(T&)>
 {
     using SetType = D;
+    using SetterType = ExternalAccessorSetterType;
 
     constexpr Setter(D(*setter)(T&)): m_setter(setter){}
 
@@ -67,7 +73,7 @@ struct Setter<D(*)(T&)>
     {
         return m_setter(obj);
     }
-private:
+
     D(*m_setter)(T&);
 };
 
@@ -75,6 +81,7 @@ template<class T, class D>
 struct Setter<void(*)(T&, D)>
 {
     using SetType = D;
+    using SetterType = ExternalAccessorSetterType;
 
     constexpr Setter(void(*setter)(T&, D)):m_setter(setter){}
 
@@ -88,7 +95,19 @@ struct Setter<void(*)(T&, D)>
         return AccessToken<void(*)(T&, D)>(obj, m_setter);
     }
 
-private:
     void(*m_setter)(T&, D);
+};
+
+template<class T, class D>
+struct Setter<D T::*>
+{
+    using SetType = D;
+    using SetterType = FieldSetterType;
+
+    constexpr Setter(D T::* setter): m_setter(setter){}
+    D& set(T& obj) const {return obj.*m_setter;}
+    void set(T& obj, D&& data) const{obj.m_setter = std::move(data);}
+
+    D T::* m_setter;
 };
 }

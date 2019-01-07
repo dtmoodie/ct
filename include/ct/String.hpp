@@ -1,6 +1,10 @@
 #pragma once
 #include "StringImpl.hpp"
 #include <cstddef>
+#include <type_traits>
+#include <array>
+
+
 namespace ct
 {
     template<size_t N>
@@ -77,8 +81,8 @@ namespace ct
     constexpr int stoiRange(const char* start, const char* end){
         return stoiImplRange(start, end);
     }
+
     constexpr int stoiRange(const char* start, int len) {
         return stoiImplRange(start, start + len);
     }
-
 } // namespace ct

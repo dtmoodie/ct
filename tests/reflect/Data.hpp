@@ -1,6 +1,6 @@
 #pragma once
 #include <ct/reflect.hpp>
-
+#include <cmath>
 #include <vector>
 
 struct ReflectedStruct
@@ -26,6 +26,11 @@ struct Composite
 struct TestA
 {
     float x, y, z;
+
+    float norm() const
+    {
+        return std::sqrt(x*x + y*y + z*z);
+    }
 };
 
 struct TestB

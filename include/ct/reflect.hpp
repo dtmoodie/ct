@@ -1,17 +1,24 @@
 #pragma once
 #include "reflect/accessor.hpp"
 
-#include <ct/Hash.hpp>
-#include <ct/Indexer.hpp>
+#include "Hash.hpp"
+#include "Indexer.hpp"
+#include "VariadicTypedef.hpp"
 
 #include <cstdint>
 #include <utility>
+
+#define DECL_PRIM(TYPE) \
+    template<> struct ReflectBase<TYPE>{static constexpr const bool PRIMITIVE = true;}; \
+    template<> struct Reflect<TYPE>: public ReflectBase<TYPE>{static constexpr const char* getName(){return "TYPE";}}
+
 namespace ct
 {
     template <class T>
     struct Reflect
     {
         static const bool SPECIALIZED = false;
+        using Base = ct::VariadicTypedef<void>;
         static constexpr const char* getName() { return ""; }
     };
 
@@ -166,7 +173,7 @@ namespace ct
                               ...)                                                                                     \
     size
 
-#if _MSC_VER
+#ifdef _MSC_VER
 #define CT_PP_VARIADIC_SIZE(...)                                                                                       \
     CT_PP_CAT(CT_PP_VARIADIC_SIZE_I(__VA_ARGS__,                                                                       \
                                     64,                                                                                \
@@ -309,6 +316,7 @@ namespace ct
     struct Reflect<TYPE>                                                                                               \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
+        using Base = VariadicTypedef<void>;                                                                                             \
         static constexpr const char* getName() { return #TYPE; }                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t I0 = 0;                                                                         \
@@ -319,6 +327,7 @@ namespace ct
     struct Reflect<TYPE> : private Reflect<BASE>                                                                       \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
+        using Base = ct::VariadicTypedef<BASE>;                                                                        \
         static constexpr const char* getName() { return #TYPE; }                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const ct::index_t I0 = Reflect<BASE>::REFLECTION_COUNT;                                       \
@@ -343,6 +352,7 @@ namespace ct
     struct Reflect<TYPE<Args...>>                                                                                      \
     {                                                                                                                  \
         using DataType = TYPE<Args...>;                                                                                \
+        using Base = ct::VariadicTypedef<void>;                                                                        \
         static constexpr const char* getName() { return #TYPE; }                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t I0 = 0;                                                                         \
@@ -358,12 +368,10 @@ namespace ct
 #define PUBLIC_ACCESS(NAME) PUBLIC_ACCESS_(NAME, __COUNTER__)
 
 #define PUBLIC_ACCESS_(NAME, N)                                                                                        \
-    static ct::Accessor<const decltype(DataType::NAME)& (*)(const DataType&),                                          \
-                        decltype(DataType::NAME)& (*)(DataType&)>                                                      \
+    static ct::Accessor<decltype(&DataType::NAME), decltype(&DataType::NAME)>                                          \
     getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                                                   \
     {                                                                                                                  \
-        return {[](const DataType& obj) -> const decltype(DataType::NAME)& { return obj.NAME; },                       \
-                [](DataType& obj) -> decltype(DataType::NAME)& { return obj.NAME; }};                                  \
+        return {&DataType::NAME, &DataType::NAME};                                                                      \
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
@@ -379,12 +387,8 @@ namespace ct
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
-#ifdef _MSC_VER
 #define REFLECT_INTERNAL_MEMBER(...)                                                                                   \
     CT_PP_CAT(CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
-#else
-#define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
-#endif
 
 #define ACCESSOR(NAME, GETTER, SETTER) ACCESSOR_(NAME, GETTER, SETTER, __COUNTER__)
 
@@ -396,12 +400,26 @@ namespace ct
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
 
-#define MEMBER_FUNCTION(NAME, FPTR)                                                                                    \
-    static auto getAccessor(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>)                             \
+
+#define MEMBER_FUNCTION_IMPL(NAME, FPTR, N) \
+    static auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                             \
         ->decltype(ct::makeAccessor<CalculatedValue>(FPTR))                                                            \
     {                                                                                                                  \
         return ct::makeAccessor<CalculatedValue>(FPTR);                                                                \
-    }
+    }                                                                                                                  \
+    static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
+
+
+
+#define MEMBER_FUNCTION_2(NAME, FPTR) MEMBER_FUNCTION_IMPL(NAME, FPTR, __COUNTER__)
+
+#define MEMBER_FUNCTION_3(NAME, FPTR1, FPTR2) \
+    MEMBER_FUNCTION_IMPL(NAME, FPTR1, __COUNTER__) \
+    MEMBER_FUNCTION_IMPL(NAME, FPTR2, __COUNTER__)
+
+#define MEMBER_FUNCTION_1(NAME) MEMBER_FUNCTION_IMPL(NAME, &DataType::NAME, __COUNTER__)
+
+#define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \

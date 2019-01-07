@@ -16,4 +16,10 @@ template<uint32_t I> struct ctv
 #define STATIC_EQUAL(LHS, RHS) static_assert(ctv<(LHS)>::value == ctv<(RHS)>::value, #LHS " != " #RHS)
 #define STATIC_NE(LHS, RHS) static_assert(ctv<(LHS)>::value != ctv<(RHS)>::value, #LHS " == " #RHS)
 
+template<class T, T LHS, T RHS>
+struct StaticEquality
+{
+    static_assert(LHS == RHS, "asdf");
+};
+
 #endif
