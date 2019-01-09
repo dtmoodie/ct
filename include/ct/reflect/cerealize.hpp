@@ -27,7 +27,7 @@ namespace ct
         auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
         ar(cereal::make_nvp(
             Reflect<T>::getName(ct::Indexer<I>{}),
-            static_cast<typename ReferenceType<typename decltype(accessor)::SetType>::Type>(accessor.set(obj))));
+            static_cast<typename ReferenceType<typename decltype(accessor)::Set_t>::Type>(accessor.set(obj))));
     }
 
     template <class AR, class T, index_t I>

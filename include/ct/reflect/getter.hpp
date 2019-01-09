@@ -11,9 +11,9 @@ namespace ct
     template <class T, class D>
     struct Getter<D (T::*)() const, typename std::enable_if<!std::is_member_object_pointer<D (T::*)()>::value>::type>
     {
-        using GetType = typename std::decay<D>::type;
-        using RetType = D;
-        using GetterType = MemberAccessorGetterType;
+        using Get_t = typename std::decay<D>::type;
+        using Return_t = D;
+        using Getter_t = MemberAccessorGetterType;
 
         constexpr Getter(D (T::*getter)() const) : m_getter(getter) {}
 
@@ -25,9 +25,9 @@ namespace ct
     template <class T, class D>
     struct Getter<D (T::*)(), typename std::enable_if<!std::is_member_object_pointer<D (T::*)()>::value>::type>
     {
-        using GetType = typename std::decay<D>::type;
-        using RetType = D;
-        using GetterType = MemberAccessorGetterType;
+        using Get_t = typename std::decay<D>::type;
+        using Return_t = D;
+        using Getter_t = MemberAccessorGetterType;
 
         constexpr Getter(D (T::*getter)()) : m_getter(getter) {}
 
@@ -39,9 +39,9 @@ namespace ct
     template <class T, class D>
     struct Getter<D (*)(const T&), void>
     {
-        using GetType = typename std::decay<D>::type;
-        using RetType = D;
-        using GetterType = ExternalAccessorGetterType;
+        using Get_t = typename std::decay<D>::type;
+        using Return_t = D;
+        using Getter_t = ExternalAccessorGetterType;
 
         constexpr Getter(D (*getter)(const T&)) : m_getter(getter) {}
         D get(const T& obj) const { return m_getter(obj); }
@@ -49,17 +49,16 @@ namespace ct
         D (*m_getter)(const T&);
     };
 
-    template<class T, class D>
+    template <class T, class D>
     struct Getter<D T::*, typename std::enable_if<std::is_member_object_pointer<D T::*>::value>::type>
     {
-        using GetType = typename std::decay<D>::type;
-        using RetType = const D&;
-        using GetterType = FieldGetterType;
+        using Get_t = typename std::decay<D>::type;
+        using Return_t = const D&;
+        using Getter_t = FieldGetterType;
 
+        constexpr Getter(D T::*getter) : m_getter(getter) {}
+        const D& get(const T& obj) const { return obj.*m_getter; }
 
-        constexpr Getter(D T::* getter): m_getter(getter){}
-        const D& get(const T& obj) const {return obj.*m_getter;}
-
-        D T::* m_getter;
+        D T::*m_getter;
     };
 }
