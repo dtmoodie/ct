@@ -11,7 +11,7 @@ struct Printer
     {
         std::cout << "\n====================\n";
         std::cout << ct::Reflect<T>::getName() << std::endl;
-        ct::printStruct(std::cout, data);
+        ct::printStruct<ct::PrintAllOptions>(std::cout, data);
         std::cout << std::endl;
     }
 };

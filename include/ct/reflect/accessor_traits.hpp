@@ -13,6 +13,5 @@ namespace ct
     struct MemberAccessorSetterType{};
     struct ExternalAccessorSetterType{};
 
-
     struct CalculatedValue{};
 }

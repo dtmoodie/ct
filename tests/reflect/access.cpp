@@ -1,21 +1,20 @@
-#include "common.hpp"
 #include "../common.hpp"
-#include <ct/Hash.hpp>
+#include "common.hpp"
 #include "ct/reflect/print.hpp"
+#include <ct/Hash.hpp>
 
 ct::enable_if_reflected<TestA, void> testEnabledFunction()
 {
-
 }
 
-template<class T>
+template <class T>
 void mulImpl(T& obj, const ct::Indexer<0> idx)
 {
     auto accessor = ct::Reflect<T>::getAccessor(idx);
     accessor.set(obj) *= 2;
 }
 
-template<class T, ct::index_t I>
+template <class T, ct::index_t I>
 void mulImpl(T& obj, const ct::Indexer<I> idx)
 {
     auto accessor = ct::Reflect<T>::getAccessor(idx);
@@ -23,7 +22,7 @@ void mulImpl(T& obj, const ct::Indexer<I> idx)
     mulImpl(obj, --idx);
 }
 
-template<class T>
+template <class T>
 void mul(T& obj)
 {
     mulImpl(obj, ct::Reflect<T>::end());
@@ -33,54 +32,52 @@ int main()
 {
     testEnabledFunction();
     {
-        //TestA a{ 0,1,2 };
+        // TestA a{ 0,1,2 };
         ct::Reflect<TestA>::getAccessor(ct::Indexer<0>{});
     }
     {
         using type = ct::AccessorType<TestA, 0>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
-
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
     }
     {
         using type = ct::AccessorType<TestA, 1>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
-
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
     }
     {
         using type = ct::AccessorType<TestA, 2>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
     }
 
     {
         using type = ct::AccessorType<Inherited, 0>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 0>::type, float>::value), true);
     }
 
     {
         using type = ct::AccessorType<Inherited, 1>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 1>::type, float>::value), true);
     }
 
     {
         using type = ct::AccessorType<Inherited, 2>;
-        STATIC_EQUAL((std::is_same<type::GetType, float>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 2>::type, float>::value), true);
     }
     {
         using type = ct::AccessorType<Inherited, 3>;
-        STATIC_EQUAL((std::is_same<type::GetType, int>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, int>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 3>::type, int>::value), true);
     }
     {
         using type = ct::AccessorType<Inherited, 4>;
-        STATIC_EQUAL((std::is_same<type::GetType, double>::value), true);
+        STATIC_EQUAL((std::is_same<type::Get_t, double>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 4>::type, double>::value), true);
 
         // TODO move to hash unit test
         const auto accessor = ct::Reflect<Inherited>::getAccessor(ct::Indexer<0>{});
-        STATIC_NE(ctv < ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})) > ::value, 0);
+        STATIC_NE(ctv<ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{}))>::value, 0);
         STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::crc32("x"));
     }
     PrivateGetAndSet pgs;
@@ -92,5 +89,4 @@ int main()
     pms.mutateX() = 2;
     mul(pms);
     ct::printStruct(std::cout, pms);
-    
 }

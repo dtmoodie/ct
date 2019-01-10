@@ -66,7 +66,8 @@ namespace ct
     };
 
     template <int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj) -> typename std::enable_if<ShouldWrite<T, Options, I>::value>::type
+    auto printValue(std::ostream& os, const T& obj) ->
+        typename std::enable_if<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == false>::type
     {
         // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
         // stream writable and your print options do not allow that via the error_on_nonprintable flag
@@ -81,6 +82,36 @@ namespace ct
         os << accessor.get(obj);
     }
 
+    template <int I, class Options, class T>
+    auto printMemberFunctionResult(std::ostream&, const T&) ->
+        typename std::enable_if<!std::is_same<typename AccessorType<T, I>::Args_t, VariadicTypedef<>>::value ||
+                                AccessorType<T, I>::IS_CONST == false>::type
+    {
+    }
+
+    template <int I, class Options, class T>
+    auto printMemberFunctionResult(std::ostream& os, const T& obj) ->
+        typename std::enable_if<std::is_same<typename AccessorType<T, I>::Args_t, VariadicTypedef<>>::value &&
+                                AccessorType<T, I>::IS_CONST == true>::type
+    {
+        auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
+        if (Options::print_name)
+        {
+            os << Reflect<T>::getName(ct::Indexer<I>{}) << Options::name_separator;
+        }
+
+        os << accessor.invoke(obj);
+    }
+
+    template <int I, class Options = PrintOptions, class T>
+    auto printValue(std::ostream& os, const T& obj) ->
+        typename std::enable_if<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == true>::type
+    {
+        // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
+        // stream writable and your print options do not allow that via the error_on_nonprintable flag
+        printMemberFunctionResult<I, Options, T>(os, obj);
+    }
+
     template <int I, class Options = PrintOptions, class T>
     auto printValue(std::ostream& os, const T& data) ->
         typename std::enable_if<!ShouldWrite<T, Options, I>::value>::type
@@ -88,7 +119,7 @@ namespace ct
         if (ShouldWrite<T, Options, I>::is_writable == false && Options::error_on_nonprintable == false)
         {
             auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
-            Options::onUnprintable(os, Reflect<T>::getName(ct::Indexer<I>{}), accessor.get(data));
+            Options::onUnprintable(os, Reflect<T>::getName(ct::Indexer<I>{}), accessor.invoke(data));
         }
     }
 
