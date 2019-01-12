@@ -1,6 +1,7 @@
 #include "../common.hpp"
 #include "common.hpp"
 #include "ct/reflect/print.hpp"
+#include <chrono>
 #include <ct/Hash.hpp>
 
 ct::enable_if_reflected<TestA, void> testEnabledFunction()
@@ -89,4 +90,24 @@ int main()
     pms.mutateX() = 2;
     mul(pms);
     ct::printStruct(std::cout, pms);
+
+    {
+        const auto accessor = ct::Reflect<TestA>::getAccessor(ct::Indexer<3>{});
+        const auto start1 = std::chrono::high_resolution_clock::now();
+        TestA instance;
+        for (size_t i = 0; i < 1e9; ++i)
+        {
+            accessor.invoke(instance);
+        }
+        const auto start2 = std::chrono::high_resolution_clock::now();
+        for (size_t i = 0; i < 1e9; ++i)
+        {
+            instance.norm();
+        }
+        const auto end = std::chrono::high_resolution_clock::now();
+        std::cout << std::endl;
+        std::cout << "With indirection: " << (start2 - start1).count() << std::endl;
+        std::cout << "Direct:           " << (end - start2).count() << std::endl;
+        std::cout << "% difference: " << float((start2 - start1).count()) / float((end - start2).count()) << std::endl;
+    }
 }
