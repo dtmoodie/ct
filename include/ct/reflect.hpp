@@ -75,6 +75,13 @@ namespace ct
             std::is_same<typename accessor_type::GetterTraits_t, CalculatedValue>::value;
     };
 
+    template<class T, index_t I>
+    struct IsMemberObject
+    {
+        using accesosr_type = AccessorType<T, I>;
+        static constexpr const bool value = std::is_same<typename accesosr_type::Getter_t, FieldGetterType>::value;
+    };
+
     template <index_t I, class T>
     constexpr const char* getName()
     {
@@ -110,6 +117,39 @@ namespace ct
     template <class T, index_t I, class U = void>
     using disable_if_member_setter =
         typename std::enable_if<!std::is_same<typename SetterTraits<T, I>::type, DefaultSetterTraits>::value, U>::type;
+
+    template<class T, index_t I, class ENABLE = typename std::enable_if<IsMemberObject<T, I>::value>::type>
+    struct GlobMemberObjectsHelper
+    {
+        using accessor = AccessorType<T, I>;
+        using type = typename accessor::Get_t;
+        using types = typename Append<typename GlobMemberObjectsHelper<T, I-1, void>::types, type>::type;
+    };
+
+    template<class T, index_t I>
+    struct GlobMemberObjectsHelper<T, I, typename std::enable_if<!IsMemberObject<T, I>::value>::type>
+    {
+        using types = typename GlobMemberObjectsHelper<T, I-1, void>::types;
+    };
+
+    template<class T>
+    struct GlobMemberObjectsHelper<T, 0, typename std::enable_if<IsMemberObject<T, 0>::value>::type>
+    {
+        using accessor = AccessorType<T, 0>;
+        using types = VariadicTypedef<typename accessor::Get_t>;
+    };
+
+    template<class T>
+    struct GlobMemberObjectsHelper<T, 0, typename std::enable_if<!IsMemberObject<T, 0>::value>::type>
+    {
+        using types = VariadicTypedef<void>;
+    };
+
+    template<class T>
+    struct GlobMemberObjects
+    {
+        using types = typename GlobMemberObjectsHelper<T, Reflect<T>::N, void>::types;
+    };
 } // namespace ct
 
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
