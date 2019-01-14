@@ -51,18 +51,17 @@ int main()
     }
 
 
-    for(size_t i = 0; i < 10; ++i)
-    {
-
-
+    for(size_t i = 20; i < 36; i += 4)
     {
         // compare performance to vector of structs
         std::vector<TestB> vec_of_structs;
-
+        const size_t size = 1ULL << i;
+        const float search_value = float(1ULL << (i - 1));
+        std::cout << "Testing with " << size << " elements" << std::endl;
         {
             TimeIt time;
-            vec_of_structs.reserve(1e9);
-            for(size_t i = 0; i < 1e9; ++i)
+            vec_of_structs.reserve(size);
+            for(size_t i = 0; i < size; ++i)
             {
                 vec_of_structs.push_back({float(i), float(i*2), float(i*3)});
             }
@@ -85,13 +84,13 @@ int main()
             TimeIt time;
             for(size_t i = 0; i < vec_of_structs.size(); ++i)
             {
-                if(vec_of_structs[i].x == float(1e8))
+                if(vec_of_structs[i].x == search_value)
                 {
                     std::cout << "Found at " << i << std::endl;
                     break;
                 }
             }
-            std::cout << "Searching vec of structs took ";
+            std::cout << "Searching vec of structs took      ";
 
             d1 = time.delta();
         }
@@ -101,17 +100,34 @@ int main()
             TimeIt time;
             for(size_t i = 0; i < vec_of_structs.size(); ++i)
             {
-                if(table.access(&TestB::x, i) == float(1e8))
+                if(table.access(&TestB::x, i) == search_value)
                 {
                     std::cout << "Found at " << i << std::endl;
                     break;
                 }
             }
-            std::cout << "Searching data table took     ";
+            std::cout << "Searching data table took          ";
             d2 = time.delta();
         }
-        std::cout << "Speedup                       " << float(d1.count()) / float(d2.count()) << std::endl;
-    }
+        std::cout << "Speedup                            " << float(d1.count()) / float(d2.count()) << std::endl;
+
+        std::chrono::high_resolution_clock::duration d3;
+        {
+            TimeIt time;
+            const auto begin = table.begin(&TestB::x);
+            const auto end = table.end(&TestB::x);
+            for(auto itr = begin; itr != end; ++itr)
+            {
+                if(*itr == search_value)
+                {
+                    std::cout << "Found at " << (itr - begin) << std::endl;
+                    break;
+                }
+            }
+            std::cout << "Iterator Searching data table took ";
+            d3 = time.delta();
+        }
+        std::cout << "Iterator Speedup                   " << float(d1.count()) / float(d3.count()) << std::endl;
 
     }
 

@@ -47,6 +47,41 @@ namespace ct
                 return *static_cast<const T*>(p);
             }
 
+            template<class T>
+            T* begin(T U::* mem_ptr)
+            {
+                void* p = ptr(pointerValue(mem_ptr), 0, Reflect<U>::end());
+                return static_cast<T*>(p);
+            }
+
+            template<class T>
+            const T* begin(T U::* mem_ptr) const
+            {
+                const void* p = ptr(pointerValue(mem_ptr), 0, Reflect<U>::end());
+                return static_cast<const T*>(p);
+            }
+
+            template<class T>
+            T* end(T U::* mem_ptr)
+            {
+                void* p = ptr(pointerValue(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                return static_cast<T*>(p);
+            }
+
+            template<class T>
+            const T* end(T U::* mem_ptr) const
+            {
+                const void* p = ptr(pointerValue(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                return static_cast<const T*>(p);
+            }
+
+            U access(const size_t idx)
+            {
+                U out;
+                populateData(out, Reflect<U>::end(), idx);
+                return out;
+            }
+
             void reserve(const size_t size)
             {
                 reserveImpl(size, Reflect<U>::end());
@@ -64,6 +99,21 @@ namespace ct
             {
                 std::get<I>(m_data).reserve(size);
                 reserveImpl(size, --idx);
+            }
+
+
+            void populateData(U& data, const ct::Indexer<0> idx, const size_t row)
+            {
+                const auto accessor = Reflect<U>::getAccessor(idx);
+                accessor.set(data, std::get<0>(m_data)[row]);
+            }
+
+            template<index_t I>
+            void populateData(U& data, const ct::Indexer<I> idx, const size_t row)
+            {
+                const auto accessor = Reflect<U>::getAccessor(idx);
+                accessor.set(data, std::get<I>(m_data)[row]);
+                populateData(data, --idx, row);
             }
 
             void push(const U& data, const ct::Indexer<0> idx)
