@@ -10,6 +10,27 @@
 #include <ostream>
 #include <vector>
 
+template <class T>
+void mulImpl(T& obj, const ct::Indexer<0> idx)
+{
+    auto accessor = ct::Reflect<T>::getAccessor(idx);
+    accessor.set(obj) *= 2;
+}
+
+template <class T, ct::index_t I>
+void mulImpl(T& obj, const ct::Indexer<I> idx)
+{
+    auto accessor = ct::Reflect<T>::getAccessor(idx);
+    accessor.set(obj) *= 2;
+    mulImpl(obj, --idx);
+}
+
+template <class T>
+void mul(T& obj)
+{
+    mulImpl(obj, ct::Reflect<T>::end());
+}
+
 struct DebugEqual
 {
     template <class T>

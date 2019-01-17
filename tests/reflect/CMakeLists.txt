@@ -23,3 +23,7 @@ endif()
 add_executable(test_ct_reflect_hash ${hdr} hash.cpp)
 target_link_libraries(test_ct_reflect_hash ct)
 set_target_properties(test_ct_reflect_hash PROPERTIES FOLDER Tests/ct)
+
+add_executable(test_ct_data_table ${hdr} datatable.cpp)
+target_link_libraries(test_ct_data_table ct)
+set_target_properties(test_ct_data_table PROPERTIES FOLDER Tests/ct)

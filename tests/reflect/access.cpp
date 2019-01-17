@@ -8,26 +8,7 @@ ct::enable_if_reflected<TestA, void> testEnabledFunction()
 {
 }
 
-template <class T>
-void mulImpl(T& obj, const ct::Indexer<0> idx)
-{
-    auto accessor = ct::Reflect<T>::getAccessor(idx);
-    accessor.set(obj) *= 2;
-}
 
-template <class T, ct::index_t I>
-void mulImpl(T& obj, const ct::Indexer<I> idx)
-{
-    auto accessor = ct::Reflect<T>::getAccessor(idx);
-    accessor.set(obj) *= 2;
-    mulImpl(obj, --idx);
-}
-
-template <class T>
-void mul(T& obj)
-{
-    mulImpl(obj, ct::Reflect<T>::end());
-}
 
 int main()
 {
@@ -84,16 +65,33 @@ int main()
     PrivateGetAndSet pgs;
     pgs.setX(2);
     ct::printStruct(std::cout, pgs);
+    std::cout << std::endl;
     mul(pgs);
+    if(pgs.getX() != 4.0f)
+    {
+        std::cout << "Private mutation not working" << std::endl;
+        return 1;
+    }
     ct::printStruct(std::cout, pgs);
+    std::cout << std::endl;
     PrivateMutableAccess pms;
     pms.mutateX() = 2;
     mul(pms);
     ct::printStruct(std::cout, pms);
+    std::cout << std::endl;
 
     {
         const auto accessor = ct::Reflect<TestA>::getAccessor(ct::Indexer<3>{});
         const auto start1 = std::chrono::high_resolution_clock::now();
+
+        static_assert(ct::IsMemberObject<TestA, 0>::value, "asdf");
+        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 0, void>::types, ct::VariadicTypedef<float>>::value, "asdf");
+        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 1, void>::types, ct::VariadicTypedef<float, float>>::value, "asdf");
+        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 2, void>::types, ct::VariadicTypedef<float, float, float>>::value, "asdf");
+        static_assert(std::is_same<typename ct::GlobMemberObjects<TestA>::types, ct::VariadicTypedef<float, float, float>>::value, "asdf");
+
+
+
         TestA instance;
         for (size_t i = 0; i < 1e9; ++i)
         {
