@@ -18,6 +18,7 @@ namespace ct
         constexpr Setter(void (T::*setter)(D)) : m_setter(setter) {}
 
         void set(T& obj, D&& data) const { (obj.*m_setter)(std::forward(data)); }
+        void set(T& obj, const D& data) const { (obj.*m_setter)(data); }
 
         AccessToken<void (T::*)(D)> set(T& obj) const { return AccessToken<void (T::*)(D)>(obj, m_setter); }
 
@@ -33,6 +34,7 @@ namespace ct
         constexpr Setter(D& (T::*setter)()) : m_setter(setter) {}
 
         void set(T& obj, D&& data) const { (obj.*m_setter)() = std::move(data); }
+        void set(T& obj, const D& data) const { (obj.*m_setter)() = data; }
 
         D& set(T& obj) const { return (obj.*m_setter)(); }
 
@@ -65,6 +67,7 @@ namespace ct
         constexpr Setter(void (*setter)(T&, D)) : m_setter(setter) {}
 
         void set(T& obj, D&& data) const { m_setter(obj, std::forward(data)); }
+        void set(T& obj, const D& data) const { m_setter(obj, data); }
 
         AccessToken<void (*)(T&, D)> set(T& obj) const { return AccessToken<void (*)(T&, D)>(obj, m_setter); }
 
@@ -79,7 +82,8 @@ namespace ct
 
         constexpr Setter(D T::*setter) : m_setter(setter) {}
         D& set(T& obj) const { return obj.*m_setter; }
-        void set(T& obj, D&& data) const { obj.m_setter = std::move(data); }
+        void set(T& obj, D&& data) const { obj.*m_setter = std::move(data); }
+        void set(T& obj, const D& data) const { obj.*m_setter = data; }
 
         D T::*m_setter;
     };
