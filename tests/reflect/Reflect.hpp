@@ -51,14 +51,6 @@ namespace ct
         PROPERTY("x", &DataType::getX, &DataType::setX)
     REFLECT_END;
 
-#if __cplusplus <= 201103
-    REFLECT_BEGIN(InternallyReflected)
-        PUBLIC_ACCESS(x)
-        PUBLIC_ACCESS(y)
-        PUBLIC_ACCESS(z)
-    REFLECT_END;
-#endif
-
     REFLECT_BEGIN(PointerOwner)
         PUBLIC_ACCESS(ptr)
     REFLECT_END;

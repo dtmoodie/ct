@@ -89,7 +89,7 @@ struct WeirdWeakOwnerShip
 };
 
 // Doesn't work with C++11 :/
-#if __cplusplus > 201103 || _MSC_VER > 1800
+
 
 struct InternallyReflected
 {
@@ -100,12 +100,7 @@ struct InternallyReflected
     REFLECT_INTERNAL_END;
 };
 
-#else
-struct InternallyReflected
-{
-    float x, y, z;
-};
-#endif
+
 namespace cereal
 {
     template <class AR>

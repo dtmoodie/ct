@@ -22,12 +22,33 @@
 
 namespace ct
 {
-    template <class T>
+    template <class T, class ENABLE = void>
     struct Reflect
     {
         static const bool SPECIALIZED = false;
         using Base = ct::VariadicTypedef<void>;
         static constexpr const char* getName() { return ""; }
+    };
+
+    template<class T>
+    struct Reflect<T, typename std::enable_if<T::INTERNALLY_REFLECTED>::type>
+    {
+        static const bool SPECIALIZED = true;
+        static constexpr const char* getName() {return T::getName(); }
+        static constexpr const ct::index_t I0 = T::I0;
+        static constexpr const ct::index_t REFLECT_COUNT_START = T::REFLECT_COUNT_START;
+        using DataType = T;
+
+        template<index_t I>
+        static auto getAccessor(const Indexer<I> idx) -> decltype(T::getAccessor(idx)){return T::getAccessor(idx);}
+
+        template<index_t I>
+        static auto getName(const Indexer<I> idx) -> decltype(T::getName(idx)){return T::getName(idx);}
+
+        static constexpr const ct::index_t REFLECT_COUNT_END = T::REFLECT_COUNT_END;
+        static constexpr const ct::index_t REFLECTION_COUNT = T::REFLECTION_COUNT;
+        static constexpr const ct::index_t N = T::N;
+        static constexpr ct::Indexer<N> end() { return ct::Indexer<N>{}; }
     };
 
     template <class T, class U = void>
@@ -425,11 +446,11 @@ namespace ct
 
 #define PUBLIC_ACCESS_(NAME, N)                                                                                        \
     static ct::Accessor<decltype(&DataType::NAME), decltype(&DataType::NAME)> getAccessor(                             \
-        const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                                                           \
+        const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                                           \
     {                                                                                                                  \
         return {&DataType::NAME, &DataType::NAME};                                                                     \
     }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
+    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
@@ -443,26 +464,31 @@ namespace ct
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
+#ifdef _MSC_VER
 #define REFLECT_INTERNAL_MEMBER(...)                                                                                   \
     CT_PP_CAT(CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
+#else
+#define REFLECT_INTERNAL_MEMBER(...)                                                                                   \
+    CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
+#endif
 
 #define PROPERTY(NAME, GETTER, SETTER) PROPERTY_(NAME, GETTER, SETTER, __COUNTER__)
 
 #define PROPERTY_(NAME, GETTER, SETTER, N)                                                                             \
-    static constexpr auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                             \
+    static constexpr auto getAccessor(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
         ->decltype(ct::makeAccessor(GETTER, SETTER))                                                                   \
     {                                                                                                                  \
         return ct::makeAccessor(GETTER, SETTER);                                                                       \
     }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
+    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define MEMBER_FUNCTION_IMPL(NAME, FPTR, N)                                                                            \
-    static auto getAccessor(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>)                                       \
+    static auto getAccessor(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                     \
         ->decltype(ct::makeAccessor<CalculatedValue>(FPTR))                                                            \
     {                                                                                                                  \
         return ct::makeAccessor<CalculatedValue>(FPTR);                                                                \
     }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + N - REFLECT_COUNT_START - 1>) { return #NAME; }
+    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define MEMBER_FUNCTION_2(NAME, FPTR) MEMBER_FUNCTION_IMPL(NAME, FPTR, __COUNTER__)
 
