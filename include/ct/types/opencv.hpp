@@ -13,13 +13,13 @@ namespace ct
         static constexpr int SPECIALIZED = true;
 
         static constexpr ct::Accessor<decltype(&cv::Vec<T, R>::val),decltype(&cv::Vec<T, R>::val)>
-        getAccessor(const ct::Indexer<0>)
+        getPtr(const ct::Indexer<0>)
         {
             return {&cv::Vec<T, R>::val,&cv::Vec<T, R>::val};
         }
         static constexpr const char* getName(Indexer<0>){return "data";}
 
-        static auto getAccessor(const ct::Indexer<1>)
+        static auto getPtr(const ct::Indexer<1>)
             ->decltype(ct::makeAccessor<CalculatedValue>(&cv::Vec<T,R>::t))
         {
             return ct::makeAccessor<CalculatedValue>(&cv::Vec<T,R>::t);

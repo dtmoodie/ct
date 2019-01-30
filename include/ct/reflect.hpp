@@ -1,5 +1,5 @@
 #pragma once
-#include "reflect/accessor.hpp"
+#include <ct/reflect/member_pointer.hpp>
 
 #include "Hash.hpp"
 #include "Indexer.hpp"
@@ -7,18 +7,6 @@
 
 #include <cstdint>
 #include <utility>
-
-#define DECL_PRIM(TYPE)                                                                                                \
-    template <>                                                                                                        \
-    struct ReflectBase<TYPE>                                                                                           \
-    {                                                                                                                  \
-        static constexpr const bool PRIMITIVE = true;                                                                  \
-    };                                                                                                                 \
-    template <>                                                                                                        \
-    struct Reflect<TYPE> : public ReflectBase<TYPE>                                                                    \
-    {                                                                                                                  \
-        static constexpr const char* getName() { return "TYPE"; }                                                      \
-    }
 
 namespace ct
 {
@@ -40,7 +28,7 @@ namespace ct
         using DataType = T;
 
         template<index_t I>
-        static auto getAccessor(const Indexer<I> idx) -> decltype(T::getAccessor(idx)){return T::getAccessor(idx);}
+        static auto getPtr(const Indexer<I> idx) -> decltype(T::getPtr(idx)){return T::getPtr(idx);}
 
         template<index_t I>
         static auto getName(const Indexer<I> idx) -> decltype(T::getName(idx)){return T::getName(idx);}
@@ -52,55 +40,26 @@ namespace ct
     };
 
     template <class T, class U = void>
-    using enable_if_reflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
+    using EnableIfReflected = typename std::enable_if<Reflect<T>::SPECIALIZED, U>::type;
 
     template <class T, class U = void>
-    using enable_if_not_reflected = typename std::enable_if<!Reflect<T>::SPECIALIZED, U>::type;
+    using DisableIfReflected = typename std::enable_if<!Reflect<T>::SPECIALIZED, U>::type;
 
     template <class T, index_t I>
-    using AccessorType = decltype(ct::Reflect<T>::getAccessor(Indexer<I>{}));
-
-    template <class T, index_t I>
-    struct GetterType
-    {
-        using accessor_type = AccessorType<T, I>;
-        using type = typename accessor_type::Get_t;
-    };
-
-    template <class T, index_t I>
-    struct SetterType
-    {
-        using accessor_type = AccessorType<T, I>;
-        using type = typename accessor_type::Set_t;
-    };
-
-    template <class T, index_t I>
-    struct GetterTraits
-    {
-        using accessor_type = AccessorType<T, I>;
-        using type = typename accessor_type::GetterTraits_t;
-    };
-
-    template <class T, index_t I>
-    struct SetterTraits
-    {
-        using accessor_type = AccessorType<T, I>;
-        using type = typename accessor_type::SetterTraits_t;
-    };
+    using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));
 
     template <class T, index_t I>
     struct IsMemberFunction
     {
-        using accessor_type = AccessorType<T, I>;
-        static constexpr const bool value =
-            std::is_same<typename accessor_type::GetterTraits_t, CalculatedValue>::value;
+        using Accessor_t = PtrType<T, I>;
+        static constexpr const bool value = IsMemberFunctionPointers<Accessor_t>::value;
     };
 
     template<class T, index_t I>
     struct IsMemberObject
     {
-        using accesosr_type = AccessorType<T, I>;
-        static constexpr const bool value = std::is_same<typename accesosr_type::Getter_t, FieldGetterType>::value;
+        using Accesosr_t = PtrType<T, I>;
+        static constexpr const bool value = IsMemberObjectPointer<Accesosr_t>::value;
     };
 
     template <index_t I, class T>
@@ -110,58 +69,81 @@ namespace ct
     }
 
     template <index_t I, class T>
-    typename GetterType<T, I>::type get(const T& obj)
+    auto set(T& obj) -> decltype(Reflect<T>::getPtr(Indexer<I>{}).set(obj))
     {
-        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
-        return accessor.get(obj);
-    }
-
-    template <index_t I, class T>
-    auto set(T& obj) -> decltype(Reflect<T>::getAccessor(Indexer<I>{}).set(obj))
-    {
-        auto accessor = Reflect<T>::getAccessor(Indexer<I>{});
+        auto accessor = Reflect<T>::getPtr(Indexer<I>{});
         return accessor.set(obj);
     }
 
-    template <class T, index_t I, class U = void>
-    using enable_if_member_getter =
-        typename std::enable_if<std::is_same<typename GetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+    template<class T, index_t I>
+    struct IsReadable
+    {
+        using type = PtrType<T, I>;
+        constexpr static const bool value = getFlags<type>() & READABLE;
+    };
+
+    template<class T, index_t I>
+    struct IsWritable
+    {
+        using type = PtrType<T, I>;
+        constexpr static const bool value = getFlags<type>() & WRITABLE;
+    };
+
+    template<class T, index_t I>
+    struct ShouldSerialize
+    {
+        using type = PtrType<T, I>;
+        constexpr static const bool value = !(getFlags<type>() & DO_NOT_SERIALIZE);
+    };
+
+    template<class T, index_t I>
+    struct FieldGetType
+    {
+        using Ptr_t = PtrType<T, I>;
+        using type = typename GetType<Ptr_t>::type;
+    };
 
     template <class T, index_t I, class U = void>
-    using enable_if_member_setter =
-        typename std::enable_if<std::is_same<typename SetterTraits<T, I>::type, DefaultSetterTraits>::value, U>::type;
+    using EnableIfIsReadable = typename std::enable_if<IsReadable<T, I>::value, U>::type;
 
     template <class T, index_t I, class U = void>
-    using disable_if_member_getter =
-        typename std::enable_if<!std::is_same<typename GetterTraits<T, I>::type, DefaultGetterTraits>::value, U>::type;
+    using EnableIfIsWritable = typename std::enable_if<IsWritable<T, I>::value, U>::type;
+
+    template<class T, index_t I, class U = void>
+    using EnableIfIsMemberObject = typename std::enable_if<IsMemberObject<T, I>::value, U>::type;
+
+    template<class T, index_t I, class U = void>
+    using DisableIfIsMemberObject = typename std::enable_if<!IsMemberObject<T, I>::value, U>::type;
 
     template <class T, index_t I, class U = void>
-    using disable_if_member_setter =
-        typename std::enable_if<!std::is_same<typename SetterTraits<T, I>::type, DefaultSetterTraits>::value, U>::type;
+    using DisableIfIsReadable = typename std::enable_if<!IsReadable<T, I>::value, U>::type;
 
-    template<class T, index_t I, class ENABLE = typename std::enable_if<IsMemberObject<T, I>::value>::type>
+    template <class T, index_t I, class U = void>
+    using DisableIfIsWritable = typename std::enable_if<!IsWritable<T, I>::value, U>::type;
+
+    template<class T, index_t I, class ENABLE = EnableIfIsMemberObject<T, I>>
     struct GlobMemberObjectsHelper
     {
-        using accessor = AccessorType<T, I>;
-        using type = typename accessor::Get_t;
+        using Ptr_t = PtrType<T, I>;
+        using type = typename std::decay<typename GetType<Ptr_t>::type>::type;
         using types = typename Append<typename GlobMemberObjectsHelper<T, I-1, void>::types, type>::type;
     };
 
     template<class T, index_t I>
-    struct GlobMemberObjectsHelper<T, I, typename std::enable_if<!IsMemberObject<T, I>::value>::type>
+    struct GlobMemberObjectsHelper<T, I, DisableIfIsMemberObject<T, I>>
     {
         using types = typename GlobMemberObjectsHelper<T, I-1, void>::types;
     };
 
     template<class T>
-    struct GlobMemberObjectsHelper<T, 0, typename std::enable_if<IsMemberObject<T, 0>::value>::type>
+    struct GlobMemberObjectsHelper<T, 0, EnableIfIsMemberObject<T, 0>>
     {
-        using accessor = AccessorType<T, 0>;
-        using types = VariadicTypedef<typename accessor::Get_t>;
+        using Ptr_t = PtrType<T, 0>;
+        using types = VariadicTypedef<typename std::decay<typename GetType<Ptr_t>::type>::type>;
     };
 
     template<class T>
-    struct GlobMemberObjectsHelper<T, 0, typename std::enable_if<!IsMemberObject<T, 0>::value>::type>
+    struct GlobMemberObjectsHelper<T, 0, DisableIfIsMemberObject<T, 0>>
     {
         using types = VariadicTypedef<void>;
     };
@@ -410,11 +392,11 @@ namespace ct
         static constexpr const ct::index_t I0 = Reflect<BASE>::REFLECTION_COUNT;                                       \
         static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__;                                          \
         template <ct::index_t I>                                                                                       \
-                static constexpr auto getAccessor(const ct::Indexer<I> idx) -> typename std::enable_if < I             \
+                static constexpr auto getPtr(const ct::Indexer<I> idx) -> typename std::enable_if < I             \
                 >= 0 &&                                                                                                \
-            I<Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getAccessor(idx))>::type                        \
+            I<Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getPtr(idx))>::type                        \
         {                                                                                                              \
-            return Reflect<BASE>::getAccessor(idx);                                                                    \
+            return Reflect<BASE>::getPtr(idx);                                                                    \
         }                                                                                                              \
         template <ct::index_t I>                                                                                       \
                 static constexpr auto getName(const ct::Indexer<I> idx) -> typename std::enable_if < I                 \
@@ -445,22 +427,20 @@ namespace ct
 #define PUBLIC_ACCESS(NAME) PUBLIC_ACCESS_(NAME, __COUNTER__)
 
 #define PUBLIC_ACCESS_(NAME, N)                                                                                        \
-    static ct::Accessor<decltype(&DataType::NAME), decltype(&DataType::NAME)> getAccessor(                             \
-        const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                                           \
+    constexpr static auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
+      -> decltype(ct::makeMemberObjectPointer(&DataType::NAME))                                                            \
     {                                                                                                                  \
-        return {&DataType::NAME, &DataType::NAME};                                                                     \
+        return ct::makeMemberObjectPointer(&DataType::NAME);                                                     \
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
-                                                                                                                       \
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
 #define REFLECT_INTERNAL_MEMBER_3(TYPE, NAME, INIT)                                                                    \
     TYPE NAME = INIT;                                                                                                  \
-                                                                                                                       \
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
@@ -475,18 +455,18 @@ namespace ct
 #define PROPERTY(NAME, GETTER, SETTER) PROPERTY_(NAME, GETTER, SETTER, __COUNTER__)
 
 #define PROPERTY_(NAME, GETTER, SETTER, N)                                                                             \
-    static constexpr auto getAccessor(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
-        ->decltype(ct::makeAccessor(GETTER, SETTER))                                                                   \
+    static constexpr auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
+        ->decltype(ct::makeMemberPropertyPointer(GETTER, SETTER))                                                                   \
     {                                                                                                                  \
-        return ct::makeAccessor(GETTER, SETTER);                                                                       \
+        return ct::makeMemberPropertyPointer(GETTER, SETTER);                                                                       \
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 
 #define MEMBER_FUNCTION_IMPL(NAME, FPTR, N)                                                                            \
-    static auto getAccessor(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                     \
-        ->decltype(ct::makeAccessor<CalculatedValue>(FPTR))                                                            \
+    static auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                     \
+        ->decltype(ct::makeMemberFunctionPointers(FPTR))                                                            \
     {                                                                                                                  \
-        return ct::makeAccessor<CalculatedValue>(FPTR);                                                                \
+        return ct::makeMemberFunctionPointers(FPTR);                                                                \
     }                                                                                                                  \
     static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
 

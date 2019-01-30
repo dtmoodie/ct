@@ -4,7 +4,7 @@
 namespace ct
 {
     template<class T>
-    struct TypeHash<T, ct::enable_if_reflected<T>>
+    struct TypeHash<T, ct::EnableIfReflected<T>>
     {
         static constexpr const uint32_t value = hashStruct<T>();
     };
@@ -25,7 +25,7 @@ namespace ct
     template<class T, index_t I>
     constexpr uint32_t hashMember()
     {
-        return std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>::value ^ TypeHash<typename GetterType<T, I>::type>::value;
+        return std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>::value ^ TypeHash<typename std::decay<typename FieldGetType<T, I>::type>::type>::value;
     }
 
     template<class T>

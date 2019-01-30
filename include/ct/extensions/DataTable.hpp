@@ -104,29 +104,29 @@ namespace ct
 
             void populateData(U& data, const ct::Indexer<0> idx, const size_t row)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
+                const auto accessor = Reflect<U>::getPtr(idx);
                 accessor.set(data, std::get<0>(m_data)[row]);
             }
 
             template<index_t I>
             void populateData(U& data, const ct::Indexer<I> idx, const size_t row)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
+                const auto accessor = Reflect<U>::getPtr(idx);
                 accessor.set(data, std::get<I>(m_data)[row]);
                 populateData(data, --idx, row);
             }
 
             void push(const U& data, const ct::Indexer<0> idx)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
-                std::get<0>(m_data).push_back(accessor.get(data));
+                const auto accessor = Reflect<U>::getPtr(idx);
+                std::get<0>(m_data).push_back(get(accessor, data));
             }
 
             template<index_t I>
             void push(const U& data, const ct::Indexer<I> idx)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
-                std::get<static_cast<size_t>(I)>(m_data).push_back(accessor.get(data));
+                const auto accessor = Reflect<U>::getPtr(idx);
+                std::get<static_cast<size_t>(I)>(m_data).push_back(get(accessor, data));
                 push(data, --idx);
             }
 
@@ -174,16 +174,16 @@ namespace ct
 
             void fillOffsets(const Indexer<0> idx)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
-                const auto field_offset =  pointerValue(accessor.m_getter);
+                const auto accessor = Reflect<U>::getPtr(idx);
+                const auto field_offset =  pointerValue(accessor.m_ptr);
                 m_field_offsets[0] = field_offset;
             }
 
             template<index_t I>
             void fillOffsets(const Indexer<I> idx)
             {
-                const auto accessor = Reflect<U>::getAccessor(idx);
-                const auto field_offset =  pointerValue(accessor.m_getter);
+                const auto accessor = Reflect<U>::getPtr(idx);
+                const auto field_offset =  pointerValue(accessor.m_ptr);
                 m_field_offsets[I] = field_offset;
                 fillOffsets(--idx);
             }

@@ -30,7 +30,7 @@ struct SkipUnprintable : public PrintOptions
     template <class T>
     static std::ostream& onUnprintable(std::ostream& os, const char* name, const T& data)
     {
-        os << "Unable to print '" << name << "' o << operator available for " << typeid(T).name();
+        os << "Unable to print '" << name << "' no << operator available for " << typeid(T).name();
         return os;
     }
 };
@@ -41,7 +41,7 @@ struct PrintAllOptions : public PrintOptions
 };
 
 template <class Options = PrintOptions, class T>
-auto printStruct(std::ostream& os, const T& obj) -> ct::enable_if_reflected<T>;
+auto printStruct(std::ostream& os, const T& obj) -> ct::EnableIfReflected<T>;
 }
 
 #include "print-inl.hpp"

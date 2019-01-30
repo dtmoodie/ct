@@ -4,7 +4,7 @@
 #include <chrono>
 #include <ct/Hash.hpp>
 
-ct::enable_if_reflected<TestA, void> testEnabledFunction()
+ct::EnableIfReflected<TestA, void> testEnabledFunction()
 {
 }
 
@@ -15,22 +15,22 @@ int main()
     testEnabledFunction();
     {
         // TestA a{ 0,1,2 };
-        ct::Reflect<TestA>::getAccessor(ct::Indexer<0>{});
+        ct::Reflect<TestA>::getPtr(ct::Indexer<0>{});
     }
     {
-        using type = ct::AccessorType<TestA, 0>;
-        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
+        using type = ct::FieldGetType<TestA, 0>;
+        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
     }
     {
-        using type = ct::AccessorType<TestA, 1>;
-        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
+        using type = ct::FieldGetType<TestA, 1>;
+        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
     }
     {
-        using type = ct::AccessorType<TestA, 2>;
-        STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
+        using type = ct::FieldGetType<TestA, 2>;
+        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
     }
 
-    {
+    /*{
         using type = ct::AccessorType<Inherited, 0>;
         STATIC_EQUAL((std::is_same<type::Get_t, float>::value), true);
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 0>::type, float>::value), true);
@@ -58,10 +58,10 @@ int main()
         STATIC_EQUAL((std::is_same<ct::GetterType<Inherited, 4>::type, double>::value), true);
 
         // TODO move to hash unit test
-        const auto accessor = ct::Reflect<Inherited>::getAccessor(ct::Indexer<0>{});
+        const auto accessor = ct::Reflect<Inherited>::getPtr(ct::Indexer<0>{});
         STATIC_NE(ctv<ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{}))>::value, 0);
         STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::crc32("x"));
-    }
+    }*/
     PrivateGetAndSet pgs;
     pgs.setX(2);
     ct::printStruct(std::cout, pgs);
@@ -81,7 +81,7 @@ int main()
     std::cout << std::endl;
 
     {
-        const auto accessor = ct::Reflect<TestA>::getAccessor(ct::Indexer<3>{});
+        const auto accessor = ct::Reflect<TestA>::getPtr(ct::Indexer<3>{});
         const auto start1 = std::chrono::high_resolution_clock::now();
 
         static_assert(ct::IsMemberObject<TestA, 0>::value, "asdf");
@@ -95,7 +95,7 @@ int main()
         TestA instance;
         for (size_t i = 0; i < 1e9; ++i)
         {
-            accessor.invoke(instance);
+            //accessor.invoke(instance);
         }
         const auto start2 = std::chrono::high_resolution_clock::now();
         for (size_t i = 0; i < 1e9; ++i)

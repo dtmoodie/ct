@@ -13,7 +13,7 @@ namespace ct
     typename std::enable_if<std::is_same<typename AccessorType<T, I>::GetterType_t, FieldGetterType>::value>::type
     registerHelperImpl(DEFINITION& def, const Indexer<I> idx)
     {
-        auto accessor = Reflect<T>::getAccessor(idx);
+        auto accessor = Reflect<T>::getPtr(idx);
         def._field(getName<I, T>(), accessor.m_getter);
     }
 
@@ -21,7 +21,7 @@ namespace ct
     typename std::enable_if<std::is_same<typename AccessorType<T, I>::GetterType_t, MemberAccessorGetterType>::value && !std::is_same<typename AccessorType<T, I>::SetterType_t, void>::value>::type
     registerHelperImpl(DEFINITION& def, const Indexer<I> idx)
     {
-        auto accessor = Reflect<T>::getAccessor(idx);
+        auto accessor = Reflect<T>::getPtr(idx);
         def._property(getName<I, T>(), accessor.m_getter, accessor.m_setter);
     }
 
@@ -29,7 +29,7 @@ namespace ct
     typename std::enable_if<std::is_same<typename AccessorType<T, I>::GetterType_t, MemberAccessorGetterType>::value && std::is_same<typename AccessorType<T, I>::SetterType_t, void>::value>::type
     registerHelperImpl(DEFINITION& def, const Indexer<I> idx)
     {
-        auto accessor = Reflect<T>::getAccessor(idx);
+        auto accessor = Reflect<T>::getPtr(idx);
         def._property(getName<I, T>(), accessor.m_getter, 0);
     }
 

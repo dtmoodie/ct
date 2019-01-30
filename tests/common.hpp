@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <type_traits>
 
 // forces a compile time value
 template<uint32_t I> struct ctv
@@ -15,6 +16,15 @@ template<uint32_t I> struct ctv
 #else
 #define STATIC_EQUAL(LHS, RHS) static_assert(ctv<(LHS)>::value == ctv<(RHS)>::value, #LHS " != " #RHS)
 #define STATIC_NE(LHS, RHS) static_assert(ctv<(LHS)>::value != ctv<(RHS)>::value, #LHS " == " #RHS)
+
+template<class LHS, class RHS>
+struct StaticEqualTypes
+{
+    StaticEqualTypes()
+    {
+        static_assert(std::is_same<LHS, RHS>::value, "Types not equal");
+    }
+};
 
 template<class T, T LHS, T RHS>
 struct StaticEquality

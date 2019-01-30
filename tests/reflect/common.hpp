@@ -13,15 +13,15 @@
 template <class T>
 void mulImpl(T& obj, const ct::Indexer<0> idx)
 {
-    auto accessor = ct::Reflect<T>::getAccessor(idx);
-    accessor.set(obj) *= 2;
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    set(accessor, obj) *= 2;
 }
 
 template <class T, ct::index_t I>
 void mulImpl(T& obj, const ct::Indexer<I> idx)
 {
-    auto accessor = ct::Reflect<T>::getAccessor(idx);
-    accessor.set(obj) *= 2;
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    set(accessor, obj) *= 2;
     mulImpl(obj, --idx);
 }
 
@@ -110,6 +110,13 @@ void testTypes(Tester& tester)
         tester.test(pma);
     }
     {
+        InternallyReflected data;
+        data.x = 5;
+        data.y = 10;
+        data.z = 15;
+        tester.test(data);
+    }
+    {
         PrivateGetAndSet pgs;
         pgs.setX(5.2);
         tester.test(pgs);
@@ -143,6 +150,10 @@ void testTypes(Tester& tester)
     }
     {
         std::shared_ptr<ReflectedStruct> data = std::make_shared<ReflectedStruct>();
+        tester.test(data);
+    }
+    {
+        Wrapper data{5};
         tester.test(data);
     }
     {

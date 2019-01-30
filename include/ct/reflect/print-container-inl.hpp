@@ -8,7 +8,7 @@
 namespace ct
 {
 template <class Options = PrintOptions, class T>
-auto printStruct(std::ostream& os, const std::vector<T>& obj) -> ct::enable_if_reflected<T>
+auto printStruct(std::ostream& os, const std::vector<T>& obj) -> ct::EnableIfReflected<T>
 {
     if(!obj.empty())
     {
@@ -26,7 +26,7 @@ auto printStruct(std::ostream& os, const std::vector<T>& obj) -> ct::enable_if_r
 }
 
 template <class Options = PrintOptions, class K, class V>
-auto printStruct(std::ostream& os, const std::map<K, V>& obj) -> ct::enable_if_reflected<V>
+auto printStruct(std::ostream& os, const std::map<K, V>& obj) -> ct::EnableIfReflected<V>
 {
     if(!obj.empty())
     {

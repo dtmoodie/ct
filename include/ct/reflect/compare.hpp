@@ -12,8 +12,8 @@ struct Equal
 };
 
 template <class T, class Comparator = Equal>
-auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::enable_if_reflected<T, bool>;
+auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::EnableIfReflected<T, bool>;
 template <class T, class Comparator = Equal>
-auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::enable_if_not_reflected<T, bool>;
+auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::DisableIfReflected<T, bool>;
 }
 #include "compare-inl.hpp"

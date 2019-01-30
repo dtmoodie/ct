@@ -33,6 +33,13 @@ struct TestA
     }
 };
 
+struct Wrapper
+{
+    REFLECT_INTERNAL_START(Wrapper)
+        REFLECT_INTERNAL_MEMBER(float, val)
+    REFLECT_INTERNAL_END
+};
+
 struct TestB
 {
     float x, y, z;

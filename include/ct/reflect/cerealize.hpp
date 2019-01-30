@@ -19,20 +19,39 @@ namespace ct
 
 namespace ct
 {
+    template<class T, index_t I>
+    struct CountSerializableFieldsHelper
+    {
+        constexpr static const uint32_t value = ShouldSerialize<T, I>::value ? 1 : 0;
+        constexpr static const uint32_t count = CountSerializableFieldsHelper<T, I-1>::count + value;
+    };
+
+    template<class T>
+    struct CountSerializableFieldsHelper<T, 0>
+    {
+        constexpr static const uint32_t value = ShouldSerialize<T, 0>::value ? 1 : 0;
+        constexpr static const uint32_t count = value;
+    };
+    template<class T>
+    struct CountSerializableFields
+    {
+        constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::N>::count;
+    };
+
 
     template <class AR, class T, index_t I>
     auto loadValue(AR& ar, T& obj) ->
-        typename std::enable_if<!std::is_same<typename ct::SetterType<T, I>::type, void>::value>::type
+        typename std::enable_if<ShouldSerialize<T, I>::value>::type
     {
-        auto accessor = Reflect<T>::getAccessor(ct::Indexer<I>{});
+        auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
         ar(cereal::make_nvp(
             Reflect<T>::getName(ct::Indexer<I>{}),
-            static_cast<typename ReferenceType<typename decltype(accessor)::Set_t>::Type>(accessor.set(obj))));
+            static_cast<typename ReferenceType<typename SetType<decltype(accessor)>::type>::Type>(set(accessor, obj))));
     }
 
     template <class AR, class T, index_t I>
     auto loadValue(AR&, T&) ->
-        typename std::enable_if<std::is_same<typename ct::SetterType<T, I>::type, void>::value>::type
+        typename std::enable_if<!ShouldSerialize<T, I>::value>::type
     {
     }
 
@@ -56,17 +75,17 @@ namespace ct
     }
 
     template <class AR, class T, index_t I>
-    auto saveValue(AR&, const T&, const ct::Indexer<I> idx) ->
-        typename std::enable_if<std::is_same<typename GetterTraits<T, I>::type, CalculatedValue>::value>::type
+    auto saveValue(AR&, const T&, const ct::Indexer<I> ) ->
+        typename std::enable_if<!ShouldSerialize<T, I>::value>::type
     {
     }
 
     template <class AR, class T, index_t I>
     auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) ->
-        typename std::enable_if<!std::is_same<typename GetterTraits<T, I>::type, CalculatedValue>::value>::type
+        typename std::enable_if<ShouldSerialize<T, I>::value>::type
     {
-        auto accessor = Reflect<T>::getAccessor(idx);
-        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), accessor.get(obj)));
+        auto accessor = Reflect<T>::getPtr(idx);
+        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), get(accessor, obj)));
     }
 
     template <class AR, class T>
@@ -93,46 +112,13 @@ namespace cereal
 {
 
     template <class AR, class T>
-    auto saveDispatcher(AR& ar, const T& data) ->
-        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == false ||
-                                 ct::Reflect<T>::N > 0)>::type
+    auto save(AR& ar, const T& data) -> ct::EnableIfReflected<T>
     {
         ct::saveStruct(ar, data);
     }
 
     template <class AR, class T>
-    auto saveDispatcher(AR& ar, const T& data) ->
-        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == true &&
-                                 ct::Reflect<T>::N == 0)>::type
-    {
-        auto accessor = ct::Reflect<T>::getAccessor(ct::Indexer<0>{});
-        ar(accessor.get(data));
-    }
-
-    template <class AR, class T>
-    auto save(AR& ar, const T& data) -> ct::enable_if_reflected<T>
-    {
-        ct::saveStruct(ar, data);
-    }
-
-    template <class AR, class T>
-    auto loadDispatcher(AR& ar, T& data) ->
-        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == false ||
-                                 ct::Reflect<T>::N > 0)>::type
-    {
-        ct::loadStruct(ar, data);
-    }
-
-    template <class AR, class T>
-    auto loadDispatcher(AR& ar, T& data) ->
-        typename std::enable_if<(ct::is_reference_type<typename ct::GetterType<T, 0>::type>::value == true &&
-                                 ct::Reflect<T>::N == 0)>::type
-    {
-        ct::loadValue<AR, T, 0>(ar, data);
-    }
-
-    template <class AR, class T>
-    auto load(AR& ar, T& data) -> ct::enable_if_reflected<T>
+    auto load(AR& ar, T& data) -> ct::EnableIfReflected<T>
     {
         ct::loadStruct(ar, data);
     }

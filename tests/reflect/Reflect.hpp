@@ -44,11 +44,11 @@ namespace ct
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateMutableAccess)
-        PROPERTY(x, &DataType::getX, &DataType::mutateX)
+        PROPERTY("x", &DataType::getX, &DataType::mutateX)
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateGetAndSet)
-        PROPERTY(x, &DataType::getX, &DataType::setX)
+        PROPERTY("x", &DataType::getX, &DataType::setX)
     REFLECT_END;
 
     REFLECT_BEGIN(PointerOwner)
@@ -59,4 +59,5 @@ namespace ct
         PUBLIC_ACCESS(struct_vec)
         PUBLIC_ACCESS(pointer_owners)
     REFLECT_END;
+
 }

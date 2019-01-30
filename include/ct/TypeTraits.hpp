@@ -1,4 +1,6 @@
 #pragma once
+#include <ct/VariadicTypedef.hpp>
+
 #include <ostream>
 #include <type_traits>
 #include <vector>
@@ -34,6 +36,27 @@ namespace ct
         }
         static const bool value =
             sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(uint32_t);
+    };
+
+    template<class T>
+    struct StreamWritableHelper;
+
+    template<class T>
+    struct StreamWritableHelper<VariadicTypedef<T>>
+    {
+        constexpr static const bool value = StreamWritable<T>::value;
+    };
+
+    template<class T, class ... TYPES>
+    struct StreamWritableHelper<VariadicTypedef<T, TYPES...>>
+    {
+        constexpr static const bool value = StreamWritableHelper<VariadicTypedef<TYPES...>>::value && StreamWritable<T>::value;
+    };
+
+    template<class ... TYPES>
+    struct StreamWritable<VariadicTypedef<TYPES...>>
+    {
+        constexpr static const bool value = StreamWritableHelper<VariadicTypedef<TYPES...>>::value;
     };
 
     template <typename T, typename _ = void>
