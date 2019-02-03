@@ -40,16 +40,20 @@ namespace ct
         PUBLIC_ACCESS(w)
     REFLECT_END;
 
+    REFLECT_DERIVED(MultipleInheritance, ReflectedStruct, TestA)
+        PUBLIC_ACCESS(asdf)
+    REFLECT_END;
+
     REFLECT_BEGIN(TestVec)
         PUBLIC_ACCESS(vec)
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateMutableAccess)
-        PROPERTY("x", &DataType::getX, &DataType::mutateX)
+        PROPERTY(x, &DataType::getX, &DataType::mutateX)
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateGetAndSet)
-        PROPERTY("x", &DataType::getX, &DataType::setX)
+        PROPERTY(x, &DataType::getX, &DataType::setX)
     REFLECT_END;
 
     REFLECT_BEGIN(PointerOwner)

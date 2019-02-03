@@ -160,4 +160,8 @@ void testTypes(Tester& tester)
         // WeirdWeakOwnerShip data;
         // tester.test(data);
     }
+    {
+        MultipleInheritance asdf;
+        tester.test(asdf);
+    }
 }
