@@ -37,7 +37,7 @@ namespace ct
     template<class T, class ... BASES>
     struct ReflectBasesImpl: public ReflectBasesImpl<BASES...>
     {
-        using Super =ReflectBasesImpl<BASES...>;
+        using Super = ReflectBasesImpl<BASES...>;
         constexpr static const index_t NUM_FIELDS  = Reflect<T>::NUM_FIELDS + Super::NUM_FIELDS;
         constexpr static const index_t START_INDEX = Super::END_INDEX;
         constexpr static const index_t END_INDEX   = START_INDEX + Reflect<T>::NUM_FIELDS;
@@ -101,7 +101,7 @@ namespace ct
 
         template<index_t I>
         constexpr static auto getPtr(const Indexer<I>)
-        -> decltype(ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{}))
+            -> decltype(ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{}))
         {
             return ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{});
         }
@@ -127,14 +127,14 @@ namespace ct
 
         template<index_t I>
         constexpr static auto getPtr(const Indexer<I>)
-        -> typename std::enable_if<I >= START_INDEX && I < END_INDEX, decltype(ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{}))>::type
+            -> typename std::enable_if<I >= START_INDEX && I < END_INDEX, decltype(ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{}))>::type
         {
             return ReflectImpl<T>::getPtr(Indexer<I - START_INDEX>{});
         }
 
         template<index_t I>
         constexpr static auto getPtr(const Indexer<I> idx)
-        -> typename std::enable_if<I < START_INDEX, decltype(ReflectBases<BaseTypes>::getPtr(idx))>::type
+            -> typename std::enable_if<I < START_INDEX, decltype(ReflectBases<BaseTypes>::getPtr(idx))>::type
         {
             return ReflectBases<BaseTypes>::getPtr(idx);
         }
