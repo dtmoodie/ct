@@ -310,11 +310,18 @@ namespace ct
 
 
 #define REFLECT_INTERNAL_START(TYPE)                                                                                   \
-    static constexpr ct::index_t INTERNALLY_REFLECTED = 1;                                                             \
+    static constexpr const bool INTERNALLY_REFLECTED = 1;                                                              \
     static constexpr const char* getName() { return #TYPE; }                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__;                                              \
     using DataType = TYPE;                                                                                             \
     using BaseTypes = ct::VariadicTypedef<void>;
+
+#define REFLECT_INTERNAL_DERIVED(TYPE, ...) \
+    static constexpr const bool  INTERNALLY_REFLECTED = true;                                                          \
+    static constexpr const char* getName() { return #TYPE; }                                                           \
+    static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__;                                              \
+    using DataType = TYPE;                                                                                             \
+    using BaseTypes = ct::VariadictTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
