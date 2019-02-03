@@ -40,7 +40,7 @@ namespace ct
         PUBLIC_ACCESS(w)
     REFLECT_END;
 
-    REFLECT_DERIVED(MultipleInheritance, ReflectedStruct, TestA)
+    REFLECT_DERIVED(MultipleInheritance, ReflectedStruct, PrivateMutableAccess)
         PUBLIC_ACCESS(asdf)
     REFLECT_END;
 

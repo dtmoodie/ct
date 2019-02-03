@@ -17,7 +17,7 @@ int main()
     ct::StaticEquality<ct::index_t, ct::Reflect<Inherited>::START_INDEX, 4>();
     ct::StaticEquality<ct::index_t, ct::Reflect<Inherited>::END_INDEX, 5>();
 
-    ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 10>();
-    ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 9>();
+    ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
+    ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
 
 }

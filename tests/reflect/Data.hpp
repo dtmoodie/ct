@@ -38,11 +38,6 @@ struct TestA
     }
 };
 
-struct MultipleInheritance: public TestA, public ReflectedStruct
-{
-    float asdf;
-};
-
 struct Wrapper
 {
     REFLECT_INTERNAL_START(Wrapper)
@@ -72,6 +67,11 @@ struct PrivateMutableAccess
     float& mutateX() { return x; }
   private:
     float x;
+};
+
+struct MultipleInheritance: public PrivateMutableAccess, public ReflectedStruct
+{
+    float asdf;
 };
 
 struct PrivateGetAndSet

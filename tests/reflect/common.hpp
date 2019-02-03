@@ -162,6 +162,12 @@ void testTypes(Tester& tester)
     }
     {
         MultipleInheritance asdf;
+        asdf.ReflectedStruct::x = 0;
+        asdf.ReflectedStruct::y = 1;
+        asdf.ReflectedStruct::z = 2;
+        asdf.id = 3;
+        asdf.mutateX() = 4;
+        asdf.asdf = 5;
         tester.test(asdf);
     }
 }
