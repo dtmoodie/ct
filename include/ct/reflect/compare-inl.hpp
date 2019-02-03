@@ -8,7 +8,7 @@ namespace ct
     bool compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = Reflect<T>::getName(idx);
+        const char* name = accessor.m_name;
         if (!cmp.test(name, get(accessor, lhs), get(accessor, rhs)))
         {
             return false;
@@ -21,7 +21,7 @@ namespace ct
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = Reflect<T>::getName(idx);
+        const char* name = accessor.m_name;
         if (!cmp.test(name, get(accessor, lhs), get(accessor, rhs)))
         {
             return false;

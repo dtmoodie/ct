@@ -36,6 +36,14 @@ namespace ct
         using Class_t = CTYPE;
         using Data_t = DTYPE;
         enum : int64_t {Flags = FLAGS | READABLE | WRITABLE};
+
+        constexpr MemberObjectPointer(const char* name, Data_t Class_t::* ptr):
+            m_name(name),
+            m_ptr(ptr)
+        {}
+
+
+        const char* m_name;
         Data_t Class_t::* m_ptr;
     };
 
@@ -101,18 +109,20 @@ namespace ct
     template<class PTR>
     struct InferPointerType;
 
-    template<class DTYPE, class CTYPE>
-    struct InferPointerType<DTYPE(CTYPE::*)()>
+    template<class DTYPE, class CTYPE, class ... ARGS>
+    struct InferPointerType<DTYPE(CTYPE::*)(ARGS...)>
     {
         using Class_t = CTYPE;
         using Data_t  = DTYPE;
+        static constexpr const int NUM_ARGS = sizeof...(ARGS);
     };
 
-    template<class DTYPE, class CTYPE>
-    struct InferPointerType<DTYPE(CTYPE::*)() const>
+    template<class DTYPE, class CTYPE, class ... ARGS>
+    struct InferPointerType<DTYPE(CTYPE::*)(ARGS...) const>
     {
         using Class_t = CTYPE;
         using Data_t  = DTYPE;
+        static constexpr const int NUM_ARGS = sizeof...(ARGS);
     };
 
     template<class ... TYPES>
@@ -151,6 +161,13 @@ namespace ct
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
         enum : int64_t {Flags = FLAGS | READABLE | WRITABLE};
 
+        constexpr MemberPropertyPointer(const char* name, GET_PTR getter, SET_PTR setter):
+            m_name(name),
+            m_getter(getter),
+            m_setter(setter)
+        {}
+
+        const char* m_name;
         GET_PTR m_getter;
         SET_PTR m_setter;
     };
@@ -211,6 +228,12 @@ namespace ct
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
         enum : int64_t {Flags = FLAGS | READABLE};
 
+        constexpr MemberPropertyPointer(const char* name, GET_PTR getter):
+            m_name(name),
+            m_getter(getter)
+        {}
+
+        const char* m_name;
         GET_PTR m_getter;
     };
 
@@ -241,11 +264,12 @@ namespace ct
         enum : int64_t {Flags = FLAGS};
         using Class_t = typename InferClassType<PTRS...>::Class_t;
 
-        constexpr MemberFunctionPointers(const PTRS ... ptrs):
-            m_ptrs(ptrs...)
+        constexpr MemberFunctionPointers(const char* name, const PTRS ... ptrs):
+            m_name(name), m_ptrs(ptrs...)
         {
         }
 
+        const char* m_name;
         std::tuple<PTRS...> m_ptrs;
     };
 
@@ -281,27 +305,27 @@ namespace ct
     }
 
     template<Flag_t FLAGS = DO_NOT_SERIALIZE, class ... ARGS>
-    constexpr MemberFunctionPointers<FLAGS, ARGS...> makeMemberFunctionPointers(const ARGS... args)
+    constexpr MemberFunctionPointers<FLAGS, ARGS...> makeMemberFunctionPointers(const char* name, const ARGS... args)
     {
-        return MemberFunctionPointers<FLAGS, ARGS...>{args...};
+        return MemberFunctionPointers<FLAGS, ARGS...>(name, args...);
     }
 
     template<Flag_t FLAGS = NONE, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS> makeMemberObjectPointer(const PTR ptr)
+    constexpr MemberObjectPointer<PTR, FLAGS> makeMemberObjectPointer(const char* name, const PTR ptr)
     {
-        return MemberObjectPointer<PTR, FLAGS>{ptr};
+        return MemberObjectPointer<PTR, FLAGS>(name, ptr);
     }
 
     template<Flag_t FLAGS = NONE, class GET_PTR, class SET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS> makeMemberPropertyPointer(const GET_PTR get, const SET_PTR set)
+    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS> makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS>{get, set};
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS>(name, get, set);
     }
 
     template<Flag_t FLAGS = NONE, class GET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS> makeMemberPropertyPointer(const GET_PTR get, const std::nullptr_t)
+    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS> makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t)
     {
-        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS>{get};
+        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS>(name, get);
     }
 
 }

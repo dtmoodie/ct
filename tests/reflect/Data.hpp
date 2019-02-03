@@ -31,6 +31,11 @@ struct TestA
     {
         return std::sqrt(x*x + y*y + z*z);
     }
+
+    TestA mul(float val) const
+    {
+        return {x*val, y*val, z*val};
+    }
 };
 
 struct Wrapper

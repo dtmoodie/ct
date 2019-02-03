@@ -74,22 +74,41 @@ namespace ct
 
         if (Options::print_name)
         {
-            os << Reflect<T>::getName(ct::Indexer<I>{}) << Options::name_separator;
+            os << accessor.m_name << Options::name_separator;
         }
 
         os << get(accessor, obj);
     }
 
+    template<class T, index_t I, index_t J = 0>
+    struct CountArgs
+    {
+        using Ptr_t = PtrType<T, I>;
+        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
+        constexpr static const index_t NUM_ARGS = InferPointerType<FunctionPtr_t>::NUM_ARGS;
+    };
+
+    template<class T, index_t I, class U = void>
+    using EnableIfNoArgs = typename std::enable_if<CountArgs<T, I>::NUM_ARGS == 0, U>::type;
+
+    template<class T, index_t I, class U = void>
+    using EnableIfArgs = typename std::enable_if<CountArgs<T, I>::NUM_ARGS >= 1, U>::type;
+
     template <int I, class Options, class T>
-    void printMemberFunctionResult(std::ostream& os, const T& obj)
+    auto printMemberFunctionResult(std::ostream& os, const T& obj) -> EnableIfNoArgs<T, I>
     {
         auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
         if (Options::print_name)
         {
-            os << Reflect<T>::getName(ct::Indexer<I>{}) << Options::name_separator;
+            os << accessor.m_name << Options::name_separator;
         }
 
         os << invoke<0>(accessor, obj);
+    }
+
+    template <int I, class Options, class T>
+    auto printMemberFunctionResult(std::ostream& , const T& ) -> EnableIfArgs<T, I>
+    {
     }
 
     template <int I, class Options = PrintOptions, class T>

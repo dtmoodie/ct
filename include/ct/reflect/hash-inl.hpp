@@ -25,7 +25,7 @@ namespace ct
     template<class T, index_t I>
     constexpr uint32_t hashMember()
     {
-        return std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>::value ^ TypeHash<typename std::decay<typename FieldGetType<T, I>::type>::type>::value;
+        return std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}).m_name)>::value ^ TypeHash<typename std::decay<typename FieldGetType<T, I>::type>::type>::value;
     }
 
     template<class T>

@@ -1,6 +1,7 @@
 #pragma once
 #include <ct/reflect/member_pointer.hpp>
 
+#include "macros.hpp"
 #include "Hash.hpp"
 #include "Indexer.hpp"
 #include "VariadicTypedef.hpp"
@@ -29,9 +30,6 @@ namespace ct
 
         template<index_t I>
         static auto getPtr(const Indexer<I> idx) -> decltype(T::getPtr(idx)){return T::getPtr(idx);}
-
-        template<index_t I>
-        static auto getName(const Indexer<I> idx) -> decltype(T::getName(idx)){return T::getName(idx);}
 
         static constexpr const ct::index_t REFLECT_COUNT_END = T::REFLECT_COUNT_END;
         static constexpr const ct::index_t REFLECTION_COUNT = T::REFLECTION_COUNT;
@@ -65,7 +63,7 @@ namespace ct
     template <index_t I, class T>
     constexpr const char* getName()
     {
-        return Reflect<T>::getName(ct::Indexer<I>{});
+        return Reflect<T>::getPtr(ct::Indexer<I>{}).m_name;
     }
 
     template <index_t I, class T>
@@ -155,219 +153,6 @@ namespace ct
     };
 } // namespace ct
 
-#define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
-#if _MSC_VER
-#define CT_PP_CAT_I(a, b) a##b
-#else
-#define CT_PP_CAT_I(a, b) CT_PP_CAT_II(~, a##b)
-#define CT_PP_CAT_II(p, res) res
-#endif
-#define CT_PP_EMPTY()
-
-#define CT_PP_VARIADIC_SIZE_I(e0,                                                                                      \
-                              e1,                                                                                      \
-                              e2,                                                                                      \
-                              e3,                                                                                      \
-                              e4,                                                                                      \
-                              e5,                                                                                      \
-                              e6,                                                                                      \
-                              e7,                                                                                      \
-                              e8,                                                                                      \
-                              e9,                                                                                      \
-                              e10,                                                                                     \
-                              e11,                                                                                     \
-                              e12,                                                                                     \
-                              e13,                                                                                     \
-                              e14,                                                                                     \
-                              e15,                                                                                     \
-                              e16,                                                                                     \
-                              e17,                                                                                     \
-                              e18,                                                                                     \
-                              e19,                                                                                     \
-                              e20,                                                                                     \
-                              e21,                                                                                     \
-                              e22,                                                                                     \
-                              e23,                                                                                     \
-                              e24,                                                                                     \
-                              e25,                                                                                     \
-                              e26,                                                                                     \
-                              e27,                                                                                     \
-                              e28,                                                                                     \
-                              e29,                                                                                     \
-                              e30,                                                                                     \
-                              e31,                                                                                     \
-                              e32,                                                                                     \
-                              e33,                                                                                     \
-                              e34,                                                                                     \
-                              e35,                                                                                     \
-                              e36,                                                                                     \
-                              e37,                                                                                     \
-                              e38,                                                                                     \
-                              e39,                                                                                     \
-                              e40,                                                                                     \
-                              e41,                                                                                     \
-                              e42,                                                                                     \
-                              e43,                                                                                     \
-                              e44,                                                                                     \
-                              e45,                                                                                     \
-                              e46,                                                                                     \
-                              e47,                                                                                     \
-                              e48,                                                                                     \
-                              e49,                                                                                     \
-                              e50,                                                                                     \
-                              e51,                                                                                     \
-                              e52,                                                                                     \
-                              e53,                                                                                     \
-                              e54,                                                                                     \
-                              e55,                                                                                     \
-                              e56,                                                                                     \
-                              e57,                                                                                     \
-                              e58,                                                                                     \
-                              e59,                                                                                     \
-                              e60,                                                                                     \
-                              e61,                                                                                     \
-                              e62,                                                                                     \
-                              e63,                                                                                     \
-                              size,                                                                                    \
-                              ...)                                                                                     \
-    size
-
-#ifdef _MSC_VER
-#define CT_PP_VARIADIC_SIZE(...)                                                                                       \
-    CT_PP_CAT(CT_PP_VARIADIC_SIZE_I(__VA_ARGS__,                                                                       \
-                                    64,                                                                                \
-                                    63,                                                                                \
-                                    62,                                                                                \
-                                    61,                                                                                \
-                                    60,                                                                                \
-                                    59,                                                                                \
-                                    58,                                                                                \
-                                    57,                                                                                \
-                                    56,                                                                                \
-                                    55,                                                                                \
-                                    54,                                                                                \
-                                    53,                                                                                \
-                                    52,                                                                                \
-                                    51,                                                                                \
-                                    50,                                                                                \
-                                    49,                                                                                \
-                                    48,                                                                                \
-                                    47,                                                                                \
-                                    46,                                                                                \
-                                    45,                                                                                \
-                                    44,                                                                                \
-                                    43,                                                                                \
-                                    42,                                                                                \
-                                    41,                                                                                \
-                                    40,                                                                                \
-                                    39,                                                                                \
-                                    38,                                                                                \
-                                    37,                                                                                \
-                                    36,                                                                                \
-                                    35,                                                                                \
-                                    34,                                                                                \
-                                    33,                                                                                \
-                                    32,                                                                                \
-                                    31,                                                                                \
-                                    30,                                                                                \
-                                    29,                                                                                \
-                                    28,                                                                                \
-                                    27,                                                                                \
-                                    26,                                                                                \
-                                    25,                                                                                \
-                                    24,                                                                                \
-                                    23,                                                                                \
-                                    22,                                                                                \
-                                    21,                                                                                \
-                                    20,                                                                                \
-                                    19,                                                                                \
-                                    18,                                                                                \
-                                    17,                                                                                \
-                                    16,                                                                                \
-                                    15,                                                                                \
-                                    14,                                                                                \
-                                    13,                                                                                \
-                                    12,                                                                                \
-                                    11,                                                                                \
-                                    10,                                                                                \
-                                    9,                                                                                 \
-                                    8,                                                                                 \
-                                    7,                                                                                 \
-                                    6,                                                                                 \
-                                    5,                                                                                 \
-                                    4,                                                                                 \
-                                    3,                                                                                 \
-                                    2,                                                                                 \
-                                    1, ), )
-#else
-#define CT_PP_VARIADIC_SIZE(...)                                                                                       \
-    CT_PP_VARIADIC_SIZE_I(__VA_ARGS__,                                                                                 \
-                          64,                                                                                          \
-                          63,                                                                                          \
-                          62,                                                                                          \
-                          61,                                                                                          \
-                          60,                                                                                          \
-                          59,                                                                                          \
-                          58,                                                                                          \
-                          57,                                                                                          \
-                          56,                                                                                          \
-                          55,                                                                                          \
-                          54,                                                                                          \
-                          53,                                                                                          \
-                          52,                                                                                          \
-                          51,                                                                                          \
-                          50,                                                                                          \
-                          49,                                                                                          \
-                          48,                                                                                          \
-                          47,                                                                                          \
-                          46,                                                                                          \
-                          45,                                                                                          \
-                          44,                                                                                          \
-                          43,                                                                                          \
-                          42,                                                                                          \
-                          41,                                                                                          \
-                          40,                                                                                          \
-                          39,                                                                                          \
-                          38,                                                                                          \
-                          37,                                                                                          \
-                          36,                                                                                          \
-                          35,                                                                                          \
-                          34,                                                                                          \
-                          33,                                                                                          \
-                          32,                                                                                          \
-                          31,                                                                                          \
-                          30,                                                                                          \
-                          29,                                                                                          \
-                          28,                                                                                          \
-                          27,                                                                                          \
-                          26,                                                                                          \
-                          25,                                                                                          \
-                          24,                                                                                          \
-                          23,                                                                                          \
-                          22,                                                                                          \
-                          21,                                                                                          \
-                          20,                                                                                          \
-                          19,                                                                                          \
-                          18,                                                                                          \
-                          17,                                                                                          \
-                          16,                                                                                          \
-                          15,                                                                                          \
-                          14,                                                                                          \
-                          13,                                                                                          \
-                          12,                                                                                          \
-                          11,                                                                                          \
-                          10,                                                                                          \
-                          9,                                                                                           \
-                          8,                                                                                           \
-                          7,                                                                                           \
-                          6,                                                                                           \
-                          5,                                                                                           \
-                          4,                                                                                           \
-                          3,                                                                                           \
-                          2,                                                                                           \
-                          1, )
-#endif
-
 #define CT_PP_OVERLOAD(prefix, ...) CT_PP_CAT(prefix, CT_PP_VARIADIC_SIZE(__VA_ARGS__))
 
 #define REFLECT_BEGIN(TYPE)                                                                                            \
@@ -397,13 +182,6 @@ namespace ct
             I<Reflect<BASE>::REFLECTION_COUNT, decltype(Reflect<BASE>::getPtr(idx))>::type                        \
         {                                                                                                              \
             return Reflect<BASE>::getPtr(idx);                                                                    \
-        }                                                                                                              \
-        template <ct::index_t I>                                                                                       \
-                static constexpr auto getName(const ct::Indexer<I> idx) -> typename std::enable_if < I                 \
-                >= 0 &&                                                                                                \
-            I<Reflect<BASE>::REFLECTION_COUNT, const char*>::type                                                      \
-        {                                                                                                              \
-            return Reflect<BASE>::getName(idx);                                                                        \
         }
 
 #define REFLECT_TEMPLATED_START(TYPE)                                                                                  \
@@ -424,15 +202,12 @@ namespace ct
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__;                                              \
     using DataType = TYPE;
 
-#define PUBLIC_ACCESS(NAME) PUBLIC_ACCESS_(NAME, __COUNTER__)
-
-#define PUBLIC_ACCESS_(NAME, N)                                                                                        \
-    constexpr static auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
-      -> decltype(ct::makeMemberObjectPointer(&DataType::NAME))                                                            \
+#define PUBLIC_ACCESS(NAME)                                                                                            \
+    constexpr static auto getPtr(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>)                        \
+      -> decltype(ct::makeMemberObjectPointer(#NAME, &DataType::NAME))                                                 \
     {                                                                                                                  \
-        return ct::makeMemberObjectPointer(&DataType::NAME);                                                     \
-    }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
+        return ct::makeMemberObjectPointer(#NAME, &DataType::NAME);                                                    \
+    }
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
@@ -452,33 +227,19 @@ namespace ct
     CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
 #endif
 
-#define PROPERTY(NAME, GETTER, SETTER) PROPERTY_(NAME, GETTER, SETTER, __COUNTER__)
-
-#define PROPERTY_(NAME, GETTER, SETTER, N)                                                                             \
-    static constexpr auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                           \
-        ->decltype(ct::makeMemberPropertyPointer(GETTER, SETTER))                                                                   \
+#define PROPERTY(NAME, GETTER, SETTER)                                                                             \
+    static constexpr auto getPtr(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>)                           \
+        ->decltype(ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER))                                                                   \
     {                                                                                                                  \
-        return ct::makeMemberPropertyPointer(GETTER, SETTER);                                                                       \
-    }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
+        return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                                       \
+    }
 
-#define MEMBER_FUNCTION_IMPL(NAME, FPTR, N)                                                                            \
-    static auto getPtr(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>)                                     \
-        ->decltype(ct::makeMemberFunctionPointers(FPTR))                                                            \
+#define MEMBER_FUNCTION(NAME, ...)                                                                                     \
+    static auto getPtr(const ct::Indexer<I0 + __COUNTER__ - REFLECT_COUNT_START - 1>)                                  \
+        ->decltype(ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__))                                                 \
     {                                                                                                                  \
-        return ct::makeMemberFunctionPointers(FPTR);                                                                \
-    }                                                                                                                  \
-    static constexpr const char* getName(const ct::Indexer<I0 + (N) - REFLECT_COUNT_START - 1>) { return #NAME; }
-
-#define MEMBER_FUNCTION_2(NAME, FPTR) MEMBER_FUNCTION_IMPL(NAME, FPTR, __COUNTER__)
-
-#define MEMBER_FUNCTION_3(NAME, FPTR1, FPTR2)                                                                          \
-    MEMBER_FUNCTION_IMPL(NAME, FPTR1, __COUNTER__)                                                                     \
-    MEMBER_FUNCTION_IMPL(NAME, FPTR2, __COUNTER__)
-
-#define MEMBER_FUNCTION_1(NAME) MEMBER_FUNCTION_IMPL(NAME, &DataType::NAME, __COUNTER__)
-
-#define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
+        return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);                                                     \
+    }
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \

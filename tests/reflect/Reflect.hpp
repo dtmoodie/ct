@@ -21,6 +21,7 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
+        MEMBER_FUNCTION(mul, &TestA::mul)
     REFLECT_END;
 
     REFLECT_BEGIN(TestB)

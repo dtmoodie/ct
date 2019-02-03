@@ -9,4 +9,6 @@ int main()
     STATIC_EQUAL((ct::hashMember<ReflectedStruct, 2>()), ct::crc32("z") ^ ct::crc32("float") );
     std::integral_constant<uint32_t, ct::hashStruct<ReflectedStruct>()>::value;
 
+    static_assert(ct::crc32(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<0>{}).m_name) != 0, "asdf");
+
 }

@@ -17,6 +17,8 @@ int main()
         // TestA a{ 0,1,2 };
         ct::Reflect<TestA>::getPtr(ct::Indexer<0>{});
     }
+
+    static_assert(ct::CountArgs<TestA, 3>::NUM_ARGS == 0, "asdf");
     {
         using type = ct::FieldGetType<TestA, 0>;
         using test = StaticEqualTypes<typename std::decay<type>::type, float>;

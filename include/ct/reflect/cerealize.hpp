@@ -45,7 +45,7 @@ namespace ct
     {
         auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
         ar(cereal::make_nvp(
-            Reflect<T>::getName(ct::Indexer<I>{}),
+            accessor.m_name,
             static_cast<typename ReferenceType<typename SetType<decltype(accessor)>::type>::Type>(set(accessor, obj))));
     }
 
@@ -85,7 +85,7 @@ namespace ct
         typename std::enable_if<ShouldSerialize<T, I>::value>::type
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        ar(cereal::make_nvp(Reflect<T>::getName(ct::Indexer<I>{}), get(accessor, obj)));
+        ar(cereal::make_nvp(accessor.m_name, get(accessor, obj)));
     }
 
     template <class AR, class T>
