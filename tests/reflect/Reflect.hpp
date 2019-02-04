@@ -70,4 +70,22 @@ namespace ct
         PROPERTY(prop, &getExplicitThisProperty, &setExplicitThisProperty)
     REFLECT_END;
 
+    REFLECT_BEGIN(Base)
+        PUBLIC_ACCESS(base_x)
+        PUBLIC_ACCESS(base_y)
+        PUBLIC_ACCESS(base_z)
+    REFLECT_END;
+
+    REFLECT_DERIVED(DerivedA, Base)
+        PUBLIC_ACCESS(derived_a)
+    REFLECT_END;
+
+    REFLECT_DERIVED(DerivedB, Base)
+        PUBLIC_ACCESS(derived_b)
+    REFLECT_END;
+
+    REFLECT_DERIVED(DerivedC, DerivedA, DerivedB)
+        PUBLIC_ACCESS(derived_c)
+    REFLECT_END;
+
 }

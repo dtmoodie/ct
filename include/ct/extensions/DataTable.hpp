@@ -7,14 +7,6 @@ namespace ct
 {
     namespace ext
     {
-        template<class T, class U>
-        size_t pointerValue(T U::* ptr)
-        {
-            size_t output = 0;
-            memcpy(&output, &ptr, sizeof(ptr));
-            return output;
-        }
-
         template<class U, class T>
         struct DataTableBase
         {

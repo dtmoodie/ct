@@ -27,9 +27,9 @@ int main()
     {
         ct::ext::DataTable<TestB> table;
         //std::integral_constant<size_t, pointerValue(&TestA::x)>::value;
-        std::cout << ext::pointerValue(&TestA::x) << std::endl;
-        std::cout << ext::pointerValue(&TestA::y) << std::endl;
-        std::cout << ext::pointerValue(&TestA::z) << std::endl;
+        std::cout << pointerValue(&TestA::x) << std::endl;
+        std::cout << pointerValue(&TestA::y) << std::endl;
+        std::cout << pointerValue(&TestA::z) << std::endl;
 
         TestB val;
         val.x = 1;

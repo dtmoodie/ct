@@ -53,6 +53,28 @@ struct TestA
     }
 };
 
+struct Base
+{
+    float base_x;
+    float base_y;
+    float base_z;
+};
+
+struct DerivedA: virtual public Base
+{
+    float derived_a;
+};
+
+struct DerivedB: virtual public Base
+{
+    float derived_b;
+};
+
+struct DerivedC: virtual public DerivedA, virtual public DerivedB
+{
+    float derived_c;
+};
+
 struct Wrapper
 {
     REFLECT_INTERNAL_START(Wrapper)

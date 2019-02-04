@@ -4,6 +4,7 @@
 #include "access_token.hpp"
 #include <ct/VariadicTypedef.hpp>
 
+#include <cstring>
 #include <cstdint>
 #include <tuple>
 
@@ -20,6 +21,12 @@ namespace ct
         // reserve the first 8 bits of the flag field for ct flags
         CT_RESERVED_FLAG_BITS = 8
     };
+
+    template<typename T, typename U>
+    constexpr size_t pointerValue(U T::*member)
+    {
+        return (char*)&((T*)nullptr->*member) - (char*)nullptr;
+    }
 
     template<class T>
     struct GetType;

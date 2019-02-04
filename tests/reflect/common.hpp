@@ -174,5 +174,16 @@ void testTypes(Tester& tester)
         ExplicitThisProperty data;
         tester.test(data);
     }
+    {
+        DerivedC derived;
+        derived.base_x = 0;
+        derived.base_y = 1;
+        derived.base_z = 2;
+        derived.derived_a = 3;
+        derived.derived_b = 4;
+        derived.derived_c = 5;
+
+        tester.test(derived);
+    }
 
 }

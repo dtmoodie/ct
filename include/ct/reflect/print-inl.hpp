@@ -10,7 +10,14 @@ namespace std
     template <class T>
     auto operator<<(ostream& os, const T& obj) -> ct::EnableIfReflected<T, ostream&>
     {
+        thread_local bool recursion_block = false;
+        if(recursion_block)
+        {
+            return os;
+        }
+        recursion_block = true;
         ct::printStruct(os, obj);
+        recursion_block = false;
         return os;
     }
 
