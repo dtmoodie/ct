@@ -12,6 +12,19 @@ void printField(const ct::MemberObjectPointer<T C::*, FLAGS> ptr, std::ostream& 
 }
 
 template<class T>
+void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
+{
+    os << ct::Reflect<T>::getName() << ", ";
+}
+
+template<class T, class ... T1>
+void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
+{
+    os << ct::Reflect<T>::getName() << ", ";
+    printTypes(ct::VariadicTypedef<T1...>{}, os);
+}
+
+template<class T>
 void printSignaturesHelper(const std::tuple<T>*, std::ostream& os)
 {
     os << "  " << typeid(T).name();
@@ -102,4 +115,6 @@ int main()
 {
     Printer printer;
     testTypes(printer);
+
+    printTypes(ct::Reflect<DerivedC>::VisitationList_t{}, std::cout);
 }
