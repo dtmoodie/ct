@@ -143,12 +143,13 @@ namespace ct
     };
 
     template<class T>
-    struct Reflect<T, typename std::enable_if<T::INTERNALLY_REFLECTED>::type>
+    struct Reflect<T, typename std::enable_if<T::INTERNALLY_REFLECTED && std::is_same<typename T::BaseTypes, ct::VariadicTypedef<void>>::value>::type>
     {
+        using DataType = T;
+
         static const bool SPECIALIZED = true;
         static constexpr const char* getName() {return T::getName(); }
         static constexpr const ct::index_t REFLECT_COUNT_START = T::REFLECT_COUNT_START;
-        using DataType = T;
 
         template<index_t I>
         static auto getPtr(const Indexer<I> idx) -> decltype(T::getPtr(idx)){return T::getPtr(idx);}
@@ -156,6 +157,38 @@ namespace ct
         static constexpr const ct::index_t REFLECT_COUNT_END = T::REFLECT_COUNT_END;
         static constexpr const ct::index_t REFLECTION_COUNT = T::REFLECTION_COUNT;
         static constexpr const ct::index_t NUM_FIELDS = T::NUM_FIELDS;
+        static constexpr ct::Indexer<NUM_FIELDS> end() { return ct::Indexer<NUM_FIELDS>{}; }
+    };
+
+    template<class T>
+    struct Reflect<T, typename std::enable_if<T::INTERNALLY_REFLECTED && !std::is_same<typename T::BaseTypes, ct::VariadicTypedef<void>>::value>::type>
+    {
+        using DataType = T;
+        using BaseTypes = typename T::BaseTypes;
+
+        static const bool SPECIALIZED = true;
+        constexpr static const index_t NUM_FIELDS  = T::REFLECTION_COUNT + ReflectBases<BaseTypes>::NUM_FIELDS;
+        constexpr static const index_t START_INDEX = ReflectBases<BaseTypes>::END_INDEX;
+        constexpr static const index_t END_INDEX   = START_INDEX + T::REFLECTION_COUNT;
+
+        static constexpr const char* getName() {return T::getName(); }
+        static constexpr const ct::index_t REFLECT_COUNT_START = T::REFLECT_COUNT_START;
+
+        template<index_t I>
+        constexpr static auto getPtr(const Indexer<I>)
+            -> typename std::enable_if<I >= START_INDEX && I < END_INDEX, decltype(T::getPtr(Indexer<I - START_INDEX>{}))>::type
+        {
+            return T::getPtr(Indexer<I - START_INDEX>{});
+        }
+
+        template<index_t I>
+        constexpr static auto getPtr(const Indexer<I> idx)
+            -> typename std::enable_if<I < START_INDEX, decltype(ReflectBases<BaseTypes>::getPtr(idx))>::type
+        {
+            return ReflectBases<BaseTypes>::getPtr(idx);
+        }
+
+
         static constexpr ct::Indexer<NUM_FIELDS> end() { return ct::Indexer<NUM_FIELDS>{}; }
     };
 
@@ -223,11 +256,31 @@ namespace ct
         using type = typename GetType<Ptr_t>::type;
     };
 
+    template<class T, index_t I>
+    struct FieldSetType
+    {
+        using Ptr_t = PtrType<T, I>;
+        using type = typename SetType<Ptr_t>::type;
+    };
+
+    template<index_t I, class T>
+    auto set(T& obj) -> typename FieldSetType<T, I>::type
+    {
+        auto ptr = Reflect<T>::getPtr(Indexer<I>{});
+        return set(ptr, obj);
+    }
+
     template <class T, index_t I, class U = void>
     using EnableIfIsReadable = typename std::enable_if<IsReadable<T, I>::value, U>::type;
 
     template <class T, index_t I, class U = void>
     using EnableIfIsWritable = typename std::enable_if<IsWritable<T, I>::value, U>::type;
+
+    template<class T, index_t I, class U = void>
+    using EnableIfMemberFunction = typename std::enable_if<IsMemberFunction<T, I>::value, U>::type;
+
+    template<class T, index_t I, class U = void>
+    using DisableIfMemberFunction = typename std::enable_if<!IsMemberFunction<T, I>::value, U>::type;
 
     template<class T, index_t I, class U = void>
     using EnableIfIsMemberObject = typename std::enable_if<IsMemberObject<T, I>::value, U>::type;
@@ -308,7 +361,6 @@ namespace ct
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t REFLECT_COUNT_START = __COUNTER__;
 
-
 #define REFLECT_INTERNAL_START(TYPE)                                                                                   \
     static constexpr const bool INTERNALLY_REFLECTED = 1;                                                              \
     static constexpr const char* getName() { return #TYPE; }                                                           \
@@ -321,7 +373,7 @@ namespace ct
     static constexpr const char* getName() { return #TYPE; }                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__;                                              \
     using DataType = TYPE;                                                                                             \
-    using BaseTypes = ct::VariadictTypedef<__VA_ARGS__>;
+    using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
@@ -355,12 +407,22 @@ namespace ct
         return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                   \
     }
 
+#define PROPERTY_WITH_FLAG(FLAG, NAME, GETTER, SETTER)                                                                                 \
+    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
+        ->decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER))                                               \
+    {                                                                                                                  \
+        return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                                   \
+    }
+
 #define MEMBER_FUNCTION(NAME, ...)                                                                                     \
     static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                                       \
         ->decltype(ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__))                                                 \
-    {                                                                                                                  \
-        return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);                                                     \
-    }
+    {   return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);   }
+
+#define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
+    static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                                       \
+        ->decltype(ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__))                                           \
+    {   return ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__);  }
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \

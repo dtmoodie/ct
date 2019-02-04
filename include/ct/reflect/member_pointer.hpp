@@ -85,7 +85,7 @@ namespace ct
     template<class DTYPE, class CTYPE, Flag_t FLAGS>
     struct GetType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS>>
     {
-        using type = typename MemberObjectPointer<DTYPE CTYPE::*, FLAGS>::Data_t&;
+        using type = const typename MemberObjectPointer<DTYPE CTYPE::*, FLAGS>::Data_t&;
     };
 
     template<class DTYPE, class CTYPE, Flag_t FLAGS>
@@ -114,6 +114,7 @@ namespace ct
     {
         using Class_t = CTYPE;
         using Data_t  = DTYPE;
+        static constexpr const bool IMPLICIT_THIS = false;
         static constexpr const int NUM_ARGS = sizeof...(ARGS);
     };
 
@@ -122,6 +123,25 @@ namespace ct
     {
         using Class_t = CTYPE;
         using Data_t  = DTYPE;
+        static constexpr const bool IMPLICIT_THIS = false;
+        static constexpr const int NUM_ARGS = sizeof...(ARGS);
+    };
+
+    template<class DTYPE, class CTYPE, class ... ARGS>
+    struct InferPointerType<DTYPE(*)(CTYPE, ARGS...)>
+    {
+        using Class_t = CTYPE;
+        using Data_t = DTYPE;
+        static constexpr const bool IMPLICIT_THIS = true;
+        static constexpr const int NUM_ARGS = sizeof...(ARGS);
+    };
+
+    template<class DTYPE, class ... ARGS>
+    struct InferPointerType<DTYPE(*)(ARGS...)>
+    {
+        using Class_t = void;
+        using Data_t = DTYPE;
+        static constexpr const bool IMPLICIT_THIS = false;
         static constexpr const int NUM_ARGS = sizeof...(ARGS);
     };
 
@@ -132,6 +152,7 @@ namespace ct
     {
         using Class_t = typename InferPointerType<T>::Class_t;
     };
+
     template<class T, class ... TYPES>
     struct InferClassType<T, TYPES...>
     {
@@ -149,6 +170,13 @@ namespace ct
 
     template<class DTYPE, class CTYPE>
     struct InferSetterType<void(CTYPE::*)(DTYPE)>
+    {
+        using type = DTYPE;
+    };
+
+    // Explicit this override
+    template<class DTYPE, class CTYPE>
+    struct InferSetterType<DTYPE(*)(CTYPE&)>
     {
         using type = DTYPE;
     };
@@ -191,6 +219,14 @@ namespace ct
         return (obj.*ptr.m_getter)();
     }
 
+    template<class DTYPE, class CTYPE, class SET_PTR, Flag_t FLAGS>
+    typename GetType<MemberPropertyPointer<DTYPE(*)(CTYPE), SET_PTR, FLAGS>>::type
+    get(const MemberPropertyPointer<DTYPE(*)(CTYPE), SET_PTR, FLAGS> ptr, const typename MemberPropertyPointer<DTYPE(*)(CTYPE), SET_PTR, FLAGS>::Class_t& obj)
+    {
+        return ptr.m_getter(obj);
+    }
+
+    // traditional setter
     template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
     void set(const MemberPropertyPointer<GET_PTR, void(CLASS::*)(SET_TYPE), FLAGS> ptr,
              typename MemberPropertyPointer<GET_PTR, void(CLASS::*)(SET_TYPE), FLAGS>::Class_t& obj,
@@ -199,6 +235,17 @@ namespace ct
         (obj.*ptr.m_setter)(val);
     }
 
+    // Implicit this version
+    template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
+    void set(const MemberPropertyPointer<GET_PTR, void(*)(CLASS&, SET_TYPE), FLAGS> ptr,
+             CLASS& obj,
+             const SET_TYPE& val)
+    {
+        ptr.m_setter(obj, val);
+    }
+
+
+    // Mutable ref setter
     template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
     void set(const MemberPropertyPointer<GET_PTR, SET_TYPE(CLASS::*)(), FLAGS> ptr,
              typename MemberPropertyPointer<GET_PTR, SET_TYPE(CLASS::*)(), FLAGS>::Class_t& obj,
@@ -207,11 +254,32 @@ namespace ct
         (obj.*ptr.m_setter)() = val;
     }
 
+    // Implicit this version
     template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
-    AccessToken<void(CLASS::*)(SET_TYPE)> set(const MemberPropertyPointer<GET_PTR, void(CLASS::*)(SET_TYPE), FLAGS> ptr,
-             typename MemberPropertyPointer<GET_PTR, void(CLASS::*)(SET_TYPE), FLAGS>::Class_t& obj)
+    void set(const MemberPropertyPointer<GET_PTR, SET_TYPE(*)(CLASS&), FLAGS> ptr,
+             CLASS& obj,
+             const SET_TYPE& val)
+    {
+        ptr.m_setter(obj) = val;
+    }
+
+    template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
+    AccessToken<void(CLASS::*)(SET_TYPE)> set(const MemberPropertyPointer<GET_PTR, void(CLASS::*)(SET_TYPE), FLAGS> ptr, CLASS& obj)
     {
         return AccessToken<void (CLASS::*)(SET_TYPE)>(obj, ptr.m_setter, get(ptr, obj));
+    }
+
+    template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
+    SET_TYPE set(const MemberPropertyPointer<GET_PTR, SET_TYPE(*)(CLASS&), FLAGS> ptr, CLASS& obj)
+    {
+        return ptr.m_setter(obj);
+    }
+
+    template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
+    AccessToken<void(*)(CLASS&, SET_TYPE)> set(const MemberPropertyPointer<GET_PTR, void(*)(CLASS&, SET_TYPE), FLAGS> ptr,
+             CLASS& obj)
+    {
+        return AccessToken<void (*)(CLASS&, SET_TYPE)>(obj, ptr.m_setter, get(ptr, obj));
     }
 
     template<class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS>
@@ -274,10 +342,17 @@ namespace ct
     };
 
     template<int I, Flag_t FLAGS, class ... PTRS, class ... ARGS>
-    auto invoke(const MemberFunctionPointers<FLAGS, PTRS...> ptrs, const typename MemberFunctionPointers<FLAGS, PTRS...>::Class_t& obj, ARGS&&... args)
+    auto invoke(const MemberFunctionPointers<FLAGS, PTRS...> ptrs, const typename std::enable_if<!std::is_same<void, typename MemberFunctionPointers<FLAGS, PTRS...>::Class_t>::value, typename MemberFunctionPointers<FLAGS, PTRS...>::Class_t>::type& obj, ARGS&&... args)
         -> decltype((obj.*std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...))
     {
         return (obj.*std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...);
+    }
+
+    template<int I, Flag_t FLAGS, class OBJ, class ... PTRS, class ... ARGS>
+    auto invoke(const MemberFunctionPointers<FLAGS, PTRS...> ptrs, const OBJ&, ARGS&&... args)
+        -> typename std::enable_if<std::is_same<void, typename MemberFunctionPointers<FLAGS, PTRS...>::Class_t>::value, decltype((std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...))>::type
+    {
+        return std::get<I>(ptrs.m_ptrs)(std::forward<ARGS>(args)...);
     }
 
     template<Flag_t FLAGS, class ... PTRS>

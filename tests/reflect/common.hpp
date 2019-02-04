@@ -170,4 +170,9 @@ void testTypes(Tester& tester)
         asdf.asdf = 5;
         tester.test(asdf);
     }
+    {
+        ExplicitThisProperty data;
+        tester.test(data);
+    }
+
 }

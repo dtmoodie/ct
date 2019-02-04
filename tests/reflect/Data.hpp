@@ -32,9 +32,24 @@ struct TestA
         return std::sqrt(x*x + y*y + z*z);
     }
 
+    TestA mul(int val) const
+    {
+        return {x*val, y*val, z*val};
+    }
+
+    TestA mul(float val, float beta) const
+    {
+        return {x*val - beta, y*val - beta, z*val - beta};
+    }
+
     TestA mul(float val) const
     {
         return {x*val, y*val, z*val};
+    }
+
+    static TestA create()
+    {
+        return {0,0,0};
     }
 };
 
@@ -91,6 +106,21 @@ struct PointerOwner
     ReflectedStruct* ptr;
 };
 
+struct ExplicitThisProperty
+{
+    float prop;
+};
+
+const float& getExplicitThisProperty(const ExplicitThisProperty& data)
+{
+    return data.prop;
+}
+
+float& setExplicitThisProperty(ExplicitThisProperty& data)
+{
+    return data.prop;
+}
+
 struct WeirdWeakOwnerShip
 {
     WeirdWeakOwnerShip(const size_t cnt = 10)
@@ -114,7 +144,7 @@ struct InternallyReflected
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
-    REFLECT_INTERNAL_END;
+    REFLECT_INTERNAL_END
 };
 
 

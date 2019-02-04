@@ -21,7 +21,8 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
-        MEMBER_FUNCTION(mul, &TestA::mul)
+        MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(float) const>(&TestA::mul), static_cast<TestA(TestA::*)(float, float) const>(&TestA::mul), static_cast<TestA(TestA::*)(int) const>(&TestA::mul))
+        MEMBER_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
     REFLECT_BEGIN(TestB)
@@ -63,6 +64,10 @@ namespace ct
     REFLECT_BEGIN(WeirdWeakOwnerShip)
         PUBLIC_ACCESS(struct_vec)
         PUBLIC_ACCESS(pointer_owners)
+    REFLECT_END;
+
+    REFLECT_BEGIN(ExplicitThisProperty)
+        PROPERTY(prop, &getExplicitThisProperty, &setExplicitThisProperty)
     REFLECT_END;
 
 }

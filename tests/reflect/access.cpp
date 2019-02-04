@@ -8,10 +8,89 @@ ct::EnableIfReflected<TestA, void> testEnabledFunction()
 {
 }
 
+template<class T, class C, ct::Flag_t FLAGS>
+void printField(const ct::MemberObjectPointer<T C::*, FLAGS> ptr, std::ostream& os)
+{
+    os << "  Field " << ct::Reflect<T>::getName() << " " << ptr.m_name << std::endl;
+}
 
+template<class T>
+void printSignaturesHelper(const std::tuple<T>*, std::ostream& os)
+{
+    os << "  " << typeid(T).name();
+}
+
+template<class T, class ... PTRS>
+void printSignaturesHelper(const std::tuple<T, PTRS...>*, std::ostream& os)
+{
+    os << "  " << typeid(T).name();
+    printSignaturesHelper(static_cast<std::tuple<PTRS...>*>(nullptr), os);
+}
+
+template<class ... PTRS>
+void printSignatures(const std::tuple<PTRS...>, std::ostream& os)
+{
+    printSignaturesHelper(static_cast<std::tuple<PTRS...>*>(nullptr), os);
+}
+
+template<ct::Flag_t FLAGS, class ... PTRS>
+void printField(const ct::MemberFunctionPointers<FLAGS, PTRS...> ptr, std::ostream& os)
+{
+    os << "  Member Function  " << ptr.m_name << std::endl;
+    os << "  ";
+    printSignatures(ptr.m_ptrs, os);
+    os << std::endl;
+}
+
+template<ct::Flag_t FLAGS, class GETTER, class SETTER>
+void printField(const ct::MemberPropertyPointer<GETTER, SETTER, FLAGS> properties, std::ostream& os)
+{
+    os << "  Member Property  " << properties.m_name << std::endl;
+}
+
+
+template<class T>
+void printStructInfoHelper(std::ostream& os, const ct::Indexer<0> idx)
+{
+    auto ptr = ct::Reflect<T>::getPtr(idx);
+    printField(ptr, os);
+}
+
+template<class T, ct::index_t I>
+void printStructInfoHelper(std::ostream& os, const ct::Indexer<I> idx)
+{
+    auto ptr = ct::Reflect<T>::getPtr(idx);
+    printField(ptr, os);
+    printStructInfoHelper<T>(os, --idx);
+}
+
+template<class T>
+void printStructInfo(std::ostream& os)
+{
+    printStructInfoHelper<T>(os, ct::Reflect<T>::end());
+}
+
+struct StaticPrintStruct
+{
+    template<class T>
+    ct::EnableIfReflected<T> test(const T&)
+    {
+        printStructInfo<T>(std::cout);
+    }
+
+    template<class T>
+    ct::DisableIfReflected<T> test(const T&)
+    {
+
+    }
+
+};
 
 int main()
 {
+    StaticPrintStruct tester;
+    testTypes(tester);
+
     testEnabledFunction();
     {
         // TestA a{ 0,1,2 };
