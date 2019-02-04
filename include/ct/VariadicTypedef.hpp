@@ -51,6 +51,13 @@ namespace ct
         using tuple_type = std::tuple<T, Args...>;
     };
 
+    template <typename ...T, typename... Args>
+    struct Append<VariadicTypedef<T...>, VariadicTypedef<Args...>>
+    {
+        using type = VariadicTypedef<T..., Args...>;
+        using tuple_type = std::tuple<T..., Args...>;
+    };
+
     template <typename... Args>
     struct Append<void, VariadicTypedef<Args...>>
     {
@@ -60,6 +67,20 @@ namespace ct
 
     template <typename... Args>
     struct Append<VariadicTypedef<Args...>, void>
+    {
+        using type = VariadicTypedef<Args...>;
+        using tuple_type = std::tuple<Args...>;
+    };
+
+    template <typename... Args>
+    struct Append<VariadicTypedef<Args...>, VariadicTypedef<void>>
+    {
+        using type = VariadicTypedef<Args...>;
+        using tuple_type = std::tuple<Args...>;
+    };
+
+    template <typename... Args>
+    struct Append<VariadicTypedef<void>, VariadicTypedef<Args...>>
     {
         using type = VariadicTypedef<Args...>;
         using tuple_type = std::tuple<Args...>;
@@ -108,4 +129,33 @@ namespace ct
 
     template<class T>
     using fromTuple = typename ConvertFromTuple<T>::type;
+
+    template<class T, class U>
+    struct ContainsTypeImpl;
+
+    template<class T>
+    struct ContainsTypeImpl<T, ct::VariadicTypedef<>>
+    {
+        constexpr static const bool value = false;
+    };
+
+    template<class T, class U1>
+    struct ContainsTypeImpl<T, ct::VariadicTypedef<U1>>
+    {
+        constexpr static const bool value = std::is_same<T, U1>::value;
+    };
+
+    template<class T, class U1, class ... U>
+    struct ContainsTypeImpl<T, ct::VariadicTypedef<U1, U...>>
+    {
+        constexpr static const bool value = std::is_same<T, U1>::value || ContainsTypeImpl<T, ct::VariadicTypedef<U...>>::value;
+    };
+
+    template<class T, class U>
+    struct ContainsType
+    {
+        constexpr static const bool value = ContainsTypeImpl<T, U>::value;
+    };
+
+
 }
