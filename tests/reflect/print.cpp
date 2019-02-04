@@ -116,5 +116,5 @@ int main()
     Printer printer;
     testTypes(printer);
 
-    printTypes(ct::Reflect<DerivedC>::VisitationList_t{}, std::cout);
+    //printTypes(ct::Reflect<DerivedC>::VisitationList_t{}, std::cout);
 }

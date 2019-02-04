@@ -21,7 +21,18 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
-        MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(float) const>(&TestA::mul), static_cast<TestA(TestA::*)(float, float) const>(&TestA::mul), static_cast<TestA(TestA::*)(int) const>(&TestA::mul))
+        // GCC 4.8 doesn't like this, can't do overloads this way with it
+#ifdef __GNUC__
+#if __GNUC__ >= 5
+    MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(float) const>(&TestA::mul), static_cast<TestA(TestA::*)(float, float) const>(&TestA::mul), static_cast<TestA(TestA::*)(int) const>(&TestA::mul))
+#else
+    MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(float) const>(&TestA::mul))
+    MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(float, float) const>(&TestA::mul))
+    MEMBER_FUNCTION(mul, static_cast<TestA(TestA::*)(int) const>(&TestA::mul))
+#endif
+#else
+
+#endif
         MEMBER_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
