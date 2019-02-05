@@ -17,7 +17,7 @@ namespace ct
     }
 
     template <class T, ct::index_t I, class Comparator>
-    typename std::enable_if<!IsMemberFunction<T, I>::value, bool>::type
+    EnableIf<!IsMemberFunction<T, I>::value, bool>
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
@@ -30,7 +30,7 @@ namespace ct
     }
 
     template <class T, ct::index_t I, class Comparator>
-    typename std::enable_if<IsMemberFunction<T, I>::value, bool>::type
+    EnableIf<IsMemberFunction<T, I>::value, bool>
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const Comparator& cmp)
     {
         /*auto accessor = Reflect<T>::getPtr(idx);

@@ -19,29 +19,27 @@ namespace ct
 
 namespace ct
 {
-    template<class T, index_t I>
+    template <class T, index_t I>
     struct CountSerializableFieldsHelper
     {
         constexpr static const uint32_t value = ShouldSerialize<T, I>::value ? 1 : 0;
-        constexpr static const uint32_t count = CountSerializableFieldsHelper<T, I-1>::count + value;
+        constexpr static const uint32_t count = CountSerializableFieldsHelper<T, I - 1>::count + value;
     };
 
-    template<class T>
+    template <class T>
     struct CountSerializableFieldsHelper<T, 0>
     {
         constexpr static const uint32_t value = ShouldSerialize<T, 0>::value ? 1 : 0;
         constexpr static const uint32_t count = value;
     };
-    template<class T>
+    template <class T>
     struct CountSerializableFields
     {
         constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::N>::count;
     };
 
-
     template <class AR, class T, index_t I>
-    auto loadValue(AR& ar, T& obj) ->
-        typename std::enable_if<ShouldSerialize<T, I>::value>::type
+    auto loadValue(AR& ar, T& obj) -> EnableIf<ShouldSerialize<T, I>::value>
     {
         auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
         ar(cereal::make_nvp(
@@ -50,8 +48,7 @@ namespace ct
     }
 
     template <class AR, class T, index_t I>
-    auto loadValue(AR&, T&) ->
-        typename std::enable_if<!ShouldSerialize<T, I>::value>::type
+    auto loadValue(AR&, T&) -> EnableIf<!ShouldSerialize<T, I>::value>
     {
     }
 
@@ -75,14 +72,12 @@ namespace ct
     }
 
     template <class AR, class T, index_t I>
-    auto saveValue(AR&, const T&, const ct::Indexer<I> ) ->
-        typename std::enable_if<!ShouldSerialize<T, I>::value>::type
+    auto saveValue(AR&, const T&, const ct::Indexer<I>) -> EnableIf<!ShouldSerialize<T, I>::value>
     {
     }
 
     template <class AR, class T, index_t I>
-    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) ->
-        typename std::enable_if<ShouldSerialize<T, I>::value>::type
+    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> EnableIf<ShouldSerialize<T, I>::value>
     {
         auto accessor = Reflect<T>::getPtr(idx);
         ar(cereal::make_nvp(accessor.m_name, get(accessor, obj)));

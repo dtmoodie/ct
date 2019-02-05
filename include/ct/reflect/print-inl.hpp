@@ -11,7 +11,7 @@ namespace std
     auto operator<<(ostream& os, const T& obj) -> ct::EnableIfReflected<T, ostream&>
     {
         thread_local bool recursion_block = false;
-        if(recursion_block)
+        if (recursion_block)
         {
             return os;
         }
@@ -22,8 +22,7 @@ namespace std
     }
 
     template <class T>
-    auto operator<<(ostream& os, const vector<T>& vec) ->
-        typename std::enable_if<ct::StreamWritable<T>::value, ostream&>::type
+    auto operator<<(ostream& os, const vector<T>& vec) -> ct::EnableIf<ct::StreamWritable<T>::value, ostream&>
     {
         if (vec.empty())
         {
@@ -64,15 +63,16 @@ namespace ct
         using DType = typename GetType<Ptr_t>::type;
         constexpr static const bool is_calculated = IsMemberFunctionPointers<Ptr_t>::value;
         constexpr static const bool is_writable = CanWrite<T, I>::value;
-        constexpr static const bool value = is_writable && ((is_calculated && O::print_calculated_values == true) || is_calculated == false);
+        constexpr static const bool value =
+            is_writable && ((is_calculated && O::print_calculated_values == true) || is_calculated == false);
 
         static_assert(is_writable == true || O::error_on_nonprintable == false,
                       "Either need to be able to write this data type or need to disable it in options");
     };
 
     template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& obj) ->
-        typename std::enable_if<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == false>::type
+    auto printParam(std::ostream& os, const T& obj)
+        -> EnableIf<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == false>
     {
         // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
         // stream writable and your print options do not allow that via the error_on_nonprintable flag
@@ -87,7 +87,7 @@ namespace ct
         os << get(accessor, obj);
     }
 
-    template<class T, index_t I, index_t J = 0>
+    template <class T, index_t I, index_t J = 0>
     struct CountArgs
     {
         using Ptr_t = PtrType<T, I>;
@@ -95,11 +95,11 @@ namespace ct
         constexpr static const index_t NUM_ARGS = InferPointerType<FunctionPtr_t>::NUM_ARGS;
     };
 
-    template<class T, index_t I, class U = void>
-    using EnableIfNoArgs = typename std::enable_if<CountArgs<T, I>::NUM_ARGS == 0, U>::type;
+    template <class T, index_t I, class U = void>
+    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0, U>;
 
-    template<class T, index_t I, class U = void>
-    using EnableIfArgs = typename std::enable_if<CountArgs<T, I>::NUM_ARGS >= 1, U>::type;
+    template <class T, index_t I, class U = void>
+    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1, U>;
 
     template <int I, class Options, class T>
     auto printMemberFunctionResult(std::ostream& os, const T& obj) -> EnableIfNoArgs<T, I>
@@ -114,13 +114,13 @@ namespace ct
     }
 
     template <int I, class Options, class T>
-    auto printMemberFunctionResult(std::ostream& , const T& ) -> EnableIfArgs<T, I>
+    auto printMemberFunctionResult(std::ostream&, const T&) -> EnableIfArgs<T, I>
     {
     }
 
     template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& obj) ->
-        typename std::enable_if<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == true>::type
+    auto printParam(std::ostream& os, const T& obj)
+        -> EnableIf<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value == true>
     {
         // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
         // stream writable and your print options do not allow that via the error_on_nonprintable flag
@@ -128,8 +128,7 @@ namespace ct
     }
 
     template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& data) ->
-        typename std::enable_if<!ShouldWrite<T, Options, I>::value>::type
+    auto printParam(std::ostream& os, const T& data) -> EnableIf<!ShouldWrite<T, Options, I>::value>
     {
         if (ShouldWrite<T, Options, I>::is_writable == false && Options::error_on_nonprintable == false)
         {
@@ -138,20 +137,17 @@ namespace ct
         }
     }
 
-    template<int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj)
-        -> typename std::enable_if<!IsMemberFunction<T, I>::value>::type
+    template <int I, class Options = PrintOptions, class T>
+    auto printValue(std::ostream& os, const T& obj) -> EnableIf<!IsMemberFunction<T, I>::value>
     {
         printParam<I, Options>(os, obj);
     }
 
-    template<int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj)
-        -> typename std::enable_if<IsMemberFunction<T, I>::value>::type
+    template <int I, class Options = PrintOptions, class T>
+    auto printValue(std::ostream& os, const T& obj) -> EnableIf<IsMemberFunction<T, I>::value>
     {
         printMemberFunctionResult<I, Options>(os, obj);
     }
-
 
     template <class Options = PrintOptions, class T>
     void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<0U>)
