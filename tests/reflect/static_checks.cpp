@@ -1,6 +1,6 @@
-#include <ct/reflect.hpp>
-#include "Reflect.hpp"
 #include "Data.hpp"
+#include "Reflect.hpp"
+#include <ct/reflect.hpp>
 
 int main()
 {
@@ -19,5 +19,4 @@ int main()
 
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
-
 }

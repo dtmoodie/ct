@@ -14,7 +14,7 @@
 template <class Read, class Write>
 struct CerealizationTester
 {
-    CerealizationTester(const std::string path) : m_path(path) {}
+    CerealizationTester(std::string path) : m_path(std::move(path)) {}
 
     template <class T>
     void test(const T& data)

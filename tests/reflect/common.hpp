@@ -76,8 +76,8 @@ void testTypes(Tester& tester)
     }
     {
         Inherited data;
-        data.id = 0;
-        data.w = 0;
+        data.id = 3;
+        data.w = 4;
         data.x = 0;
         data.y = 1;
         data.z = 2;
@@ -159,8 +159,7 @@ void testTypes(Tester& tester)
     {
         // WeirdWeakOwnerShip data;
         // tester.test(data);
-    }
-    {
+    } {
         MultipleInheritance asdf;
         asdf.ReflectedStruct::x = 0;
         asdf.ReflectedStruct::y = 1;
@@ -185,5 +184,4 @@ void testTypes(Tester& tester)
 
         tester.test(derived);
     }
-
 }
