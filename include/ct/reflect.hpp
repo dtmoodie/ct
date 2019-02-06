@@ -458,21 +458,21 @@ namespace ct
     }
 
 #define PROPERTY_WITH_FLAG(FLAG, NAME, GETTER, SETTER)                                                                 \
-    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
         ->decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER))                                         \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
 
 #define MEMBER_FUNCTION(NAME, ...)                                                                                     \
-    static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                                       \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
         ->decltype(ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__))                                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);                                                     \
     }
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
-    static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                                       \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START - 1>)                             \
         ->decltype(ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__))                                           \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__);                                               \
