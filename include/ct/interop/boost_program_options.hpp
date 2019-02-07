@@ -77,7 +77,7 @@ namespace ct
     }
 
     template <class T>
-    DisableIfReflected<T> registerOption(T& obj, po::variables_map& vm, std::string path)
+    DisableIfReflected<T> registerOption(T& obj, po::variables_map& vm, const std::string& path)
     {
         if (vm.count(path))
         {
@@ -86,7 +86,7 @@ namespace ct
     }
 
     template <class T, index_t I>
-    DisableIfReflected<typename FieldSetType<T, I>::type>
+    DisableIfReflected<typename std::decay<typename FieldSetType<T, I>::type>::type>
     readField(T& obj, const Indexer<I> idx, po::variables_map& vm, std::string path)
     {
         auto ptr = Reflect<T>::getPtr(idx);
@@ -99,12 +99,12 @@ namespace ct
 
         if (vm.count(path))
         {
-            set(ptr, obj, vm[path].as<type>());
+            set(ptr, obj, vm[path].as<typename std::decay<type>::type>());
         }
     }
 
     template <class T, index_t I>
-    EnableIfReflected<typename FieldSetType<T, I>::type>
+    EnableIfReflected<typename std::decay<typename FieldSetType<T, I>::type>::type>
     readField(T& obj, const Indexer<I> idx, po::variables_map& vm, std::string path)
     {
         auto ptr = Reflect<T>::getPtr(idx);
