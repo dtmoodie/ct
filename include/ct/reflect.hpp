@@ -19,35 +19,30 @@
 
 namespace ct
 {
+    namespace detail
+    {
+        constexpr StringView parseClassNameGCC(const StringView name)
+        {
+            return name.slice(name.rfind('=') + 2, name.size() - 1);
+        }
 
+        constexpr StringView parseClassNameMSVC(const StringView name)
+        {
+            return name.slice(ct::findFirst(name.data(), ' ') + 1, ct::findLast(name.data(), '>'));
+        }
+    }
     template <class T>
     struct GetNameGCC
     {
-        static constexpr ct::StringView parseClassNameHelper(ct::StringView name, const size_t len, const size_t index)
-        {
-            return ct::StringView(name.m_data + index, len - index - 1);
-        }
-
-        static constexpr ct::StringView parseClassName(const ct::StringView name)
-        {
-            return parseClassNameHelper(name, ct::strLen(name), ct::findLast(name, '=') + 2);
-        }
-        static constexpr ct::StringView getName() { return parseClassName(CT_FUNCTION_NAME); }
+        static constexpr StringView name() { return CT_FUNCTION_NAME; }
+        static constexpr StringView getName() { return detail::parseClassNameGCC(name()); }
     };
 
     template <class T>
     struct GetNameMSVC
     {
-        static constexpr ct::StringView parseClassNameHelper(ct::StringView name, const size_t begin, const size_t end)
-        {
-            return ct::StringView(name.m_data + begin, end - begin);
-        }
-
-        static constexpr ct::StringView parseClassName(const ct::StringView name)
-        {
-            return parseClassNameHelper(name, ct::findFirst(name.m_data, ' ') + 1, ct::findLast(name.m_data, '>'));
-        }
-        static constexpr ct::StringView getName() { return parseClassName(CT_FUNCTION_NAME); }
+        static constexpr StringView name() { return CT_FUNCTION_NAME; }
+        static constexpr StringView getName() { return detail::parseClassNameMSVC(name()); }
     };
 #ifdef _MSC_VER
     template <class T>

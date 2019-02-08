@@ -28,7 +28,7 @@ namespace ct
         return len < 2 ? 0 : detail::crc32(str + begin, len - 1) ^ 0xFFFFFFFF;
     }
 
-    constexpr uint32_t crc32(const StringView view) { return crc32Range(view.m_data, view.m_size); }
+    constexpr uint32_t crc32(const StringView view) { return crc32Range(view.data(), view.size()); }
 
     template <class T>
     constexpr T combineHash(T seed, T hash)

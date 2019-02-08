@@ -19,4 +19,12 @@ int main()
 
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
+
+    ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getName()), ct::crc32("ReflectedStruct")>{};
+
+    ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<Inherited>::getName()), ct::crc32("Inherited")>{};
+
+    ct::StaticEquality<uint32_t,
+                       ct::crc32(ct::Reflect<MultipleInheritance>::getName()),
+                       ct::crc32("MultipleInheritance")>{};
 }
