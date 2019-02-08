@@ -22,10 +22,16 @@ namespace ct
         CT_RESERVED_FLAG_BITS = 8
     };
 
+	
     template <typename T, typename U>
     constexpr size_t pointerValue(U T::*member)
     {
+#ifdef _MSC_VER
+		// Have to test if this works on GCC
+        return *(unsigned int*)(&member);
+#else
         return (char*)&((T*)nullptr->*member) - (char*)nullptr;
+#endif
     }
 
     template <class T>
