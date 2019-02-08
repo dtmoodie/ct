@@ -19,15 +19,15 @@ int main()
     static_assert(ct::CountArgs<TestA, 3>::NUM_ARGS == 0, "asdf");
     {
         using type = ct::FieldGetType<TestA, 0>;
-        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
+        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
     }
     {
         using type = ct::FieldGetType<TestA, 1>;
-        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
+        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
     }
     {
         using type = ct::FieldGetType<TestA, 2>;
-        using test = StaticEqualTypes<typename std::decay<type>::type, float>;
+        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
     }
 
     /*{
@@ -67,7 +67,7 @@ int main()
     ct::printStruct(std::cout, pgs);
     std::cout << std::endl;
     mul(pgs);
-    if(pgs.getX() != 4.0f)
+    if (pgs.getX() != 4.0f)
     {
         std::cout << "Private mutation not working" << std::endl;
         return 1;
@@ -85,17 +85,23 @@ int main()
         const auto start1 = std::chrono::high_resolution_clock::now();
 
         static_assert(ct::IsMemberObject<TestA, 0>::value, "asdf");
-        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 0, void>::types, ct::VariadicTypedef<float>>::value, "asdf");
-        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 1, void>::types, ct::VariadicTypedef<float, float>>::value, "asdf");
-        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 2, void>::types, ct::VariadicTypedef<float, float, float>>::value, "asdf");
-        static_assert(std::is_same<typename ct::GlobMemberObjects<TestA>::types, ct::VariadicTypedef<float, float, float>>::value, "asdf");
-
-
+        static_assert(
+            std::is_same<ct::GlobMemberObjectsHelper<TestA, 0, void>::types, ct::VariadicTypedef<float>>::value,
+            "asdf");
+        static_assert(
+            std::is_same<ct::GlobMemberObjectsHelper<TestA, 1, void>::types, ct::VariadicTypedef<float, float>>::value,
+            "asdf");
+        static_assert(std::is_same<ct::GlobMemberObjectsHelper<TestA, 2, void>::types,
+                                   ct::VariadicTypedef<float, float, float>>::value,
+                      "asdf");
+        static_assert(
+            std::is_same<typename ct::GlobMemberObjects<TestA>::types, ct::VariadicTypedef<float, float, float>>::value,
+            "asdf");
 
         TestA instance;
         for (size_t i = 0; i < 1e9; ++i)
         {
-            //accessor.invoke(instance);
+            // accessor.invoke(instance);
         }
         const auto start2 = std::chrono::high_resolution_clock::now();
         for (size_t i = 0; i < 1e9; ++i)

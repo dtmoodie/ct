@@ -7,30 +7,28 @@
 namespace ct
 {
 
-    template<class LHS, class RHS>
+    template <class LHS, class RHS>
     struct StaticEqualTypes
     {
-        constexpr StaticEqualTypes()
-        {
-            static_assert(std::is_same<LHS, RHS>::value, "Types not equal");
-        }
+        constexpr StaticEqualTypes() { static_assert(std::is_same<LHS, RHS>::value, "Types not equal"); }
     };
 
-    template<class T, T LHS, T RHS>
+    template <class T, T LHS, T RHS>
     struct StaticEquality
     {
-        constexpr StaticEquality()
-        {
-            static_assert(LHS == RHS, "values not equal");
-        }
-
+        constexpr StaticEquality() { static_assert(LHS == RHS, "values not equal"); }
     };
 
-    template<index_t I, index_t START, index_t END>
+    template <class T, T LHS, T RHS>
+    struct StaticInequality
+    {
+        constexpr StaticInequality() { static_assert(LHS != RHS, "values are equal"); }
+    };
+
+    template <index_t I, index_t START, index_t END>
     struct StaticInRange
     {
         static_assert(I >= START && I < END, "I must be in range");
     };
-
 }
 #endif

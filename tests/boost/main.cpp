@@ -1,6 +1,7 @@
 #include "../common.hpp"
 #include <ct/interop/boost_program_options.hpp>
 #include <ct/reflect/print.hpp>
+#include <ct/static_asserts.hpp>
 #include <iostream>
 
 struct SubOptions
@@ -32,13 +33,6 @@ struct ProgramOptions
     REFLECT_INTERNAL_END
 };
 
-struct TestStruct
-{
-    static constexpr auto getTypeHelper() -> typename std::remove_reference<decltype(*this)>::type;
-    // using DataType = decltype(getTypeHelper());
-    using DataType = decltype(getTypeHelper());
-};
-
 int main(int ac, char** av)
 {
     ct::po::options_description desc;
@@ -54,16 +48,4 @@ int main(int ac, char** av)
     ct::readOptions(opts, vm);
 
     std::cout << opts << std::endl;
-    using type = TestStruct::DataType;
-    std::cout << std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>::getName())>::value << std::endl;
-    StaticEquality<uint32_t,
-                   std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>::getName())>::value,
-                   ct::crc32("TestStruct")>();
-    std::cout << ct::GetName<type>::getName() << std::endl;
-
-    std::cout << ct::findNthFromBeginning("asdfasdfasdf", 2, 'a') << std::endl;
-
-    std::cout << ct::GetNameMSVC<float>::parseClassName(
-                     "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")
-              << std::endl;
 }
