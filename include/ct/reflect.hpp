@@ -13,8 +13,14 @@
 
 #ifdef _MSC_VER
 #define CT_FUNCTION_NAME __FUNCTION__
+#define CT_CONSTEXPR_NAME constexpr
 #else
 #define CT_FUNCTION_NAME __PRETTY_FUNCTION__
+#if __GNUC__ > 5
+#define CT_CONSTEXPR_NAME constexpr
+#else
+#define CT_CONSTEXPR_NAME
+#endif
 #endif
 
 namespace ct
@@ -38,8 +44,7 @@ namespace ct
     template <class T>
     struct GetNameGCC
     {
-        static constexpr StringView name() { return StringView(CT_FUNCTION_NAME); }
-        static constexpr StringView getName() { return detail::parseClassNameGCC(name()); }
+        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(CT_FUNCTION_NAME); }
     };
 
     template <class T>
@@ -452,23 +457,24 @@ namespace ct
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
-#define REFLECT_INTERNAL_START(TYPE)                                                                                   \
+#define REFLECT_INTERNAL_START                                                                                         \
     static constexpr const bool INTERNALLY_REFLECTED = 1;                                                              \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    using DataType = TYPE;                                                                                             \
-    static constexpr ct::StringView getName() { return #TYPE; }                                                        \
+    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
+    using DataType = decltype(getTypeHelper());                                                                        \
+    static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
     using BaseTypes = ct::VariadicTypedef<>;
 
-#define REFLECT_INTERNAL_DERIVED(TYPE, ...)                                                                            \
+#define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    using DataType = TYPE;                                                                                             \
-    static constexpr ct::StringView getName() { return #TYPE; }                                                        \
+    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
+    using DataType = decltype(getTypeHelper());                                                                        \
+    static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
     using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
-        ->decltype(ct::makeMemberObjectPointer(#NAME, &DataType::NAME))                                                \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(#NAME, &DataType::NAME);                                                    \
     }
@@ -494,14 +500,12 @@ namespace ct
 
 #define PROPERTY(NAME, GETTER, SETTER)                                                                                 \
     static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
-        ->decltype(ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER))                                               \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                   \
     }
 
 #define PROPERTY_WITH_FLAG(FLAG, NAME, GETTER, SETTER)                                                                 \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
-        ->decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER))                                         \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
@@ -514,7 +518,6 @@ namespace ct
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
-        ->decltype(ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__))                                           \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__);                                               \
     }
