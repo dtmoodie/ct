@@ -508,7 +508,6 @@ namespace ct
 
 #define MEMBER_FUNCTION(NAME, ...)                                                                                     \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
-        ->decltype(ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__))                                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);                                                     \
     }

@@ -114,6 +114,16 @@ struct PointerOwner
     ReflectedStruct* ptr;
 };
 
+struct Virtual
+{
+    //~Virtual() {}
+
+    REFLECT_INTERNAL_START(Virtual)
+        MEMBER_FUNCTION(foo, &Virtual::foo)
+    REFLECT_INTERNAL_END
+    void foo();
+};
+
 struct ExplicitThisProperty
 {
     float prop;
