@@ -31,17 +31,21 @@ namespace ct
             return name.slice(ct::findFirst(name.data(), ' ') + 1, ct::findLast(name.data(), '>'));
         }
     }
+
+    // This works on gcc 5.4 but not 4.8 :(
+    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55425
+    // This is why we can't have nice things
     template <class T>
     struct GetNameGCC
     {
-        static constexpr StringView name() { return CT_FUNCTION_NAME; }
+        static constexpr StringView name() { return StringView(CT_FUNCTION_NAME); }
         static constexpr StringView getName() { return detail::parseClassNameGCC(name()); }
     };
 
     template <class T>
     struct GetNameMSVC
     {
-        static constexpr StringView name() { return CT_FUNCTION_NAME; }
+        static constexpr StringView name() { return StringView(CT_FUNCTION_NAME); }
         static constexpr StringView getName() { return detail::parseClassNameMSVC(name()); }
     };
 #ifdef _MSC_VER
@@ -448,20 +452,18 @@ namespace ct
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
-#define REFLECT_INTERNAL_START                                                                                         \
-    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
+#define REFLECT_INTERNAL_START(TYPE)                                                                                   \
     static constexpr const bool INTERNALLY_REFLECTED = 1;                                                              \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    using DataType = decltype(getTypeHelper());                                                                        \
-    static constexpr ct::StringView getName() { return ct::GetName<DataType>::getName(); }                             \
+    using DataType = TYPE;                                                                                             \
+    static constexpr ct::StringView getName() { return #TYPE; }                                                        \
     using BaseTypes = ct::VariadicTypedef<>;
 
-#define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
+#define REFLECT_INTERNAL_DERIVED(TYPE, ...)                                                                            \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
-    using DataType = decltype(getTypeHelper());                                                                        \
-    static constexpr ct::StringView getName() { return ct::GetName<DataType>::getName(); }                             \
+    using DataType = TYPE;                                                                                             \
+    static constexpr ct::StringView getName() { return #TYPE; }                                                        \
     using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
