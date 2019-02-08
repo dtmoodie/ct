@@ -72,8 +72,9 @@ int main()
 
     // StaticEquality < size_t, StringView("asdf").
 
+    // The following is not portable to gcc 4.8 :(
     // GCC's output ct::GetName<test::TestClass>::name();
-    constexpr const char* class_name1 =
+    /*constexpr const char* class_name1 =
         "static constexpr ct::StringView ct::GetNameGCC<T>::name() [with T = test::TestClass]";
     // MSVC's output
     constexpr const char* class_name2 = "GetNameMSVC<class test::TestClass>::getName";
@@ -101,7 +102,7 @@ int main()
 
     std::cout << ct::detail::parseClassNameMSVC(
                      "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")
-              << std::endl;
+              << std::endl;*/
 
     return 0;
 }
