@@ -2,6 +2,7 @@
 #include "Hash.hpp"
 #include "String.hpp"
 #include "config.hpp"
+#include "reflect.hpp"
 #include <ct/TypeTraits.hpp>
 #include <type_traits>
 
@@ -12,7 +13,7 @@ namespace ct
     {
         return crc32Range(str, classNameIdx(str) + 1);
     }
-    CTCONSTEXPR uint32_t hashClassNameHelper(const char* str) { return crc32Range(str, classNameIdx(str)); }
+    CTCONSTEXPR uint32_t hashClassNameHelper(const char* str) { return crc32(detail::parseClassNameGCC(str)); }
     CTCONSTEXPR uint32_t hashClassName(const char* str)
     {
 #ifdef _MSC_VER

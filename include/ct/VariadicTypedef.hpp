@@ -172,6 +172,12 @@ namespace ct
         using type = typename InsertUnique<T, U>::type;
     };
 
+    template <class U>
+    struct InsertUniqueMultiple<VariadicTypedef<>, U>
+    {
+        using type = U;
+    };
+
     template <class T, class... TS, class U>
     struct InsertUniqueMultiple<VariadicTypedef<T, TS...>, U>
     {

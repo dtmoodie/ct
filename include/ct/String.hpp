@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_STRING_HPP
+#define CT_STRING_HPP
 #include "StringImpl.hpp"
 #include <array>
 #include <cstddef>
@@ -6,55 +7,60 @@
 #include <type_traits>
 namespace ct
 {
-    struct StringView
+
+    template <class T = char>
+    struct BasicStringView
     {
         constexpr static const auto npos = std::string::npos;
 
-        inline StringView(const std::string& str);
+        inline BasicStringView(const std::basic_string<T>& str);
 
         template <size_t N>
-        constexpr StringView(const char (&data)[N]);
+        constexpr BasicStringView(const T (&data)[N]);
 
-        constexpr StringView(const char* data, size_t n);
-        constexpr StringView(const char* data);
+        constexpr BasicStringView(const T* data, size_t n);
+        constexpr BasicStringView(const T* data);
 
-        constexpr StringView slice(size_t begin, size_t end) const;
+        constexpr BasicStringView slice(size_t begin, size_t end) const;
 
-        constexpr StringView substr(size_t pos = 0, size_t count = 0) const;
+        constexpr BasicStringView substr(size_t pos = 0, size_t count = 0) const;
 
-        constexpr size_t find(char character, size_t n = 0, size_t pos = 0) const;
+        constexpr size_t find(T character, size_t n = 0, size_t pos = 0) const;
 
-        constexpr size_t rfind(char character, size_t n = 0) const;
+        constexpr size_t rfind(T character, size_t n = 0) const;
 
-        constexpr size_t count(char character, size_t pos = 0, size_t cnt = 0) const;
+        constexpr size_t count(T character, size_t pos = 0, size_t cnt = 0) const;
 
-        constexpr operator const char*() const;
-        operator std::string() const;
+        constexpr operator const T*() const;
+        operator std::basic_string<T>() const;
 
         constexpr char operator[](const size_t idx) const;
 
-        constexpr const char* data() const;
+        constexpr const T* data() const;
         constexpr size_t size() const;
 
         constexpr int toInteger() const;
 
         constexpr uint32_t hash() const;
 
-        constexpr bool equal(const StringView other) const;
+        constexpr bool equal(const BasicStringView other) const;
 
-        constexpr bool operator==(const StringView other) const;
-        constexpr bool operator!=(const StringView other) const;
+        constexpr bool operator==(const BasicStringView other) const;
+        constexpr bool operator!=(const BasicStringView other) const;
 
       private:
-        constexpr bool equalImpl(const StringView other, size_t pos) const;
+        constexpr bool equalImpl(const BasicStringView other, size_t pos) const;
 
-        constexpr size_t rfindImpl(char character, size_t n, size_t pos) const;
+        constexpr size_t rfindImpl(T character, size_t n, size_t pos) const;
 
-        const char* m_data;
+        const T* m_data;
         size_t m_size;
     };
 
-    std::ostream& operator<<(std::ostream& os, const StringView& view)
+    using StringView = BasicStringView<>;
+
+    template <class T>
+    inline std::ostream& operator<<(std::ostream& os, const BasicStringView<T>& view)
     {
         for (size_t i = 0; i < view.size(); ++i)
         {
@@ -69,7 +75,11 @@ namespace ct
         return N;
     }
 
-    constexpr size_t strLen(const StringView view) { return view.size(); }
+    template <class T>
+    constexpr size_t strLen(const BasicStringView<T> view)
+    {
+        return view.size();
+    }
 
     constexpr size_t strLen(const char* str, size_t len = 0) { return *str ? strLen(str + 1, len + 1) : len; }
 
@@ -108,7 +118,8 @@ namespace ct
         return detail::findDeliminator(str, N - 1, character);
     }
 
-    constexpr std::size_t findLast(const StringView view, char character = ':')
+    template <class T>
+    constexpr std::size_t findLast(const BasicStringView<T> view, char character = ':')
     {
         return detail::findDeliminator(view.data(), view.size() - 1, character);
     }
@@ -147,71 +158,122 @@ namespace ct
 
     ///// Implementation
 
-    StringView::StringView(const std::string& str) : m_data(str.c_str()), m_size(str.size()) {}
+    template <class T>
+    BasicStringView<T>::BasicStringView(const std::basic_string<T>& str) : m_data(str.c_str()), m_size(str.size())
+    {
+    }
 
+    template <class T>
     template <size_t N>
-    constexpr StringView::StringView(const char (&data)[N]) : m_data(data), m_size(N)
+    constexpr BasicStringView<T>::BasicStringView(const T (&data)[N]) : m_data(data), m_size(N)
     {
     }
 
-    constexpr StringView::StringView(const char* data, size_t n) : m_data(data), m_size(n) {}
-    constexpr StringView::StringView(const char* data) : m_data(data), m_size(strLen(data)) {}
-
-    constexpr StringView StringView::slice(size_t begin, size_t end) const
+    template <class T>
+    constexpr BasicStringView<T>::BasicStringView(const T* data, size_t n) : m_data(data), m_size(n)
     {
-        return StringView(m_data + begin, end - begin);
     }
 
-    constexpr StringView StringView::substr(size_t pos, size_t count) const
+    template <class T>
+    constexpr BasicStringView<T>::BasicStringView(const T* data) : m_data(data), m_size(strLen(data))
+    {
+    }
+
+    template <class T>
+    constexpr BasicStringView<T> BasicStringView<T>::slice(size_t begin, size_t end) const
+    {
+        return BasicStringView(m_data + begin, end - begin);
+    }
+
+    template <class T>
+    constexpr BasicStringView<T> BasicStringView<T>::substr(size_t pos, size_t count) const
     {
         return count == 0 ? slice(pos, m_size - pos) : slice(pos, pos + count);
     }
 
-    constexpr size_t StringView::find(char character, size_t n, size_t pos) const
+    template <class T>
+    constexpr size_t BasicStringView<T>::find(T character, size_t n, size_t pos) const
     {
         return m_data[pos] == character ? (n == 0 ? pos : find(character, n - 1, pos + 1))
                                         : (pos == m_size ? npos : find(character, n, pos + 1));
     }
 
-    constexpr size_t StringView::rfindImpl(char character, size_t n, size_t pos) const
+    template <class T>
+    constexpr size_t BasicStringView<T>::rfindImpl(T character, size_t n, size_t pos) const
     {
         return (pos == 0 ? (m_data[pos] == character ? (n == 0 ? pos : npos) : npos)
                          : (m_data[pos] == character ? (n == 0 ? pos : rfindImpl(character, n - 1, pos - 1))
                                                      : rfindImpl(character, n, pos - 1)));
     }
 
-    constexpr size_t StringView::rfind(char character, size_t n) const { return rfindImpl(character, n, m_size); }
+    template <class T>
+    constexpr size_t BasicStringView<T>::rfind(T character, size_t n) const
+    {
+        return rfindImpl(character, n, m_size);
+    }
 
-    constexpr size_t StringView::count(char character, size_t pos, size_t cnt) const
+    template <class T>
+    constexpr size_t BasicStringView<T>::count(T character, size_t pos, size_t cnt) const
     {
         return pos == m_size ? cnt : (m_data[pos] == character ? cnt + 1 : count(character, pos + 1, cnt));
     }
 
-    constexpr StringView::operator const char*() const { return m_data; }
+    template <class T>
+    constexpr BasicStringView<T>::operator const T*() const
+    {
+        return m_data;
+    }
 
-    StringView::operator std::string() const { return std::string(m_data, m_data + m_size); }
+    template <class T>
+    BasicStringView<T>::operator std::basic_string<T>() const
+    {
+        return std::string(m_data, m_data + m_size);
+    }
 
-    constexpr int StringView::toInteger() const { return stoiRange(m_data, m_size); }
+    template <class T>
+    constexpr int BasicStringView<T>::toInteger() const
+    {
+        return stoiRange(m_data, m_size);
+    }
 
-    constexpr char StringView::operator[](const size_t idx) const
+    template <class T>
+    constexpr char BasicStringView<T>::operator[](const size_t idx) const
     {
         return idx < m_size ? m_data[idx] : throw "compile-time-error: out of range";
     }
 
-    constexpr const char* StringView::data() const { return m_data; }
+    template <class T>
+    constexpr const T* BasicStringView<T>::data() const
+    {
+        return m_data;
+    }
 
-    constexpr size_t StringView::size() const { return m_size; }
+    template <class T>
+    constexpr size_t BasicStringView<T>::size() const
+    {
+        return m_size;
+    }
 
-    constexpr bool StringView::equal(const StringView other) const
+    template <class T>
+    constexpr bool BasicStringView<T>::equal(const BasicStringView other) const
     {
         return other.size() == size() ? (size() == other.size() && equalImpl(other, 0)) : false;
     }
 
-    constexpr bool StringView::operator==(const StringView other) const { return equal(other); }
+    template <class T>
+    constexpr bool BasicStringView<T>::operator==(const BasicStringView other) const
+    {
+        return equal(other);
+    }
 
-    constexpr bool StringView::operator!=(const StringView other) const { return !(*this == other); }
+    template <class T>
+    constexpr bool BasicStringView<T>::operator!=(const BasicStringView other) const
+    {
+        return !(*this == other);
+    }
 
-    constexpr bool StringView::equalImpl(const StringView other, size_t pos) const
+    template <class T>
+    constexpr bool BasicStringView<T>::equalImpl(const BasicStringView other, size_t pos) const
     {
         return (pos == (m_size - 1) || pos == (other.size() - 1))
                    ? m_data[pos] == other[pos]
@@ -219,3 +281,4 @@ namespace ct
     }
 
 } // namespace ct
+#endif // CT_STRING_HPP

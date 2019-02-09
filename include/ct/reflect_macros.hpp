@@ -21,7 +21,7 @@
 #endif
 
 
-#ifndef __CUDA_ARCH__
+#ifndef __NVCC__
 #define REFLECT_BEGIN(TYPE)                                                                                            \
     template <>                                                                                                        \
     struct ReflectImpl<TYPE>                                                                                           \
