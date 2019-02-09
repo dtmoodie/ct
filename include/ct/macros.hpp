@@ -1,5 +1,5 @@
-#ifndef CT_REFLECT_MACROS_HPP
-#define CT_REFLECT_MACROS_HPP
+#ifndef CT_MACROS_HPP
+#define CT_MACROS_HPP
 
 #define DECL_PRIM(TYPE)                                                                                                \
     template <>                                                                                                        \
@@ -14,13 +14,14 @@
     }
 
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
-#if _MSC_VER
+#ifdef _MSC_VER
 #define CT_PP_CAT_I(a, b) a##b
 #else
 #define CT_PP_CAT_I(a, b) CT_PP_CAT_II(~, a##b)
 #define CT_PP_CAT_II(p, res) res
 #endif
 #define CT_PP_EMPTY()
+
 
 #define CT_PP_VARIADIC_SIZE_I(e0,                                                                                      \
                               e1,                                                                                      \
@@ -226,4 +227,7 @@
                           1, )
 #endif
 
-#endif // CT_REFLECT_MACROS_HPP
+#define CT_PP_OVERLOAD(prefix, ...) CT_PP_CAT(prefix, CT_PP_VARIADIC_SIZE(__VA_ARGS__))
+
+
+#endif // CT_MACROS_HPP
