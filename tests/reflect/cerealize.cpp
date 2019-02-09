@@ -17,7 +17,8 @@ struct CerealizationTester
     CerealizationTester(std::string path) : m_path(std::move(path)) {}
 
     template <class T>
-    void test(const T& data)
+    void
+    test(const T& data)
     {
         {
             std::ofstream ofs(m_path);
@@ -42,6 +43,7 @@ struct CerealizationTester
         }
         std::cout << std::endl;
     }
+
     std::string m_path;
 };
 

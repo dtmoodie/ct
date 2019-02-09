@@ -87,19 +87,12 @@ namespace ct
         os << get(accessor, obj);
     }
 
-    template <class T, index_t I, index_t J = 0>
-    struct CountArgs
-    {
-        using Ptr_t = PtrType<T, I>;
-        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
-        constexpr static const index_t NUM_ARGS = InferPointerType<FunctionPtr_t>::NUM_ARGS;
-    };
 
     template <class T, index_t I, class U = void>
-    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0, U>;
+    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0 && ConstFunction<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
-    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1, U>;
+    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1 && ConstFunction<T, I>::value, U>;
 
     template <int I, class Options, class T>
     auto printMemberFunctionResult(std::ostream& os, const T& obj) -> EnableIfNoArgs<T, I>

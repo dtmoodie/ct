@@ -1,6 +1,7 @@
 #include "Data.hpp"
 #include "Reflect.hpp"
 #include <ct/reflect.hpp>
+#include <ct/reflect/print.hpp>
 
 int main()
 {
@@ -27,4 +28,10 @@ int main()
     ct::StaticEquality<uint32_t,
                        ct::crc32(ct::Reflect<MultipleInheritance>::getName()),
                        ct::crc32("MultipleInheritance")>{};
+
+    ct::StaticEquality<bool, ct::ConstFunction<Virtual, 0>::value, false>{};
+    ct::StaticEquality<bool, ct::ConstFunction<Virtual, 1>::value, false>{};
+
+    ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 0>::value, false>{};
+    ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 1>::value, false>{};
 }

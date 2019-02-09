@@ -116,12 +116,13 @@ struct PointerOwner
 
 struct Virtual
 {
-    //~Virtual() {}
-
+    virtual ~Virtual(){}
     REFLECT_INTERNAL_START
-        MEMBER_FUNCTION(foo, &Virtual::foo)
+        MEMBER_FUNCTION(foo, static_cast<void(DataType::*)()>(&Virtual::foo))
+        MEMBER_FUNCTION(foo, static_cast<void(DataType::*)(int)>(&Virtual::foo))
     REFLECT_INTERNAL_END
-    void foo();
+    virtual void foo(){}
+    virtual void foo(int){}
 };
 
 struct ExplicitThisProperty

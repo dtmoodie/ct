@@ -25,6 +25,12 @@ namespace ct
         constexpr StaticInequality() { static_assert(LHS != RHS, "values are equal"); }
     };
 
+    template<class T, T LHS, T RHS>
+    struct StaticGreater
+    {
+        constexpr StaticGreater() {static_assert(LHS > RHS, "values not greater");}
+    };
+
     template <index_t I, index_t START, index_t END>
     struct StaticInRange
     {

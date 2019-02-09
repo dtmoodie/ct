@@ -360,6 +360,22 @@ namespace ct
         using type = typename SetType<Ptr_t>::type;
     };
 
+    template <class T, index_t I, index_t J = 0>
+    struct CountArgs
+    {
+        using Ptr_t = PtrType<T, I>;
+        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
+        constexpr static const index_t NUM_ARGS = InferPointerType<FunctionPtr_t>::NUM_ARGS;
+    };
+
+    template<class T, index_t I, index_t J = 0>
+    struct ConstFunction
+    {
+        using Ptr_t = PtrType<T, I>;
+        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
+        static constexpr const bool value = MemberFunctionConstness<FunctionPtr_t>::value;
+    };
+
     template <index_t I, class T>
     auto set(T& obj) -> typename FieldSetType<T, I>::type
     {

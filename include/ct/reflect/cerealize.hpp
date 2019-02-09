@@ -14,6 +14,7 @@ namespace ct
 
 #include <cereal/cereal.hpp>
 
+#include <ct/static_asserts.hpp>
 #include <ct/TypeTraits.hpp>
 #include <ct/reflect.hpp>
 
@@ -35,7 +36,7 @@ namespace ct
     template <class T>
     struct CountSerializableFields
     {
-        constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::N>::count;
+        constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::NUM_FIELDS - 1>::count;
     };
 
     template <class AR, class T, index_t I>
@@ -109,6 +110,7 @@ namespace cereal
     template <class AR, class T>
     auto save(AR& ar, const T& data) -> ct::EnableIfReflected<T>
     {
+        //ct::StaticGreater<uint32_t, ct::CountSerializableFields<T>::value, 0>{};
         ct::saveStruct(ar, data);
     }
 

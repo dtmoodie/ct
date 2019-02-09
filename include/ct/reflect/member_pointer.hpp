@@ -419,6 +419,24 @@ namespace ct
         constexpr static const bool has_setter = false;
     };
 
+    template<class T>
+    struct MemberFunctionConstness
+    {
+
+    };
+
+    template<class R, class T, class... ARGS>
+    struct MemberFunctionConstness<R(T::*)(ARGS...) const>
+    {
+        static constexpr const bool value = true;
+    };
+
+    template<class R, class T, class... ARGS>
+    struct MemberFunctionConstness<R(T::*)(ARGS...)>
+    {
+        static constexpr const bool value = false;
+    };
+
     template <Flag_t FLAGS, class METADATA, class... PTRS>
     struct MemberFunctionPointers
     {
@@ -426,6 +444,9 @@ namespace ct
         {
             Flags = FLAGS
         };
+
+        using Constness = VariadicTypedef<std::integral_constant<bool, MemberFunctionConstness<PTRS>::value>...>;
+
         using Class_t = typename InferClassType<PTRS...>::Class_t;
 
         constexpr MemberFunctionPointers(const char* name, const METADATA metadata, const PTRS... ptrs)
@@ -458,16 +479,13 @@ namespace ct
                 const typename std::enable_if<
                     !std::is_same<void, typename MemberFunctionPointers<FLAGS, METADATA, PTRS...>::Class_t>::value,
                     typename MemberFunctionPointers<FLAGS, METADATA, PTRS...>::Class_t>::type& obj,
-                ARGS&&... args) -> decltype((obj.*std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...))
+                ARGS&&... args)
     {
         return (obj.*std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...);
     }
 
     template <int I, Flag_t FLAGS, class METADATA, class OBJ, class... PTRS, class... ARGS>
-    auto invoke(const MemberFunctionPointers<FLAGS, METADATA, PTRS...> ptrs, const OBJ&, ARGS&&... args) ->
-        typename std::enable_if<
-            std::is_same<void, typename MemberFunctionPointers<FLAGS, METADATA, PTRS...>::Class_t>::value,
-            decltype((std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...))>::type
+    auto invoke(const MemberFunctionPointers<FLAGS, METADATA, PTRS...> ptrs, const OBJ&, ARGS&&... args)
     {
         return std::get<I>(ptrs.m_ptrs)(std::forward<ARGS>(args)...);
     }
@@ -491,7 +509,7 @@ namespace ct
     };
 
     template <class PTR_TYPE>
-    constexpr int64_t getFlags()
+    constexpr Flag_t getFlags()
     {
         return PTR_TYPE::Flags;
     }

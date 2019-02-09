@@ -5,7 +5,8 @@
 namespace ct
 {
     template <class T, class Comparator>
-    bool compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
+    EnableIf<!IsMemberFunction<T, 0>::value, bool>
+    compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
         const char* name = accessor.m_name;
@@ -13,6 +14,13 @@ namespace ct
         {
             return false;
         }
+        return true;
+    }
+
+    template <class T, class Comparator>
+    EnableIf<IsMemberFunction<T, 0>::value, bool>
+    compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
+    {
         return true;
     }
 
