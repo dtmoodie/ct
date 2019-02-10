@@ -39,7 +39,7 @@ MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))*/
 #else
 
 #endif
-        MEMBER_FUNCTION(create, &TestA::create)
+        STATIC_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
     REFLECT_BEGIN(TestB)

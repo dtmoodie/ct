@@ -3,8 +3,24 @@
 #include <ct/reflect.hpp>
 #include <ct/reflect/print.hpp>
 
+template <class T, ct::index_t START, ct::index_t END, ct::index_t COUNT>
+void checkFieldRange()
+{
+    ct::StaticEquality<ct::index_t, ct::Reflect<T>::START_INDEX, START>{};
+    ct::StaticEquality<ct::index_t, ct::Reflect<T>::END_INDEX, END>{};
+    ct::StaticEquality<ct::index_t, ct::Reflect<T>::NUM_FIELDS, COUNT>{};
+}
+
 int main()
 {
+    checkFieldRange<ReflectedStruct, 0, 4, 4>();
+    checkFieldRange<TestA, 0, 6, 6>();
+    checkFieldRange<TestB, 0, 3, 3>();
+    checkFieldRange<TestC, 0, 3, 3>();
+    checkFieldRange<Inherited, 4, 5, 5>();
+    checkFieldRange<Composite, 0, 2, 2>();
+    checkFieldRange<MultipleInheritance, 5, 6, 6>();
+
     ct::StaticEquality<ct::index_t, ct::Reflect<ReflectedStruct>::NUM_FIELDS, 4>();
     ct::StaticEquality<ct::index_t, ct::Reflect<ReflectedStruct>::START_INDEX, 0>();
     ct::StaticEquality<ct::index_t, ct::Reflect<ReflectedStruct>::END_INDEX, 4>();

@@ -209,9 +209,9 @@ namespace ct
         using VisitationList = typename Bases_t::VisitationList;
 
         static const bool SPECIALIZED = true;
-        constexpr static const index_t NUM_FIELDS = IMPL::REFLECTION_COUNT + Bases_t::NUM_FIELDS;
+        constexpr static const index_t NUM_FIELDS = IMPL::NUM_FIELDS + Bases_t::NUM_FIELDS;
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
-        constexpr static const index_t END_INDEX = START_INDEX + IMPL::REFLECTION_COUNT;
+        constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
 
         constexpr static StringView getName() { return IMPL::getName(); }
 
@@ -240,7 +240,7 @@ namespace ct
             Bases_t::printHierarchy(os, indent + "  ");
         }
 
-        static constexpr ct::Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>{}; }
+        static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>{}; }
     };
 
     // We've already visited this class, so exclude the implementation
@@ -278,7 +278,7 @@ namespace ct
     struct IsMemberFunction
     {
         using Accessor_t = PtrType<T, I>;
-        static constexpr const bool value = IsMemberFunctionPointers<Accessor_t>::value;
+        static constexpr const bool value = IsFunction<Accessor_t>::value;
     };
 
     template <class T, index_t I>
@@ -365,15 +365,15 @@ namespace ct
     {
         using Ptr_t = PtrType<T, I>;
         using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
-        constexpr static const index_t NUM_ARGS = InferPointerType<FunctionPtr_t>::NUM_ARGS;
+        constexpr static const index_t NUM_ARGS = FunctionPtr_t::NUM_ARGS;
     };
 
-    template<class T, index_t I, index_t J = 0>
+    template <class T, index_t I, index_t J = 0>
     struct ConstFunction
     {
         using Ptr_t = PtrType<T, I>;
         using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
-        static constexpr const bool value = MemberFunctionConstness<FunctionPtr_t>::value;
+        static constexpr const bool value = FunctionPtr_t::IS_CONST;
     };
 
     template <index_t I, class T>

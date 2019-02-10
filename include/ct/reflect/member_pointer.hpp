@@ -2,6 +2,8 @@
 #define CT_MEMBER_POINTER_HPP
 
 #include "access_token.hpp"
+#include <ct/Indexer.hpp>
+#include <ct/String.hpp>
 #include <ct/VariadicTypedef.hpp>
 
 #include <cstdint>
@@ -22,12 +24,11 @@ namespace ct
         CT_RESERVED_FLAG_BITS = 8
     };
 
-	
     template <typename T, typename U>
     constexpr size_t pointerValue(U T::*member)
     {
 #ifdef _MSC_VER
-		// Have to test if this works on GCC
+        // Have to test if this works on GCC
         return *(unsigned int*)(&member);
 #else
         return (char*)&((T*)nullptr->*member) - (char*)nullptr;
@@ -419,81 +420,174 @@ namespace ct
         constexpr static const bool has_setter = false;
     };
 
-    template<class T>
+    template <class T>
     struct MemberFunctionConstness
     {
-
     };
 
-    template<class R, class T, class... ARGS>
-    struct MemberFunctionConstness<R(T::*)(ARGS...) const>
+    template <class R, class... ARGS>
+    struct MemberFunctionConstness<R (*)(ARGS...)>
     {
         static constexpr const bool value = true;
     };
 
-    template<class R, class T, class... ARGS>
-    struct MemberFunctionConstness<R(T::*)(ARGS...)>
+    template <class R, class T, class... ARGS>
+    struct MemberFunctionConstness<R (T::*)(ARGS...) const>
+    {
+        static constexpr const bool value = true;
+    };
+
+    template <class R, class T, class... ARGS>
+    struct MemberFunctionConstness<R (T::*)(ARGS...)>
     {
         static constexpr const bool value = false;
     };
 
-    template <Flag_t FLAGS, class METADATA, class... PTRS>
+    template <class T, class P>
+    struct MemberFunction;
+
+    template <class T, class R, class... ARGS>
+    struct MemberFunction<T, R (T::*)(ARGS...) const>
+    {
+        static constexpr const bool IS_CONST = true;
+        static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
+
+        using Class_t = T;
+        using Ret_t = R;
+        using Args_t = VariadicTypedef<ARGS...>;
+
+        constexpr MemberFunction(R (T::*ptr)(ARGS...) const) : m_ptr(ptr) {}
+
+        R invoke(const T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
+
+        R (T::*m_ptr)(ARGS...) const;
+    };
+
+    template <class T, class R, class... ARGS>
+    struct MemberFunction<T, R (T::*)(ARGS...)>
+    {
+        static constexpr const bool IS_CONST = false;
+        static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
+
+        using Class_t = T;
+        using Ret_t = R;
+        using Args_t = VariadicTypedef<ARGS...>;
+
+        constexpr MemberFunction(R (T::*ptr)(ARGS...)) : m_ptr(ptr) {}
+
+        R invoke(T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
+
+        R (T::*m_ptr)(ARGS...);
+    };
+
+    template <class T, class R, class... ARGS>
+    struct MemberFunction<T, R (*)(T&, ARGS...)>
+    {
+        static constexpr const bool IS_CONST = false;
+        static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
+
+        using Class_t = T;
+        using Ret_t = R;
+        using Args_t = VariadicTypedef<ARGS...>;
+
+        constexpr MemberFunction(R (*ptr)(T&, ARGS...)) : m_ptr(ptr) {}
+
+        R invoke(T& obj, ARGS&&... args) const { return m_ptr(obj, std::forward<ARGS>(args)...); }
+
+        R (*m_ptr)(T&, ARGS...);
+    };
+
+    template <class T, class R, class... ARGS>
+    struct MemberFunction<T, R (*)(const T&, ARGS...)>
+    {
+        static constexpr const bool IS_CONST = true;
+        static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
+
+        using Class_t = T;
+        using Ret_t = R;
+        using Args_t = VariadicTypedef<ARGS...>;
+
+        constexpr MemberFunction(R (*ptr)(const T&, ARGS...)) : m_ptr(ptr) {}
+
+        R invoke(const T& obj, ARGS&&... args) const { return m_ptr(obj, std::forward<ARGS>(args)...); }
+
+        R (*m_ptr)(const T&, ARGS...);
+    };
+
+    template <class T, class SIG>
+    struct MemberFunctionConstness<MemberFunction<T, SIG>>
+    {
+        static constexpr const bool value = MemberFunction<T, SIG>::IS_CONST;
+    };
+
+    template <class T, class P>
+    MemberFunction<T, P> makeMemberFunction(P ptr)
+    {
+        return MemberFunction<T, P>(ptr);
+    }
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
     struct MemberFunctionPointers
     {
+        const char* m_name;
+        METADATA m_metadata;
+        std::tuple<MemberFunction<T, PTRS>...> m_ptrs;
+
         enum : int64_t
         {
             Flags = FLAGS
         };
 
-        using Constness = VariadicTypedef<std::integral_constant<bool, MemberFunctionConstness<PTRS>::value>...>;
-
-        using Class_t = typename InferClassType<PTRS...>::Class_t;
+        using Constness = VariadicTypedef<std::integral_constant<bool, MemberFunction<T, PTRS>::IS_CONST...>>;
+        using Class_t = T;
 
         constexpr MemberFunctionPointers(const char* name, const METADATA metadata, const PTRS... ptrs)
             : m_name(name), m_metadata(metadata), m_ptrs(ptrs...)
         {
         }
 
-        const char* m_name;
-        METADATA m_metadata;
-        std::tuple<PTRS...> m_ptrs;
+        template <index_t I, class... ARGS>
+        auto invoke(const T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
+        }
+
+        template <index_t I, class... ARGS>
+        auto invoke(T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
+        }
     };
 
-    template <Flag_t FLAGS, class... PTRS>
-    struct MemberFunctionPointers<FLAGS, void, PTRS...>
+    template <class T, Flag_t FLAGS, class... PTRS>
+    struct MemberFunctionPointers<T, FLAGS, void, PTRS...>
     {
+        StringView m_name;
+        std::tuple<MemberFunction<T, PTRS>...> m_ptrs;
+
         enum : int64_t
         {
             Flags = FLAGS
         };
-        using Class_t = typename InferClassType<PTRS...>::Class_t;
+        using Class_t = T;
 
-        constexpr MemberFunctionPointers(const char* name, const PTRS... ptrs) : m_name(name), m_ptrs(ptrs...) {}
+        constexpr MemberFunctionPointers(StringView name, const PTRS... ptrs)
+            : m_name(name), m_ptrs(makeMemberFunction<T>(ptrs)...)
+        {
+        }
 
-        const char* m_name;
-        std::tuple<PTRS...> m_ptrs;
-    };
+        template <index_t I, class... ARGS>
+        auto invoke(const T& obj, ARGS&&... args) const ->
+            typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
+        }
 
-    template <int I, Flag_t FLAGS, class METADATA, class... PTRS, class... ARGS>
-    auto invoke(const MemberFunctionPointers<FLAGS, METADATA, PTRS...> ptrs,
-                const typename std::enable_if<
-                    !std::is_same<void, typename MemberFunctionPointers<FLAGS, METADATA, PTRS...>::Class_t>::value,
-                    typename MemberFunctionPointers<FLAGS, METADATA, PTRS...>::Class_t>::type& obj,
-                ARGS&&... args)
-    {
-        return (obj.*std::get<I>(ptrs.m_ptrs))(std::forward<ARGS>(args)...);
-    }
-
-    template <int I, Flag_t FLAGS, class METADATA, class OBJ, class... PTRS, class... ARGS>
-    auto invoke(const MemberFunctionPointers<FLAGS, METADATA, PTRS...> ptrs, const OBJ&, ARGS&&... args)
-    {
-        return std::get<I>(ptrs.m_ptrs)(std::forward<ARGS>(args)...);
-    }
-
-    template <Flag_t FLAGS, class METADATA, class... PTRS>
-    struct GetType<MemberFunctionPointers<FLAGS, METADATA, PTRS...>>
-    {
-        using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
+        template <index_t I, class... ARGS>
+        auto invoke(T& obj, ARGS&&... args) const -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
+        }
     };
 
     template <class T>
@@ -502,10 +596,119 @@ namespace ct
         constexpr static const bool value = false;
     };
 
-    template <Flag_t FLAGS, class METADATA, class... PTRS>
-    struct IsMemberFunctionPointers<MemberFunctionPointers<FLAGS, METADATA, PTRS...>>
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct IsMemberFunctionPointers<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
     {
         constexpr static const bool value = true;
+    };
+
+    template <class T, class PTR>
+    struct StaticFunction;
+
+    template <class T, class R, class... ARGS>
+    struct StaticFunction<T, R (*)(ARGS...)>
+    {
+        using Args_t = VariadicTypedef<ARGS...>;
+        using Ret_t = R;
+        using Sig_t = R (*)(ARGS...);
+
+        constexpr static const bool IS_CONST = true;
+        constexpr static const uint32_t NUM_ARGS = sizeof...(ARGS);
+
+        constexpr StaticFunction(R (*ptr)(ARGS...)) : m_ptr(ptr) {}
+
+        R invoke(ARGS&&... args) { return m_ptr(std::forward<ARGS>(args)...); }
+        R invoke(const T&, ARGS&&... args) { return m_ptr(std::forward<ARGS>(args)...); }
+
+        R (*m_ptr)(ARGS...);
+    };
+
+    template <class T, Flag_t FLAGS = NONE, class METADATA = void, class... PTRS>
+    struct StaticFunctions
+    {
+        StringView m_name;
+        METADATA m_metadata;
+        std::tuple<StaticFunction<T, PTRS>...> m_ptrs;
+
+        enum : Flag_t
+        {
+            Flags = FLAGS
+        };
+
+        using Class_t = T;
+
+        constexpr StaticFunctions(StringView name, METADATA metadata, const PTRS... ptrs)
+            : m_name(name), m_metadata(metadata), m_ptrs(ptrs...)
+        {
+        }
+
+        static constexpr uint32_t numOverloads() { return sizeof...(PTRS); }
+
+        template <index_t I>
+        static constexpr bool isConst(const Indexer<I>)
+        {
+            return true;
+        }
+
+        template <index_t I, class... ARGS>
+        auto invoke(ARGS&&... args) -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
+        }
+    };
+
+    template <class T, Flag_t FLAGS, class... PTRS>
+    struct StaticFunctions<T, FLAGS, void, PTRS...>
+    {
+        StringView m_name;
+        std::tuple<StaticFunction<T, PTRS>...> m_ptrs;
+
+        enum : Flag_t
+        {
+            Flags = FLAGS
+        };
+
+        using Class_t = T;
+
+        constexpr StaticFunctions(StringView name, const PTRS... ptrs) : m_name(name), m_ptrs(ptrs...) {}
+
+        static constexpr uint32_t numOverloads() { return sizeof...(PTRS); }
+
+        template <index_t I>
+        static constexpr bool isConst(const Indexer<I>)
+        {
+            return true;
+        }
+
+        template <index_t I, class... ARGS>
+        auto invoke(ARGS&&... args) -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        {
+            return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
+        }
+    };
+
+    template <class T>
+    struct IsFunction
+    {
+        static constexpr const bool value = false;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct IsFunction<StaticFunctions<T, FLAGS, METADATA, PTRS...>>
+    {
+        static constexpr const bool value = true;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct IsFunction<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
+    {
+        static constexpr const bool value = true;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct GetType<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
+    {
+        using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
     };
 
     template <class PTR_TYPE>
@@ -526,18 +729,31 @@ namespace ct
         using type = METADATA;
     };
 
-    template <Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr MemberFunctionPointers<FLAGS, void, ARGS...> makeMemberFunctionPointers(const char* name,
-                                                                                      const ARGS... args)
+    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
+    constexpr MemberFunctionPointers<T, FLAGS, void, ARGS...> makeMemberFunctionPointers(const char* name,
+                                                                                         const ARGS... args)
     {
-        return MemberFunctionPointers<FLAGS, void, ARGS...>(name, args...);
+        return MemberFunctionPointers<T, FLAGS, void, ARGS...>(name, args...);
     }
 
-    template <Flag_t FLAGS = DO_NOT_SERIALIZE, class METADATA, class... ARGS>
-    constexpr MemberFunctionPointers<FLAGS, METADATA, ARGS...>
+    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class METADATA, class... ARGS>
+    constexpr MemberFunctionPointers<T, FLAGS, METADATA, ARGS...>
     makeMemberFunctionPointersWithMetadata(const char* name, const METADATA metadata, const ARGS... args)
     {
-        return MemberFunctionPointers<FLAGS, METADATA, ARGS...>(name, metadata, args...);
+        return MemberFunctionPointers<T, FLAGS, METADATA, ARGS...>(name, metadata, args...);
+    }
+
+    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
+    constexpr StaticFunctions<T, FLAGS, void, ARGS...> makeStaticFunctionPointers(StringView name, const ARGS... args)
+    {
+        return StaticFunctions<T, FLAGS, void, ARGS...>(name, args...);
+    }
+
+    template <class T, class METADATA, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
+    constexpr StaticFunctions<T, FLAGS, METADATA, ARGS...>
+    makeStaticFunctionPointersWithMetadata(StringView name, const METADATA metadata, const ARGS... args)
+    {
+        return StaticFunctions<T, FLAGS, METADATA, ARGS...>(name, metadata, args...);
     }
 
     template <Flag_t FLAGS = NONE, class PTR>

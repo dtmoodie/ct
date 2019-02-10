@@ -2,14 +2,15 @@
 #define CT_REFLECT_MACROS_HPP
 #include "macros.hpp"
 
-
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
+                                                                                                                       \
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
 #define REFLECT_INTERNAL_MEMBER_3(TYPE, NAME, INIT)                                                                    \
     TYPE NAME = INIT;                                                                                                  \
+                                                                                                                       \
   public:                                                                                                              \
     PUBLIC_ACCESS(NAME)
 
@@ -19,7 +20,6 @@
 #else
 #define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
 #endif
-
 
 #ifndef __NVCC__
 #define REFLECT_BEGIN(TYPE)                                                                                            \
@@ -53,7 +53,7 @@
         static constexpr const index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
 #define REFLECT_INTERNAL_START                                                                                         \
-    static constexpr const bool INTERNALLY_REFLECTED = 1;                                                              \
+    static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
     static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
     using DataType = decltype(getTypeHelper());                                                                        \
@@ -89,27 +89,37 @@
 #define MEMBER_FUNCTION(NAME, ...)                                                                                     \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberFunctionPointers(#NAME, __VA_ARGS__);                                                     \
+        return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberFunctionPointers<FLAG>(#NAME, __VA_ARGS__);                                               \
+        return ct::makeMemberFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
+    }
+
+#define STATIC_FUNCTION(NAME, ...)                                                                                     \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeStaticFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
+    }
+
+#define STATIC_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
 #define REFLECT_END                                                                                                    \
     static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \
     static constexpr const index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                         \
-    static constexpr const index_t NUM_FIELDS = REFLECTION_COUNT - 1;                                                  \
-    static constexpr ct::Indexer<NUM_FIELDS> end() { return ct::Indexer<NUM_FIELDS>{}; }                               \
+    static constexpr const index_t NUM_FIELDS = REFLECTION_COUNT;                                                      \
     }
 
 #define REFLECT_INTERNAL_END                                                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__;                                                \
     static constexpr const ct::index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                     \
-    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT - 1;                                              \
-    static constexpr ct::Indexer<NUM_FIELDS> end() { return ct::Indexer<NUM_FIELDS>{}; }
+    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT;
 
 #else
 
