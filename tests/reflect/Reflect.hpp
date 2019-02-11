@@ -31,8 +31,8 @@ namespace ct
                         static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul),
                         static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
 #else
-/*MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
-MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
+MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
+/*MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
 MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))*/
 
 #endif
