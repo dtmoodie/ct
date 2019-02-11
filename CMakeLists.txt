@@ -22,20 +22,19 @@ if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
 
-    #if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-    #    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-    #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    #    else()
-    #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++1y")
-    #    endif()
-    #endif()
 
     include_directories(include)
     add_library(ct INTERFACE)
 
-    target_compile_features(ct
-        INTERFACE cxx_return_type_deduction
-    )
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+            target_compile_features(ct
+                INTERFACE cxx_return_type_deduction
+            )
+        else()
+            target_compile_options(ct INTERFACE "-std=c++1y")
+        endif()
+    endif()
 
     target_include_directories(ct
         INTERFACE
