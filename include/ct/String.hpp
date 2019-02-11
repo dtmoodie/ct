@@ -21,7 +21,7 @@ namespace ct
         constexpr BasicStringView(const T* data, size_t n);
         constexpr BasicStringView(const T* data);
 
-        constexpr BasicStringView slice(size_t begin, size_t end) const;
+        constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
 
         constexpr BasicStringView substr(size_t pos = 0, size_t count = 0) const;
 
@@ -47,6 +47,8 @@ namespace ct
 
         constexpr bool operator==(const BasicStringView other) const;
         constexpr bool operator!=(const BasicStringView other) const;
+
+        constexpr size_t revIndex(const ssize_t idx) const;
 
       private:
         constexpr bool equalImpl(const BasicStringView other, size_t pos) const;
@@ -180,9 +182,9 @@ namespace ct
     }
 
     template <class T>
-    constexpr BasicStringView<T> BasicStringView<T>::slice(size_t begin, size_t end) const
+    constexpr BasicStringView<T> BasicStringView<T>::slice(ssize_t begin, ssize_t end) const
     {
-        return BasicStringView(m_data + begin, end - begin);
+        return BasicStringView(m_data + revIndex(begin), revIndex(end) - revIndex(begin));
     }
 
     template <class T>
@@ -278,6 +280,12 @@ namespace ct
         return (pos == (m_size - 1) || pos == (other.size() - 1))
                    ? m_data[pos] == other[pos]
                    : (m_data[pos] == other[pos] ? equalImpl(other, pos + 1) : false);
+    }
+
+    template <class T>
+    constexpr size_t BasicStringView<T>::revIndex(const ssize_t idx) const
+    {
+        return idx >= 0 ? idx : m_size + idx;
     }
 
 } // namespace ct
