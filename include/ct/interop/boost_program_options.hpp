@@ -53,7 +53,7 @@ namespace ct
         {
             path += '.';
         }
-        path += getName<I, T>();
+        path += std::string(getName<I, T>());
         registerWithMetadata(field, desc, getMetadata(ptr), path);
     }
 
@@ -95,7 +95,7 @@ namespace ct
         {
             path += '.';
         }
-        path += getName<I, T>();
+        path += std::string(getName<I, T>());
 
         if (vm.count(path))
         {
@@ -113,7 +113,7 @@ namespace ct
         {
             path += '.';
         }
-        path += getName<I, T>();
+        path += std::string(getName<I, T>());
         readOptions(set(ptr, obj), vm, path);
     }
 
