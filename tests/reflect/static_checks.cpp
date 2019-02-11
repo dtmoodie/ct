@@ -14,7 +14,7 @@ void checkFieldRange()
 int main()
 {
     checkFieldRange<ReflectedStruct, 0, 4, 4>();
-    checkFieldRange<TestA, 0, 6, 6>();
+    checkFieldRange<TestA, 0, 8, 8>();
     checkFieldRange<TestB, 0, 3, 3>();
     checkFieldRange<TestC, 0, 3, 3>();
     checkFieldRange<Inherited, 4, 5, 5>();
