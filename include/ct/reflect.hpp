@@ -289,7 +289,7 @@ namespace ct
     };
 
     template <index_t I, class T>
-    constexpr const char* getName()
+    constexpr StringView getName()
     {
         return Reflect<T>::getPtr(ct::Indexer<I>{}).m_name;
     }
@@ -302,19 +302,19 @@ namespace ct
     }
 
     template <class T>
-    constexpr index_t indexOfFieldImpl(const char* field_name, const Indexer<0>)
+    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<0>)
     {
-        return (strcmp(getName<0, T>(), field_name) == 0) ? 0 : -1;
+        return getName<0, T>() == field_name ? 0 : -1;
     }
 
     template <class T, index_t I>
-    constexpr index_t indexOfFieldImpl(const char* field_name, const Indexer<I> idx)
+    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<I> idx)
     {
-        return (strcmp(getName<I, T>(), field_name) == 0) ? I : indexOfFieldImpl<T>(field_name, --idx);
+        return getName<I, T>() == field_name ? I : indexOfFieldImpl<T>(field_name, --idx);
     }
 
     template <class T>
-    constexpr index_t indexOfField(const char* field_name)
+    constexpr index_t indexOfField(StringView field_name)
     {
         return indexOfFieldImpl<T>(field_name, ct::Reflect<T>::end());
     }
