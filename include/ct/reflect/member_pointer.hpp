@@ -1,6 +1,7 @@
 #ifndef CT_MEMBER_POINTER_HPP
 #define CT_MEMBER_POINTER_HPP
 
+#include "../bind.hpp"
 #include "access_token.hpp"
 #include <ct/Indexer.hpp>
 #include <ct/String.hpp>
@@ -455,10 +456,17 @@ namespace ct
         using Class_t = T;
         using Ret_t = R;
         using Args_t = VariadicTypedef<ARGS...>;
+        using Sig_t = R (T::*)(ARGS...) const;
+        using BoundSig_t = R(ARGS...);
 
         constexpr MemberFunction(R (T::*ptr)(ARGS...) const) : m_ptr(ptr) {}
 
         R invoke(const T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
+
+        std::function<R(ARGS...)> bind(T* obj) const
+        {
+            return ct::variadicBind(m_ptr, obj, make_int_sequence<sizeof...(ARGS)>{});
+        }
 
         R (T::*m_ptr)(ARGS...) const;
     };
@@ -472,10 +480,17 @@ namespace ct
         using Class_t = T;
         using Ret_t = R;
         using Args_t = VariadicTypedef<ARGS...>;
+        using Sig_t = R (T::*)(ARGS...);
+        using BoundSig_t = R(ARGS...);
 
         constexpr MemberFunction(R (T::*ptr)(ARGS...)) : m_ptr(ptr) {}
 
         R invoke(T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
+
+        std::function<R(ARGS...)> bind(T* obj) const
+        {
+            return ct::variadicBind(m_ptr, obj, make_int_sequence<sizeof...(ARGS)>{});
+        }
 
         R (T::*m_ptr)(ARGS...);
     };
@@ -489,10 +504,17 @@ namespace ct
         using Class_t = T;
         using Ret_t = R;
         using Args_t = VariadicTypedef<ARGS...>;
+        using Sig_t = R (*)(T&, ARGS...);
+        using BoundSig_t = R(ARGS...);
 
         constexpr MemberFunction(R (*ptr)(T&, ARGS...)) : m_ptr(ptr) {}
 
         R invoke(T& obj, ARGS&&... args) const { return m_ptr(obj, std::forward<ARGS>(args)...); }
+
+        std::function<R(ARGS...)> bind(T* obj) const
+        {
+            return ct::variadicBind(m_ptr, std::ref(*obj), make_int_sequence<sizeof...(ARGS)>{});
+        }
 
         R (*m_ptr)(T&, ARGS...);
     };
@@ -506,10 +528,17 @@ namespace ct
         using Class_t = T;
         using Ret_t = R;
         using Args_t = VariadicTypedef<ARGS...>;
+        using Sig_t = R (*)(const T&, ARGS...);
+        using BoundSig_t = R(ARGS...);
 
         constexpr MemberFunction(R (*ptr)(const T&, ARGS...)) : m_ptr(ptr) {}
 
         R invoke(const T& obj, ARGS&&... args) const { return m_ptr(obj, std::forward<ARGS>(args)...); }
+
+        std::function<R(ARGS...)> bind(const T* obj) const
+        {
+            return ct::variadicBind(m_ptr, std::cref(*obj), make_int_sequence<sizeof...(ARGS)>{});
+        }
 
         R (*m_ptr)(const T&, ARGS...);
     };
@@ -521,7 +550,7 @@ namespace ct
     };
 
     template <class T, class P>
-    MemberFunction<T, P> makeMemberFunction(P ptr)
+    constexpr MemberFunction<T, P> makeMemberFunction(P ptr)
     {
         return MemberFunction<T, P>(ptr);
     }
@@ -557,6 +586,18 @@ namespace ct
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
+
+        template <index_t I>
+        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        {
+            return std::get<I>(m_ptrs).bind(obj);
+        }
+
+        template <index_t I>
+        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        {
+            return std::get<I>(m_ptrs).bind(obj);
+        }
     };
 
     template <class T, Flag_t FLAGS, class... PTRS>
@@ -587,6 +628,18 @@ namespace ct
         auto invoke(T& obj, ARGS&&... args) const -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
+        }
+
+        template <index_t I>
+        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        {
+            return std::get<I>(m_ptrs).bind(obj);
+        }
+
+        template <index_t I>
+        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        {
+            return std::get<I>(m_ptrs).bind(obj);
         }
     };
 
