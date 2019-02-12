@@ -20,6 +20,7 @@ ENDMACRO()
 
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
+    option(BUILD_EXAMPLES  "Build examples" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
 
 
@@ -108,7 +109,15 @@ if(NOT TARGET ct)
         endforeach()
 
     endif(BUILD_TESTS)
+
+    if(BUILD_EXAMPLES)
+        SUBDIRLIST(examples "${CMAKE_CURRENT_LIST_DIR}/examples")
+        foreach(example ${examples})
+            add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples/${example})
+        endforeach()
+    endif(BUILD_EXAMPLES)
 endif()
+
 
 if(NOT TARGET ct_files)
     ADD_CUSTOM_TARGET(ct_files SOURCES ${hdr})

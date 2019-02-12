@@ -2,6 +2,8 @@
 #include "common.hpp"
 #include <ct/reflect/print-container-inl.hpp>
 #include <ct/reflect/print.hpp>
+#include <ct/reflect/visitor.hpp>
+
 #include <iostream>
 
 struct StaticPrintStruct
@@ -18,6 +20,79 @@ struct StaticPrintStruct
     }
 };
 
+struct PrintVisitorParams : public ct::DefaultVisitorParams
+{
+    constexpr static const bool ACCUMULATE_PATH = false;
+    constexpr static const bool VISIT_MEMBER_FUNCTIONS = true;
+    constexpr static const bool VISIT_STATIC_FUNCTIONS = true;
+};
+
+struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
+{
+    using Super_t = ct::VisitorBase<PrintVisitor, PrintVisitorParams>;
+
+    template <class T, class... ARGS>
+    ct::EnableIfReflected<T> visit(T& obj, const std::string& name = VisitorParams::PREFIX, ARGS&&... args)
+    {
+        thread_local bool recursion_block = false;
+
+        if (recursion_block)
+        {
+            std::cout << name << ":" << ct::Reflect<T>::getName() << " ";
+            return;
+        }
+        recursion_block = true;
+        if (!name.empty())
+        {
+            std::cout << name << ":";
+        }
+        std::cout << "(";
+        recurseFields(obj, name, ct::Reflect<T>::end(), std::forward<ARGS>(args)...);
+        std::cout << ") ";
+
+        recursion_block = false;
+    }
+
+    template <class T, class... ARGS>
+    ct::DisableIfReflected<T> visit(T& obj, const std::string& name = VisitorParams::PREFIX, ARGS&&... args)
+    {
+    }
+
+    template <ct::index_t I, class DTYPE, class... ARGS>
+    ct::DisableIfReflected<typename std::decay<DTYPE>::type> visitData(DTYPE& data, const std::string& path, ARGS&&...)
+    {
+        std::cout << path << ":" << data << ' ';
+    }
+
+    template <class R>
+    ct::EnableIfReflected<R> visitReturn(R&& val, const std::string& path)
+    {
+        visit(val, path);
+    }
+
+    template <class R>
+    ct::DisableIfReflected<R> visitReturn(R&& val, const std::string& path)
+    {
+        std::cout << path << ": " << val << ' ';
+    }
+
+    template <ct::index_t I, class DTYPE, class... ARGS>
+    ct::EnableIfReflected<typename std::decay<DTYPE>::type>
+    visitData(DTYPE& data, const std::string& path, ARGS&&... args)
+    {
+        Super_t::template visitData<I>(data, path, std::forward<ARGS>(args)...);
+    }
+
+    template <class T, ct::index_t I, class GET_PTR, class SET_PTR, ct::Flag_t FLAGS, class METADATA, class... ARGS>
+    void visitProperty(T& obj,
+                       const std::string& path,
+                       ct::MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
+                       ct::Indexer<I> idx,
+                       ARGS&&... args)
+    {
+    }
+};
+
 struct Printer
 {
     template <class T>
@@ -29,6 +104,11 @@ struct Printer
         std::cout << std::endl;
         StaticPrintStruct str;
         str.test(data);
+
+        std::cout << std::endl;
+
+        PrintVisitor visitor;
+        visitor.visit(data);
         // printStructInfo<T>(std::cout);
     }
 };

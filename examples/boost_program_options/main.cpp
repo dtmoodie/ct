@@ -1,9 +1,10 @@
-#include "../common.hpp"
+//#include "../common.hpp"
 #include <ct/interop/boost_program_options.hpp>
 #include <ct/reflect/print.hpp>
 #include <ct/static_asserts.hpp>
 #include <iostream>
 
+// Externally reflected
 struct SubOptions
 {
     float alpha = 1.0;
@@ -12,12 +13,14 @@ struct SubOptions
 
 namespace ct
 {
+    // Reflectin metadata
     REFLECT_BEGIN(SubOptions)
         PUBLIC_ACCESS(alpha)
         PUBLIC_ACCESS(beta)
     REFLECT_END;
 }
 
+// Internally reflected, reflection metadata embedded in type
 struct ProgramOptions
 {
     REFLECT_INTERNAL_START

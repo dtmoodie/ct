@@ -14,9 +14,9 @@ namespace ct
 
 #include <cereal/cereal.hpp>
 
-#include <ct/static_asserts.hpp>
 #include <ct/TypeTraits.hpp>
 #include <ct/reflect.hpp>
+#include <ct/static_asserts.hpp>
 
 namespace ct
 {
@@ -44,7 +44,7 @@ namespace ct
     {
         auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
         ar(cereal::make_nvp(
-            accessor.m_name,
+            accessor.m_name.toString(),
             static_cast<typename ReferenceType<typename SetType<decltype(accessor)>::type>::Type>(set(accessor, obj))));
     }
 
@@ -81,7 +81,7 @@ namespace ct
     auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> EnableIf<ShouldSerialize<T, I>::value>
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        ar(cereal::make_nvp(accessor.m_name, get(accessor, obj)));
+        ar(cereal::make_nvp(accessor.m_name.toString(), get(accessor, obj)));
     }
 
     template <class AR, class T>
@@ -110,7 +110,7 @@ namespace cereal
     template <class AR, class T>
     auto save(AR& ar, const T& data) -> ct::EnableIfReflected<T>
     {
-        //ct::StaticGreater<uint32_t, ct::CountSerializableFields<T>::value, 0>{};
+        // ct::StaticGreater<uint32_t, ct::CountSerializableFields<T>::value, 0>{};
         ct::saveStruct(ar, data);
     }
 

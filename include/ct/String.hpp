@@ -39,6 +39,7 @@ namespace ct
 
         constexpr operator const T*() const;
         operator std::basic_string<T>() const;
+        std::basic_string<T> toString() const;
 
         constexpr char operator[](const size_t idx) const;
 
@@ -234,6 +235,12 @@ namespace ct
 
     template <class T>
     BasicStringView<T>::operator std::basic_string<T>() const
+    {
+        return std::string(m_data, m_data + m_size);
+    }
+
+    template <class T>
+    std::basic_string<T> BasicStringView<T>::toString() const
     {
         return std::string(m_data, m_data + m_size);
     }

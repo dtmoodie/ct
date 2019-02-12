@@ -1,19 +1,13 @@
 #ifndef CT_INTEROP_BOOST_PROGRAM_OPTIONS_HPP
 #define CT_INTEROP_BOOST_PROGRAM_OPTIONS_HPP
 #include <ct/reflect.hpp>
+#include <ct/reflect/metadata.hpp>
 
 #include <boost/program_options.hpp>
 
 namespace ct
 {
     namespace po = boost::program_options;
-
-    struct Description
-    {
-        constexpr Description(const char* desc) : m_desc(desc) {}
-
-        const char* m_desc;
-    };
 
     template <class T>
     void registerOptions(const T& obj, po::options_description& desc, const std::string& path = "");
@@ -53,8 +47,8 @@ namespace ct
         {
             path += '.';
         }
-        auto name = getName<I, T>();
-        path += std::string(name);
+        const auto name = getName<I, T>();
+        path += name.toString();
         registerWithMetadata(field, desc, getMetadata(ptr), path);
     }
 
@@ -96,8 +90,8 @@ namespace ct
         {
             path += '.';
         }
-        auto name = getName<I, T>();
-        path += std::string(name);
+        const auto name = getName<I, T>();
+        path += name.toString();
 
         if (vm.count(path))
         {
@@ -115,8 +109,8 @@ namespace ct
         {
             path += '.';
         }
-        auto name = getName<I, T>();
-        path += std::string(name);
+        const auto name = getName<I, T>();
+        path += name.toString();
         readOptions(set(ptr, obj), vm, path);
     }
 

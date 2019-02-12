@@ -20,7 +20,7 @@ namespace ct
 
     constexpr uint32_t crc32Range(const char* str, std::size_t end)
     {
-        return end < 2 ? 0 : detail::crc32(str, end - 1) ^ 0xFFFFFFFF;
+        return end < 1 ? 0 : detail::crc32(str, end - 1) ^ 0xFFFFFFFF;
     }
 
     constexpr uint32_t crc32Range(const char* str, std::size_t begin, std::size_t len)

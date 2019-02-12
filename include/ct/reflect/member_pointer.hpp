@@ -18,8 +18,9 @@ namespace ct
     {
         NONE = 0,
         DO_NOT_SERIALIZE = 1,
-        READABLE = 2,
-        WRITABLE = 4,
+        READABLE = DO_NOT_SERIALIZE << 1,
+        WRITABLE = READABLE << 1,
+        REQUIRED = WRITABLE << 1,
 
         // reserve the first 8 bits of the flag field for ct flags
         CT_RESERVED_FLAG_BITS = 8
@@ -55,9 +56,9 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberObjectPointer(const char* name, Data_t Class_t::*ptr) : m_name(name), m_ptr(ptr) {}
+        constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr) : m_name(name), m_ptr(ptr) {}
 
-        const char* m_name;
+        StringView m_name;
         Data_t Class_t::*m_ptr;
     };
 
@@ -71,12 +72,12 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberObjectPointer(const char* name, Data_t Class_t::*ptr, const METADATA metadata)
+        constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr, const METADATA metadata)
             : m_name(name), m_ptr(ptr), m_metadata(metadata)
         {
         }
 
-        const char* m_name;
+        StringView m_name;
         Data_t Class_t::*m_ptr;
         METADATA m_metadata;
     };
@@ -242,12 +243,12 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberPropertyPointer(const char* name, GET_PTR getter, SET_PTR setter, const METADATA metadata)
+        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, SET_PTR setter, const METADATA metadata)
             : m_name(name), m_getter(getter), m_setter(setter), m_metadata(metadata)
         {
         }
 
-        const char* m_name;
+        StringView m_name;
         GET_PTR m_getter;
         SET_PTR m_setter;
         METADATA m_metadata;
@@ -263,12 +264,12 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberPropertyPointer(const char* name, GET_PTR getter, SET_PTR setter)
+        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, SET_PTR setter)
             : m_name(name), m_getter(getter), m_setter(setter)
         {
         }
 
-        const char* m_name;
+        StringView m_name;
         GET_PTR m_getter;
         SET_PTR m_setter;
     };
@@ -374,12 +375,12 @@ namespace ct
             Flags = FLAGS | READABLE
         };
 
-        constexpr MemberPropertyPointer(const char* name, GET_PTR getter, const METADATA metadata)
+        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, const METADATA metadata)
             : m_name(name), m_getter(getter), m_metadata(metadata)
         {
         }
 
-        const char* m_name;
+        StringView m_name;
         GET_PTR m_getter;
         METADATA m_metadata;
     };
@@ -394,9 +395,9 @@ namespace ct
             Flags = FLAGS | READABLE
         };
 
-        constexpr MemberPropertyPointer(const char* name, GET_PTR getter) : m_name(name), m_getter(getter) {}
+        constexpr MemberPropertyPointer(StringView name, GET_PTR getter) : m_name(name), m_getter(getter) {}
 
-        const char* m_name;
+        StringView m_name;
         GET_PTR m_getter;
     };
 
@@ -558,7 +559,7 @@ namespace ct
     template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
     struct MemberFunctionPointers
     {
-        const char* m_name;
+        StringView m_name;
         METADATA m_metadata;
         std::tuple<MemberFunction<T, PTRS>...> m_ptrs;
 
@@ -570,7 +571,7 @@ namespace ct
         using Constness = VariadicTypedef<std::integral_constant<bool, MemberFunction<T, PTRS>::IS_CONST...>>;
         using Class_t = T;
 
-        constexpr MemberFunctionPointers(const char* name, const METADATA metadata, const PTRS... ptrs)
+        constexpr MemberFunctionPointers(StringView name, const METADATA metadata, const PTRS... ptrs)
             : m_name(name), m_metadata(metadata), m_ptrs(ptrs...)
         {
         }
