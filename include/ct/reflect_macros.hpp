@@ -22,6 +22,7 @@
 #endif
 
 #ifndef __NVCC__
+
 #define REFLECT_BEGIN(TYPE)                                                                                            \
     template <>                                                                                                        \
     struct ReflectImpl<TYPE>                                                                                           \

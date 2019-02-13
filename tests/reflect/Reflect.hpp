@@ -23,22 +23,15 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
-// GCC 4.8 doesn't like this, can't do overloads this way with it
-//#ifdef __GNUC__
-//#if __GNUC__ >= 5
-//        MEMBER_FUNCTION(mul,
-//                        static_cast<TestA (TestA::*)(float) const>(&TestA::mul),
-//                        static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul),
-//                        static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
-//#else
-MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
-MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
-MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
-
-//#endif
-//#else
-
-//#endif
+        // GCC 4.8 doesn't like this, can't do overloads this way while maintaining compatibility
+        // need to re-evaluate now that we use c++1y on 4.8
+        //        MEMBER_FUNCTION(mul,
+        //                        static_cast<TestA (TestA::*)(float) const>(&TestA::mul),
+        //                        static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul),
+        //                        static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
+        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
+        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
+        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
         STATIC_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
@@ -67,11 +60,11 @@ MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateMutableAccess)
-        PROPERTY(x, &DataType::getX, &DataType::mutateX)
+        PROPERTY(private_mutable_property, &DataType::getX, &DataType::mutateX)
     REFLECT_END;
 
     REFLECT_BEGIN(PrivateGetAndSet)
-        PROPERTY(x, &DataType::getX, &DataType::setX)
+        PROPERTY(private_get_and_set, &DataType::getX, &DataType::setX)
     REFLECT_END;
 
     REFLECT_BEGIN(PointerOwner)

@@ -86,10 +86,10 @@ struct TestVec
 struct PrivateMutableAccess
 {
   public:
-    const float& getX() const { return x; }
-    float& mutateX() { return x; }
+    const float& getX() const { return m_private_property; }
+    float& mutateX() { return m_private_property; }
   private:
-    float x;
+    float m_private_property;
 };
 
 struct MultipleInheritance : public PrivateMutableAccess, public ReflectedStruct
@@ -116,13 +116,13 @@ struct PointerOwner
 
 struct Virtual
 {
-    virtual ~Virtual(){}
+    virtual ~Virtual() {}
     REFLECT_INTERNAL_START
-        MEMBER_FUNCTION(foo, static_cast<void(DataType::*)()>(&Virtual::foo))
-        MEMBER_FUNCTION(foo, static_cast<void(DataType::*)(int)>(&Virtual::foo))
+        MEMBER_FUNCTION(foo, static_cast<void (DataType::*)()>(&Virtual::foo))
+        MEMBER_FUNCTION(foo, static_cast<void (DataType::*)(int)>(&Virtual::foo))
     REFLECT_INTERNAL_END
-    virtual void foo(){}
-    virtual void foo(int){}
+    virtual void foo() {}
+    virtual void foo(int) {}
 };
 
 struct ExplicitThisProperty

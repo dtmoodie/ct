@@ -23,8 +23,6 @@ struct StaticPrintStruct
 struct PrintVisitorParams : public ct::DefaultVisitorParams
 {
     constexpr static const bool ACCUMULATE_PATH = false;
-    constexpr static const bool VISIT_MEMBER_FUNCTIONS = true;
-    constexpr static const bool VISIT_STATIC_FUNCTIONS = true;
 };
 
 struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
@@ -32,7 +30,7 @@ struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
     using Super_t = ct::VisitorBase<PrintVisitor, PrintVisitorParams>;
 
     template <class T, class... ARGS>
-    ct::EnableIfReflected<T> visit(T& obj, const std::string& name = VisitorParams::PREFIX, ARGS&&... args)
+    ct::EnableIfReflected<T> visit(const T& obj, const std::string& name, ARGS&&... args)
     {
         thread_local bool recursion_block = false;
 
@@ -54,12 +52,13 @@ struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
     }
 
     template <class T, class... ARGS>
-    ct::DisableIfReflected<T> visit(T& obj, const std::string& name = VisitorParams::PREFIX, ARGS&&... args)
+    ct::DisableIfReflected<T> visit(const T&, const std::string&, ARGS&&...)
     {
     }
 
     template <ct::index_t I, class DTYPE, class... ARGS>
-    ct::DisableIfReflected<typename std::decay<DTYPE>::type> visitData(DTYPE& data, const std::string& path, ARGS&&...)
+    ct::DisableIfReflected<typename std::decay<DTYPE>::type>
+    visitData(const DTYPE& data, const std::string& path, ARGS&&...)
     {
         std::cout << path << ":" << data << ' ';
     }
@@ -78,18 +77,28 @@ struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
 
     template <ct::index_t I, class DTYPE, class... ARGS>
     ct::EnableIfReflected<typename std::decay<DTYPE>::type>
-    visitData(DTYPE& data, const std::string& path, ARGS&&... args)
+    visitData(const DTYPE& data, const std::string& path, ARGS&&... args)
     {
         Super_t::template visitData<I>(data, path, std::forward<ARGS>(args)...);
     }
 
     template <class T, ct::index_t I, class GET_PTR, class SET_PTR, ct::Flag_t FLAGS, class METADATA, class... ARGS>
     void visitProperty(T& obj,
-                       const std::string& path,
+                       std::string path,
                        ct::MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-                       ct::Indexer<I> idx,
-                       ARGS&&... args)
+                       ct::Indexer<I>,
+                       ARGS&&...)
     {
+        if (VisitorParams::ACCUMULATE_PATH)
+        {
+            path += VisitorParams::DELIMINATOR;
+            path += ptr.m_name.toString();
+        }
+        else
+        {
+            path = ptr.m_name.toString();
+        }
+        visitData<I>(ct::get(ptr, obj), path);
     }
 };
 
@@ -108,7 +117,8 @@ struct Printer
         std::cout << std::endl;
 
         PrintVisitor visitor;
-        visitor.visit(data);
+        std::cout << std::endl;
+        visitor.visit(static_cast<const T&>(data), "");
         // printStructInfo<T>(std::cout);
     }
 };
