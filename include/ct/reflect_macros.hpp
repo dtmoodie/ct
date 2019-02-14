@@ -75,6 +75,12 @@
         return ct::makeMemberObjectPointer(#NAME, &DataType::NAME);                                                    \
     }
 
+#define PUBLIC_ACCESS_WITH_METADATA(NAME, METADATA)                                                                    \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeMemberObjectPointer(#NAME, &DataType::NAME, METADATA);                                          \
+    }
+
 #define PROPERTY(NAME, GETTER, SETTER)                                                                                 \
     static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
