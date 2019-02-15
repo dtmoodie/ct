@@ -142,9 +142,6 @@ namespace ct
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
-            auto num_fields = NUM_FIELDS;
-            auto start_index = START_INDEX;
-            auto end_index = END_INDEX;
             Impl::printHierarchy(os, indent);
             Super::printHierarchy(os, indent);
         }
@@ -172,9 +169,6 @@ namespace ct
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
-            auto num_fields = NUM_FIELDS;
-            auto start_index = START_INDEX;
-            auto end_index = END_INDEX;
             Impl::printHierarchy(os, indent);
         }
     };
@@ -231,12 +225,12 @@ namespace ct
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
-            auto num_fields = NUM_FIELDS;
+            auto num_fields = IMPL::REFLECTION_COUNT;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
             os << indent << "Reflect<" << IMPL::getName() << ", Visited: ";
             printTypes(VISITED{}, os);
-            os << "> (" << START_INDEX << ":" << IMPL::REFLECTION_COUNT << ":" << END_INDEX << ')' << std::endl;
+            os << "> (" << start_index << ":" << num_fields << ":" << end_index << ')' << std::endl;
             Bases_t::printHierarchy(os, indent + "  ");
         }
 

@@ -44,8 +44,8 @@ namespace ct
     auto printStruct(std::ostream& os, const T& obj) -> ct::EnableIfReflected<T>;
 
     // Print a structs compile time infor without instantiating an instance of it
-    template <class T, class C, ct::Flag_t FLAGS>
-    void printField(const ct::MemberObjectPointer<T C::*, FLAGS> ptr, std::ostream& os)
+    template <class T, class C, ct::Flag_t FLAGS, class METADATA>
+    void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
         os << "  Field  0x" << ct::pointerValue(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name
            << std::endl;

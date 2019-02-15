@@ -1,6 +1,7 @@
 #ifndef CT_REFLECT_MACROS_HPP
 #define CT_REFLECT_MACROS_HPP
 #include "macros.hpp"
+#include "reflect/metadata.hpp"
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
@@ -10,9 +11,13 @@
 
 #define REFLECT_INTERNAL_MEMBER_3(TYPE, NAME, INIT)                                                                    \
     TYPE NAME = INIT;                                                                                                  \
-                                                                                                                       \
-  public:                                                                                                              \
-    PUBLIC_ACCESS(NAME)
+    private: \
+    static inline TYPE init_##NAME() {return INIT;}\
+    public: \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeMemberObjectPointer(#NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));\
+    }
 
 #ifdef _MSC_VER
 #define REFLECT_INTERNAL_MEMBER(...)                                                                                   \

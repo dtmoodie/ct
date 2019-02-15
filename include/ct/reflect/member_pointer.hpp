@@ -96,10 +96,17 @@ namespace ct
         return nullptr;
     }
 
-    template <class DTYPE, class CTYPE1, class METADATA, Flag_t FLAGS>
+    template <class METADATA, class DTYPE, class CTYPE1, Flag_t FLAGS>
     const METADATA* getMetadata(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA>& ptr)
     {
         return &ptr.m_metadata;
+    }
+
+    template <class METADATA, class DTYPE, class CTYPE1, class MDATA, Flag_t FLAGS>
+    auto getMetadata(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, MDATA>&) ->
+        typename std::enable_if<!std::is_same<METADATA, MDATA>::value, const METADATA*>::type
+    {
+        return nullptr;
     }
 
     template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>

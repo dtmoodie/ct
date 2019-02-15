@@ -1,4 +1,4 @@
-find_package(cpgf REQUIRED)
+find_package(cpgf QUIET)
 
 if(cpgf_FOUND)
     find_package(OpenCV QUIET COMPONENTS core)
