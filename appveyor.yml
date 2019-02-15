@@ -15,7 +15,7 @@ before_build:
 
    cd build
 
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF
 
 - sh: >-
     mkdir -p build
