@@ -30,3 +30,4 @@ script:
  - reflect/test_ct_reflect_compare
  - reflect/test_ct_reflect_cerealize
  - reflect/test_ct_static_checks
+ - reflect/test_ct_data_table
