@@ -29,7 +29,7 @@ namespace ct
     {
         constexpr StringView parseClassNameGCC(const StringView name)
         {
-            return name.slice(name.rfind('=') + 2, name.size() - 1);
+            return name.slice(name.rfind('=', 1) + 2, name.rfind(';'));
         }
 
         constexpr StringView parseClassNameMSVC(const StringView name)
@@ -38,20 +38,21 @@ namespace ct
         }
     }
 
-    // This works on gcc 5.4 but not 4.8 :(
+    // This works at compile time on gcc 5.4 but not 4.8 :(
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55425
-    // This is why we can't have nice things
+    // Which is why CT_CONSTEXPR_NAME is constexpr on 5.4 and not 4.8
     template <class T>
     struct GetNameGCC
     {
-        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(CT_FUNCTION_NAME); }
+        static CT_CONSTEXPR_NAME StringView funcName() {return CT_FUNCTION_NAME;}
+        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(funcName()); }
     };
 
     template <class T>
     struct GetNameMSVC
     {
-        static constexpr StringView name() { return StringView(CT_FUNCTION_NAME); }
-        static constexpr StringView getName() { return detail::parseClassNameMSVC(name()); }
+        static constexpr StringView funcName() { return StringView(CT_FUNCTION_NAME); }
+        static constexpr StringView getName() { return detail::parseClassNameMSVC(funcName()); }
     };
 #ifdef _MSC_VER
     template <class T>
