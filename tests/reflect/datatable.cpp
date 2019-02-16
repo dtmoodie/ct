@@ -51,7 +51,7 @@ int main()
     }
 
 
-    for(size_t i = 20; i < 36; i += 4)
+    for(size_t i = 20; i < 32; i += 4)
     {
         // compare performance to vector of structs
         std::vector<TestB> vec_of_structs;
