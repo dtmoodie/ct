@@ -61,16 +61,16 @@
 #define REFLECT_INTERNAL_START                                                                                         \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
-    using DataType = decltype(getTypeHelper());                                                                        \
+    static constexpr auto getTypeHelper()-> decltype(this);                      \
+    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                                                        \
     static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
     using BaseTypes = ct::VariadicTypedef<>;
 
 #define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    static constexpr auto getTypeHelper()->typename std::remove_reference<decltype(*this)>::type;                      \
-    using DataType = decltype(getTypeHelper());                                                                        \
+    static constexpr auto getTypeHelper()->decltype(this);                      \
+    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                                                        \
     static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
     using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
