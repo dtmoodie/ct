@@ -54,7 +54,7 @@ int main()
     ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 1>::value, false>{};
     if(ct::Reflect<InternallyReflected>::getName() == ct::StringView("InternallyReflected"))
     {
-        std::cout << "getName not working for InternallyReflected, got: " << ct::Reflect<InternallyReflected>::getName() << std::endl;
+        std::cout << "getName not working for InternallyReflected, got: '" << ct::Reflect<InternallyReflected>::getName() << "'" << std::endl;
         return 1;
     }
 }
