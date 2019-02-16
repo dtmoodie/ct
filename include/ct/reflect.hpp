@@ -29,7 +29,7 @@ namespace ct
     {
         constexpr StringView parseClassNameGCC(const StringView name)
         {
-            return name.slice(name.rfind('=', 1) + 2, name.rfind(';'));
+            return name.slice(name.rfind('=') + 2, name.size() -1);
         }
 
         constexpr StringView parseClassNameMSVC(const StringView name)
@@ -44,7 +44,7 @@ namespace ct
     template <class T>
     struct GetNameGCC
     {
-        static CT_CONSTEXPR_NAME StringView funcName() {return CT_FUNCTION_NAME;}
+        static CT_CONSTEXPR_NAME const char* funcName() {return CT_FUNCTION_NAME;}
         static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(funcName()); }
     };
 
