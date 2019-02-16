@@ -3,6 +3,8 @@
 #include <ct/reflect.hpp>
 #include <ct/reflect/print.hpp>
 
+#include <iostream>
+
 template <class T, ct::index_t START, ct::index_t END, ct::index_t COUNT>
 void checkFieldRange()
 {
