@@ -5,6 +5,7 @@ image:
 - Visual Studio 2015
 - Ubuntu
 - Previous Ubuntu
+- ubuntu1804
 
 clone_depth: 1
 before_build:
