@@ -17,7 +17,7 @@ namespace ct
     template <class T = char>
     struct BasicStringView
     {
-        constexpr static const auto npos = std::string::npos;
+        static const auto npos = std::string::npos;
 
         inline BasicStringView(const std::basic_string<T>& str);
 
