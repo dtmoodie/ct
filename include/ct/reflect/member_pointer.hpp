@@ -584,25 +584,25 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(const T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(const T& obj, ARGS&&... args) const
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(T& obj, ARGS&&... args) const
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I>
-        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        auto bind(T* obj) const
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
 
         template <index_t I>
-        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        auto bind(const T* obj) const
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
@@ -626,26 +626,25 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(const T& obj, ARGS&&... args) const ->
-            typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        auto invoke(const T& obj, ARGS&&... args) const
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(T& obj, ARGS&&... args) const -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        auto invoke(T& obj, ARGS&&... args) const
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I>
-        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        auto bind(T* obj) const
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
 
         template <index_t I>
-        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
+        auto bind(const T* obj) const
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
@@ -712,7 +711,7 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(ARGS&&... args) -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(ARGS&&... args)
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
@@ -742,7 +741,7 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(ARGS&&... args) -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
+        auto invoke(ARGS&&... args)
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
