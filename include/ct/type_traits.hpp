@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_TYPE_TRAITS_HPP
+#define CT_TYPE_TRAITS_HPP
 #include <ct/VariadicTypedef.hpp>
 
 #include <ostream>
@@ -15,7 +16,7 @@ namespace ct
     };
 
     template <class T>
-    struct is_reference_type
+    struct IsReferenceType
     {
         static const bool value = std::is_same<typename ReferenceType<T>::Type, T>::value;
     };
@@ -38,51 +39,52 @@ namespace ct
             sizeof(check<T>(static_cast<std::ostream*>(nullptr), static_cast<T*>(nullptr))) == sizeof(uint32_t);
     };
 
-    template<class T>
+    template <class T>
     struct StreamWritableHelper;
 
-    template<class T>
+    template <class T>
     struct StreamWritableHelper<VariadicTypedef<T>>
     {
         constexpr static const bool value = StreamWritable<T>::value;
     };
 
-    template<class T, class ... TYPES>
+    template <class T, class... TYPES>
     struct StreamWritableHelper<VariadicTypedef<T, TYPES...>>
     {
-        constexpr static const bool value = StreamWritableHelper<VariadicTypedef<TYPES...>>::value && StreamWritable<T>::value;
+        constexpr static const bool value =
+            StreamWritableHelper<VariadicTypedef<TYPES...>>::value && StreamWritable<T>::value;
     };
 
-    template<class ... TYPES>
+    template <class... TYPES>
     struct StreamWritable<VariadicTypedef<TYPES...>>
     {
         constexpr static const bool value = StreamWritableHelper<VariadicTypedef<TYPES...>>::value;
     };
 
     template <typename T, typename _ = void>
-    struct is_container : std::false_type
+    struct IsContainer : std::false_type
     {
     };
 
     template <typename... Ts>
-    struct is_container_helper
+    struct IsContainerHelper
     {
     };
 
     template <typename T>
-    struct is_container<T,
-                        typename std::conditional<false,
-                                                  is_container_helper<typename T::value_type,
-                                                                      typename T::size_type,
-                                                                      typename T::allocator_type,
-                                                                      typename T::iterator,
-                                                                      typename T::const_iterator,
-                                                                      decltype(std::declval<T>().size()),
-                                                                      decltype(std::declval<T>().begin()),
-                                                                      decltype(std::declval<T>().end()),
-                                                                      decltype(std::declval<T>().cbegin()),
-                                                                      decltype(std::declval<T>().cend())>,
-                                                  void>::type> : public std::true_type
+    struct IsContainer<T,
+                       typename std::conditional<false,
+                                                 IsContainerHelper<typename T::value_type,
+                                                                   typename T::size_type,
+                                                                   typename T::allocator_type,
+                                                                   typename T::iterator,
+                                                                   typename T::const_iterator,
+                                                                   decltype(std::declval<T>().size()),
+                                                                   decltype(std::declval<T>().begin()),
+                                                                   decltype(std::declval<T>().end()),
+                                                                   decltype(std::declval<T>().cbegin()),
+                                                                   decltype(std::declval<T>().cend())>,
+                                                 void>::type> : public std::true_type
     {
     };
 
@@ -118,7 +120,7 @@ namespace ct
         typename std::enable_if<std::is_pod<remove_reference_t<typename remove_reference_t<T>::Type>>::value, O>::type;
 
     template <typename T>
-    class is_default_constructible
+    class IsDefaultConstructible
     {
 
         typedef char yes;
@@ -137,3 +139,4 @@ namespace ct
         static const bool value = sizeof(test<T>(0)) == sizeof(yes);
     };
 }
+#endif // CT_TYPE_TRAITS_HPP

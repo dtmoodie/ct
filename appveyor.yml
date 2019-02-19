@@ -5,6 +5,7 @@ image:
 - Visual Studio 2015
 - Ubuntu
 - Previous Ubuntu
+- ubuntu1804
 
 clone_depth: 1
 before_build:
@@ -12,16 +13,16 @@ before_build:
 
 - cmd: >-
    if not exist "build" mkdir build
-
+   
    cd build
-
+   
    cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF
 
 - sh: >-
     mkdir -p build
-
+    
     cd build
-
+    
     cmake .. -Dcereal_INCLUDE_DIR=$APPVEYOR_BUILD_FOLDER/cereal/include
 
 build_script:
@@ -41,17 +42,17 @@ test_script:
    string\debug\test_ct_string_static.exe
    
    variadic_typedef\debug\test_ct_variadic_typedef.exe
- 
+   
    type_trait_detectors\debug\test_ct_type_traits.exe
    
    reflect\debug\test_ct_reflect_print.exe
-
-    reflect\debug\test_ct_reflect_access.exe
-
-    reflect\debug\test_ct_reflect_compare.exe
-
-    reflect\debug\test_ct_reflect_cerealize.exe
-
+   
+   reflect\debug\test_ct_reflect_access.exe
+   
+   reflect\debug\test_ct_reflect_compare.exe
+   
+   reflect\debug\test_ct_reflect_cerealize.exe
+   
 
 - sh: >-
    cd tests
@@ -63,14 +64,14 @@ test_script:
    string/test_ct_string_static
    
    variadic_typedef/test_ct_variadic_typedef
- 
+   
    type_trait_detectors/test_ct_type_traits
-      
+   
    reflect/test_ct_reflect_print
-
+   
    reflect/test_ct_reflect_access
-
+   
    reflect/test_ct_reflect_compare
-
+   
    reflect/test_ct_reflect_cerealize
-
+   

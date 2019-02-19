@@ -2,7 +2,7 @@
 #include "common.hpp"
 #include "ct/reflect/print.hpp"
 #include <chrono>
-#include <ct/Hash.hpp>
+#include <ct/hash.hpp>
 
 ct::EnableIfReflected<TestA, void> testEnabledFunction()
 {

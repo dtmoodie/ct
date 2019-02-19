@@ -1,6 +1,7 @@
-#pragma once
+#ifndef CT_REFLECT_HASH_HPP
+#define CT_REFLECT_HASH_HPP
 #include <cstdint>
-#include <ct/Hash.hpp>
+#include <ct/hash.hpp>
 
 #define DECL_HASHED_TYPE(TYPE)                                                                                         \
     template <>                                                                                                        \
@@ -47,3 +48,4 @@ namespace ct
 }
 
 #include "hash-inl.hpp"
+#endif // CT_REFLECT_HASH_HPP

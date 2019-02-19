@@ -11,12 +11,14 @@
 
 #define REFLECT_INTERNAL_MEMBER_3(TYPE, NAME, INIT)                                                                    \
     TYPE NAME = INIT;                                                                                                  \
-    private: \
-    static inline TYPE init_##NAME() {return INIT;}\
-    public: \
+                                                                                                                       \
+  private:                                                                                                             \
+    static inline TYPE init_##NAME() { return INIT; }                                                                  \
+  public:                                                                                                              \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberObjectPointer(#NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));\
+        return ct::makeMemberObjectPointer(                                                                            \
+            #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                               \
     }
 
 #ifdef _MSC_VER
@@ -58,21 +60,24 @@
         static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr const index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
+// Only used to make clang format nice in weird situations
+#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
+
 #define REFLECT_INTERNAL_START                                                                                         \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    static constexpr auto getTypeHelper()-> decltype(this);                      \
-    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                                                        \
+    static constexpr auto getTypeHelper()->decltype(this);                                                             \
+    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                    \
     static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
-    using BaseTypes = ct::VariadicTypedef<>;
+    using BaseTypes = ct::VariadicTypedef<>
 
 #define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;                                          \
-    static constexpr auto getTypeHelper()->decltype(this);                      \
-    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                                                        \
+    static constexpr auto getTypeHelper()->decltype(this);                                                             \
+    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                    \
     static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                     \
-    using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
+    using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
@@ -98,11 +103,32 @@
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
 
-#define MEMBER_FUNCTION(NAME, ...)                                                                                     \
+#define MEMBER_FUNCTION_1(NAME)                                                                                        \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeMemberFunctionPointers<DataType>(#NAME, &DataType::NAME);                                       \
+    }
+
+#define MEMBER_FUNCTION_N(NAME, ...)                                                                                   \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
+
+#define MEMBER_FUNCTION_2(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_3(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_4(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_5(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_6(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_7(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_8(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_9(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+
+#ifdef _MSC_VER
+#define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
+#else
+#define MEMBER_FUNCTION(...) CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__)
+#endif
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
@@ -122,16 +148,15 @@
         return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
-#define REFLECT_END                                                                                                    \
-    static constexpr const index_t REFLECT_COUNT_END = __COUNTER__;                                                    \
-    static constexpr const index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                         \
-    static constexpr const index_t NUM_FIELDS = REFLECTION_COUNT;                                                      \
-    }
-
 #define REFLECT_INTERNAL_END                                                                                           \
     static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__;                                                \
     static constexpr const ct::index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                     \
-    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT;
+    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT
+
+#define REFLECT_END                                                                                                    \
+    REFLECT_INTERNAL_END                                                                                               \
+    ;                                                                                                                  \
+    }
 
 #else
 
@@ -145,7 +170,7 @@
 #define PROPERTY_WITH_FLAG(FLAG, NAME, GETTER, SETTER)
 #define MEMBER_FUNCTION(NAME, ...)
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)
-#define REFLECT_INTERNAL_END
+#define REFLECT_INTERNAL_END ;
 #define REFLECT_END
 
 #endif

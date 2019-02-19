@@ -4,7 +4,7 @@
 #include "../bind.hpp"
 #include "access_token.hpp"
 #include <ct/Indexer.hpp>
-#include <ct/String.hpp>
+#include <ct/StringView.hpp>
 #include <ct/VariadicTypedef.hpp>
 
 #include <cstdint>
@@ -455,8 +455,8 @@ namespace ct
     template <class T, class P>
     struct MemberFunction;
 
-    template <class T, class R, class... ARGS>
-    struct MemberFunction<T, R (T::*)(ARGS...) const>
+    template <class T, class B, class R, class... ARGS>
+    struct MemberFunction<T, R (B::*)(ARGS...) const>
     {
         static constexpr const bool IS_CONST = true;
         static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
@@ -464,23 +464,26 @@ namespace ct
         using Class_t = T;
         using Ret_t = R;
         using Args_t = VariadicTypedef<ARGS...>;
-        using Sig_t = R (T::*)(ARGS...) const;
+        using Sig_t = R (B::*)(ARGS...) const;
         using BoundSig_t = R(ARGS...);
 
-        constexpr MemberFunction(R (T::*ptr)(ARGS...) const) : m_ptr(ptr) {}
+        constexpr MemberFunction(R (B::*ptr)(ARGS...) const) : m_ptr(ptr)
+        {
+            static_assert(std::is_base_of<B, T>::value, "Must derive");
+        }
 
         R invoke(const T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
 
-        std::function<R(ARGS...)> bind(T* obj) const
+        std::function<R(ARGS...)> bind(const T* obj) const
         {
             return ct::variadicBind(m_ptr, obj, make_int_sequence<sizeof...(ARGS)>{});
         }
 
-        R (T::*m_ptr)(ARGS...) const;
+        R (B::*m_ptr)(ARGS...) const;
     };
 
-    template <class T, class R, class... ARGS>
-    struct MemberFunction<T, R (T::*)(ARGS...)>
+    template <class T, class B, class R, class... ARGS>
+    struct MemberFunction<T, R (B::*)(ARGS...)>
     {
         static constexpr const bool IS_CONST = false;
         static constexpr const uint32_t NUM_ARGS = sizeof...(ARGS);
@@ -491,7 +494,10 @@ namespace ct
         using Sig_t = R (T::*)(ARGS...);
         using BoundSig_t = R(ARGS...);
 
-        constexpr MemberFunction(R (T::*ptr)(ARGS...)) : m_ptr(ptr) {}
+        constexpr MemberFunction(R (T::*ptr)(ARGS...)) : m_ptr(ptr)
+        {
+            static_assert(std::is_base_of<B, T>::value, "Must derive");
+        }
 
         R invoke(T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
 

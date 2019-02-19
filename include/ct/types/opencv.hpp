@@ -1,44 +1,87 @@
-#ifndef CT_TYPES_HPP
-#define CT_TYPES_HPP
+#ifndef CT_TYPES_OPENCV_HPP
+#define CT_TYPES_OPENCV_HPP
 #include <opencv2/core.hpp>
+
+#include "../StringView.hpp"
 #include "../reflect.hpp"
-#include "../String.hpp"
 
 namespace ct
 {
-    template <class T, int R>
-    struct Reflect<cv::Vec<T, R>>
+    /*template <class VISITED>
+    struct Reflect<cv::Mat, VISITED, void>
     {
-        static constexpr int N = 0;
         static constexpr int SPECIALIZED = true;
+        using DataType = cv::Mat;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
-        static constexpr ct::Accessor<decltype(&cv::Vec<T, R>::val),decltype(&cv::Vec<T, R>::val)>
-        getPtr(const ct::Indexer<0>)
-        {
-            return {&cv::Vec<T, R>::val,&cv::Vec<T, R>::val};
-        }
-        static constexpr const char* getName(Indexer<0>){return "data";}
+        REFLECT_STUB
+            PUBLIC_ACCESS(rows)
+            PUBLIC_ACCESS(cols)
+            MEMBER_FUNCTION(elemSize)
+            MEMBER_FUNCTION(elemSize1)
+            MEMBER_FUNCTION(type)
+            MEMBER_FUNCTION(depth)
+            MEMBER_FUNCTION(channels)
+            MEMBER_FUNCTION(step1)
+        REFLECT_INTERNAL_END;
+        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+    };*/
 
-        static auto getPtr(const ct::Indexer<1>)
-            ->decltype(ct::makeAccessor<CalculatedValue>(&cv::Vec<T,R>::t))
-        {
-            return ct::makeAccessor<CalculatedValue>(&cv::Vec<T,R>::t);
-        }
-        \
-        static constexpr const char* getName(const ct::Indexer<1>) { return "transpose"; }
+    template <class T, int R, int C>
+    struct Reflect<cv::Matx<T, R, C>>
+    {
+        static constexpr int SPECIALIZED = true;
+        using DataType = cv::Matx<T, R, C>;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr int rows() { return R; }
+        static constexpr int cols() { return C; }
 
-        static constexpr const char* getName(){return "cv::Vec_<T, R>";}
-
-        static constexpr ct::Indexer<N> end()
-        {
-            return ct::Indexer<N>{};
-        }
+        REFLECT_STUB
+            STATIC_FUNCTION(eye, &DataType::eye)
+            STATIC_FUNCTION(zeros, &DataType::zeros)
+            STATIC_FUNCTION(ones, &DataType::ones)
+            STATIC_FUNCTION(randu, &DataType::randu)
+            STATIC_FUNCTION(randn, &DataType::randn)
+            PUBLIC_ACCESS(val)
+            MEMBER_FUNCTION(row)
+            MEMBER_FUNCTION(col)
+            STATIC_FUNCTION(rows, &Reflect<DataType>::rows)
+            STATIC_FUNCTION(rows, &Reflect<DataType>::cols)
+        REFLECT_INTERNAL_END;
+        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
-    template<class T>
-    struct Reflect<cv::Scalar_<T>>: public Reflect<cv::Vec<T, 4>>
+    template <class T>
+    struct Reflect<cv::Mat_<T>>
     {
+        static constexpr int SPECIALIZED = true;
+        using DataType = cv::Mat_<T>;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
+        REFLECT_STUB
+            PUBLIC_ACCESS(rows)
+            PUBLIC_ACCESS(cols)
+            MEMBER_FUNCTION(elemSize)
+            MEMBER_FUNCTION(elemSize1)
+            MEMBER_FUNCTION(type)
+            MEMBER_FUNCTION(depth)
+            MEMBER_FUNCTION(channels)
+            MEMBER_FUNCTION(step1)
+        REFLECT_INTERNAL_END;
+        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+    };
+
+    template <class T, int R>
+    struct Reflect<cv::Vec<T, R>> : public Reflect<cv::Matx<T, R, 1>>
+    {
+        static constexpr int SPECIALIZED = true;
+        using DataType = cv::Vec<T, R>;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+    };
+
+    template <class T>
+    struct Reflect<cv::Scalar_<T>> : public Reflect<cv::Vec<T, 4>>
+    {
     };
 
     REFLECT_TEMPLATED_START(cv::Rect_)
@@ -46,11 +89,11 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(width)
         PUBLIC_ACCESS(height)
-        MEMBER_FUNCTION(size, &cv::Rect_<Args...>::size)
-        MEMBER_FUNCTION(topLeft, &cv::Rect_<Args...>::tl)
-        MEMBER_FUNCTION(bottomRight, &cv::Rect_<Args...>::br)
-        MEMBER_FUNCTION(area, &cv::Rect_<Args...>::area)
-        MEMBER_FUNCTION(empty, &cv::Rect_<Args...>::empty)
+        MEMBER_FUNCTION(size)
+        MEMBER_FUNCTION(topLeft, &DataType::tl)
+        MEMBER_FUNCTION(bottomRight, &DataType::br)
+        MEMBER_FUNCTION(area)
+        MEMBER_FUNCTION(empty)
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Point_)

@@ -1,5 +1,5 @@
 #include "../common.hpp"
-#include <ct/Hash.hpp>
+#include <ct/hash.hpp>
 
 static constexpr const char* getString()
 {

@@ -1,7 +1,7 @@
 #ifndef CT_REFLECT_METADATA_HPP
 #define CT_REFLECT_METADATA_HPP
 
-#include "../String.hpp"
+#include "../StringView.hpp"
 
 #include <functional>
 

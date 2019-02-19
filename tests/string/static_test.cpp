@@ -1,6 +1,6 @@
 #include "../common.hpp"
 
-#include <ct/String.hpp>
+#include <ct/StringView.hpp>
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
 

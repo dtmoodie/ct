@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_REFLECT_CEREALIZE_HPP
+#define CT_REFLECT_CEREALIZE_HPP
 namespace ct
 {
     template <class AR, class T>
@@ -14,9 +15,9 @@ namespace ct
 
 #include <cereal/cereal.hpp>
 
-#include <ct/TypeTraits.hpp>
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
+#include <ct/type_traits.hpp>
 
 namespace ct
 {
@@ -120,3 +121,4 @@ namespace cereal
         ct::loadStruct(ar, data);
     }
 }
+#endif // CT_REFLECT_CEREALIZE_HPP

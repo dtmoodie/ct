@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_VARIADIC_TYPEDEF_HPP
+#define CT_VARIADIC_TYPEDEF_HPP
 #include <utility>
 
 namespace ct
@@ -190,3 +191,4 @@ namespace ct
         using type = typename InsertUniqueMultiple<VariadicTypedef<T1...>, T2>::type;
     };
 }
+#endif // CT_VARIADIC_TYPEDEF_HPP

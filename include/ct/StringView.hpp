@@ -1,6 +1,6 @@
-#ifndef CT_STRING_HPP
-#define CT_STRING_HPP
-#include "StringImpl.hpp"
+#ifndef CT_STRING_VIEW_HPP
+#define CT_STRING_VIEW_HPP
+
 #include <array>
 #include <cstddef>
 #include <ostream>
@@ -13,11 +13,23 @@ using ssize_t = SSIZE_T;
 
 namespace ct
 {
+    namespace detail
+    {
+        constexpr size_t findFirst(const char* str, size_t N, size_t idx, char del);
 
+        template <size_t idx, size_t N>
+        constexpr size_t findFirst(const char* str, char del);
+
+        constexpr size_t findDeliminator(const char* str, size_t len);
+
+        constexpr size_t findDeliminator(const char* str, size_t len, char del);
+
+        constexpr size_t findLast(const char* str, size_t len, char Del);
+    }
     template <class T = char>
     struct BasicStringView
     {
-        constexpr static const auto npos = std::string::npos;
+        constexpr static const size_t npos = static_cast<size_t>(-1);
 
         inline BasicStringView(const std::basic_string<T>& str);
 
@@ -166,6 +178,35 @@ namespace ct
     constexpr int stoiRange(const char* start, int len) { return stoiImplRange(start, start + len); }
 
     ///// Implementation
+    namespace detail
+    {
+        constexpr size_t findFirst(const char* str, size_t N, size_t idx, char del)
+        {
+            return idx == N ? N : str[idx] == del ? idx : findFirst(str, N, idx + 1, del);
+        }
+
+        template <size_t idx, size_t N>
+        constexpr size_t findFirst(const char* str, char del)
+        {
+            return str[idx] == del ? idx : idx == N - 1 ? N : findFirst<idx + 1, N>(str, del);
+        }
+
+        // len needs to be length of string - 1
+        constexpr size_t findDeliminator(const char* str, size_t len)
+        {
+            return str[len] == ':' ? len : len == 0 ? 0 : findDeliminator(str, len - 1);
+        }
+
+        constexpr size_t findDeliminator(const char* str, size_t len, char del)
+        {
+            return str[len] == del ? len : len == 0 ? 0 : findDeliminator(str, len - 1, del);
+        }
+
+        constexpr size_t findLast(const char* str, size_t len, char Del)
+        {
+            return str[len] == Del ? len : len == 0 ? 0 : findLast(str, len - 1, Del);
+        }
+    }
 
     template <class T>
     BasicStringView<T>::BasicStringView(const std::basic_string<T>& str) : m_data(str.c_str()), m_size(str.size())
@@ -302,4 +343,4 @@ namespace ct
     }
 
 } // namespace ct
-#endif // CT_STRING_HPP
+#endif // CT_STRING_VIEW_HPP

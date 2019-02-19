@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ct/operators/Operator.hpp>
-#include <ct/String.hpp>
+#include <ct/StringView.hpp>
 
 namespace ct
 {

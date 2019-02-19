@@ -5,8 +5,8 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <ct/Hash.hpp>
-#include <ct/String.hpp>
+#include <ct/hash.hpp>
+#include <ct/StringView.hpp>
 #include <ct/reflect.hpp>
 
 #include <iostream>

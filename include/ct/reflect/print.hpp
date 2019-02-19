@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_REFLECT_PRINT_HPP
+#define CT_REFLECT_PRINT_HPP
 #include "../reflect.hpp"
 #include <ostream>
 #include <typeinfo>
@@ -115,7 +116,7 @@ namespace ct
 } // namespace ct
 
 #include <cstdint>
-#include <ct/TypeTraits.hpp>
+#include <ct/type_traits.hpp>
 #include <memory>
 
 namespace std
@@ -293,3 +294,4 @@ namespace ct
         }
     }
 }
+#endif

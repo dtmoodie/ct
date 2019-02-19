@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_REFLECT_COMPARE_INL_HPP
+#define CT_REFLECT_COMPARE_INL_HPP
 #include "compare.hpp"
 #include <ct/reflect.hpp>
 
@@ -74,3 +75,4 @@ auto operator!=(const T& lhs, const T& rhs) -> ct::EnableIfReflected<T, bool>
 {
     return !(lhs == rhs);
 }
+#endif // CT_REFLECT_COMPARE_INL_HPP

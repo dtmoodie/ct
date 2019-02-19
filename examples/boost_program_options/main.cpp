@@ -23,7 +23,7 @@ namespace ct
 // Internally reflected, reflection metadata embedded in type
 struct ProgramOptions
 {
-    REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START;
         REFLECT_INTERNAL_MEMBER(int, num_iterations, 10)
         REFLECT_INTERNAL_MEMBER(float, epsilon, 1e-3f)
         float field;
@@ -33,7 +33,7 @@ struct ProgramOptions
                 "field", &ProgramOptions::field, ct::Description("Description of field"));
         }
         REFLECT_INTERNAL_MEMBER(SubOptions, sub)
-    REFLECT_INTERNAL_END
+    REFLECT_INTERNAL_END;
 };
 
 int main(int ac, char** av)

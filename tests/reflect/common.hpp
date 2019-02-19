@@ -1,6 +1,15 @@
 #pragma once
 #include "Data.hpp"
 #include "Reflect.hpp"
+
+#ifdef HAVE_OPENCV
+#include <ct/types/opencv.hpp>
+#endif
+
+#ifdef HAVE_EIGEN
+#include <ct/types/eigen.hpp>
+#endif
+
 #include <ct/reflect/compare-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 
@@ -34,13 +43,29 @@ void mul(T& obj)
 struct DebugEqual
 {
     template <class T>
-    bool test(const char* name, const T& lhs, const T& rhs) const
+    auto test(const char* name, const T& lhs, const T& rhs) const ->
+        typename std::enable_if<!std::is_array<T>::value, bool>::type
     {
         if (lhs != rhs)
         {
             std::cout << name << " values not equal: " << lhs << " != " << rhs << std::endl;
             return false;
         }
+        return true;
+    }
+
+    template <class T, size_t N>
+    bool test(const char* name, const T (&lhs)[N], const T (&rhs)[N]) const
+    {
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (lhs[i] != rhs[i])
+            {
+                std::cout << name << " values not equal (" << i << "): " << lhs << " != " << rhs << std::endl;
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -159,8 +184,7 @@ void testTypes(Tester& tester)
     {
         // WeirdWeakOwnerShip data;
         // tester.test(data);
-    }
-    {
+    } {
         MultipleInheritance asdf;
         asdf.ReflectedStruct::x = 0;
         asdf.ReflectedStruct::y = 1;
@@ -189,4 +213,46 @@ void testTypes(Tester& tester)
         Virtual virt;
         tester.test(virt);
     }
+    {
+        Templated<double> data;
+        tester.test(data);
+    }
+#ifdef HAVE_OPENCV
+    {
+        cv::Vec2f data(2, 3);
+        tester.test(data);
+    }
+    {
+        cv::Rect2f data(0, 1, 2, 3);
+        tester.test(data);
+    }
+    {
+        cv::Point2f data(0, 1);
+        tester.test(data);
+    }
+
+    {
+        cv::Point3f data(0, 1, 2);
+        tester.test(data);
+    }
+
+    {
+        cv::Scalar data(0, 1, 2, 3);
+        tester.test(data);
+    }
+    {
+        cv::Mat_<float> mat(4, 4);
+        tester.test(mat);
+    }
+    {
+        // cv::Mat mat(CV_32F, 4, 4);
+        // tester.test(mat);
+    }
+#endif
+#ifdef HAVE_EIGEN
+    {
+        Eigen::Matrix<float, 3, 3> mat = Eigen::Matrix<float, 3, 3>::Identity();
+        tester.test(mat);
+    }
+#endif
 }
