@@ -50,8 +50,8 @@ namespace ct
             STATIC_FUNCTION(randu, &DataType::randu)
             STATIC_FUNCTION(randn, &DataType::randn)
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY(shape, &Reflect<DataType>::getShape, nullptr)
-            PROPERTY(size, &Reflect<DataType>::getSize, nullptr)
+            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
+            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
             MEMBER_FUNCTION(row)
             MEMBER_FUNCTION(col)
             STATIC_FUNCTION(rows, &Reflect<DataType>::rows)
@@ -79,7 +79,10 @@ namespace ct
 
         static size_t getSize(const DataType& data) { return data.rows * data.cols; }
 
-        static TArrayView<T> getDataMutable(DataType& mat) { return {mat[0], static_cast<size_t>(mat.rows * mat.cols)}; }
+        static TArrayView<T> getDataMutable(DataType& mat)
+        {
+            return {mat[0], static_cast<size_t>(mat.rows * mat.cols)};
+        }
 
         REFLECT_STUB
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
