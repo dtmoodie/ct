@@ -3,6 +3,8 @@
 
 #include "../bind.hpp"
 #include "access_token.hpp"
+#include "metadata.hpp"
+
 #include <ct/Indexer.hpp>
 #include <ct/StringView.hpp>
 #include <ct/VariadicTypedef.hpp>
@@ -21,6 +23,7 @@ namespace ct
         READABLE = DO_NOT_SERIALIZE << 1,
         WRITABLE = READABLE << 1,
         REQUIRED = WRITABLE << 1,
+        COMPILE_TIME_CONSTANT = REQUIRED << 1,
 
         // reserve the first 8 bits of the flag field for ct flags
         CT_RESERVED_FLAG_BITS = 8
@@ -43,24 +46,8 @@ namespace ct
     template <class T>
     struct SetType;
 
-    template <class PTR, Flag_t FLAGS = NONE, class METADATA = void>
+    template <class PTR, Flag_t FLAGS = NONE, class METADATA = metadata::Empty>
     struct MemberObjectPointer;
-
-    template <class DTYPE, class CTYPE, Flag_t FLAGS>
-    struct MemberObjectPointer<DTYPE CTYPE::*, FLAGS, void>
-    {
-        using Class_t = CTYPE;
-        using Data_t = DTYPE;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE | WRITABLE
-        };
-
-        constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr) : m_name(name), m_ptr(ptr) {}
-
-        StringView m_name;
-        Data_t Class_t::*m_ptr;
-    };
 
     template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
     struct MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>
@@ -72,74 +59,47 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr, const METADATA metadata)
+        constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr, const METADATA metadata = METADATA())
             : m_name(name), m_ptr(ptr), m_metadata(metadata)
         {
+        }
+
+        template <class DERIVED>
+        const Data_t& get(DERIVED& obj) const
+        {
+            static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
+                          "Passed in object must either be of class type or derived from it");
+            return obj.*m_ptr;
+        }
+
+        template <class DERIVED>
+        Data_t& set(DERIVED& obj) const
+        {
+            static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
+                          "Passed in object must either be of class type or derived from it");
+            return obj.*m_ptr;
+        }
+
+        template <class DERIVED>
+        void set(DERIVED& obj, const Data_t& val) const
+        {
+            static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
+                          "Passed in object must either be of class type or derived from it");
+            obj.*m_ptr = val;
+        }
+
+        template <class DERIVED>
+        void set(DERIVED& obj, Data_t&& val) const
+        {
+            static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
+                          "Passed in object must either be of class type or derived from it");
+            obj.*m_ptr = std::move(val);
         }
 
         StringView m_name;
         Data_t Class_t::*m_ptr;
         METADATA m_metadata;
     };
-
-    template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>
-    DTYPE& get(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA> ptr, CTYPE2& obj)
-    {
-        static_assert(std::is_same<CTYPE1, CTYPE2>::value || std::is_base_of<CTYPE1, CTYPE2>::value,
-                      "Passed in object must either be of pointer type or derived from it");
-        return obj.*(ptr.m_ptr);
-    }
-
-    template <class DTYPE, class CTYPE1, Flag_t FLAGS>
-    const void* getMetadata(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, void>& ptr)
-    {
-        return nullptr;
-    }
-
-    template <class METADATA, class DTYPE, class CTYPE1, Flag_t FLAGS>
-    const METADATA* getMetadata(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA>& ptr)
-    {
-        return &ptr.m_metadata;
-    }
-
-    template <class METADATA, class DTYPE, class CTYPE1, class MDATA, Flag_t FLAGS>
-    auto getMetadata(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, MDATA>&) ->
-        typename std::enable_if<!std::is_same<METADATA, MDATA>::value, const METADATA*>::type
-    {
-        return nullptr;
-    }
-
-    template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>
-    const DTYPE& get(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA> ptr, const CTYPE2& obj)
-    {
-        static_assert(std::is_same<CTYPE1, CTYPE2>::value || std::is_base_of<CTYPE1, CTYPE2>::value,
-                      "Passed in object must either be of pointer type or derived from it");
-        return obj.*(ptr.m_ptr);
-    }
-
-    template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>
-    DTYPE& set(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA> ptr, CTYPE2& obj)
-    {
-        static_assert(std::is_same<CTYPE1, CTYPE2>::value || std::is_base_of<CTYPE1, CTYPE2>::value,
-                      "Passed in object must either be of pointer type or derived from it");
-        return obj.*(ptr.m_ptr);
-    }
-
-    template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>
-    void set(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA> ptr, CTYPE2& obj, const DTYPE& val)
-    {
-        static_assert(std::is_same<CTYPE1, CTYPE2>::value || std::is_base_of<CTYPE1, CTYPE2>::value,
-                      "Passed in object must either be of pointer type or derived from it");
-        (obj.*(ptr.m_ptr)) = val;
-    }
-
-    template <class DTYPE, class CTYPE1, class CTYPE2, class METADATA, Flag_t FLAGS>
-    void set(const MemberObjectPointer<DTYPE CTYPE1::*, FLAGS, METADATA> ptr, CTYPE2& obj, DTYPE&& val)
-    {
-        static_assert(std::is_same<CTYPE1, CTYPE2>::value || std::is_base_of<CTYPE1, CTYPE2>::value,
-                      "Passed in object must either be of pointer type or derived from it");
-        (obj.*(ptr.m_ptr)) = val;
-    }
 
     template <class DTYPE, class CTYPE, class METADATA, Flag_t FLAGS>
     struct GetType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
@@ -240,30 +200,72 @@ namespace ct
         using type = DTYPE;
     };
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = NONE, class METADATA = void>
+    //////////////////////////////////////////////////
+    /// Get overloads
+    //////////////////////////////////////////////////
+
+    template <class DTYPE, class CTYPE, class DERIVED>
+    auto get(DTYPE (CTYPE::*ptr)() const, const DERIVED& obj)
+    {
+        return (obj.*ptr)();
+    }
+
+    template <class DTYPE, class CTYPE, class DERIVED>
+    auto get(DTYPE (*ptr)(const CTYPE&), const DERIVED& obj)
+    {
+        return ptr(obj);
+    }
+
+    //////////////////////////////////////////////////
+    /// Set overloads
+    //////////////////////////////////////////////////
+    // Member setter
+    template <class BASE, class DERIVED, class SET_TYPE, class SET_TYPE2>
+    void set(void (BASE::*ptr)(SET_TYPE), DERIVED& obj, SET_TYPE2 val)
+    {
+        (obj.*ptr)(val);
+    }
+
+    // explicit this setter
+    template <class BASE, class DERIVED, class SET_TYPE, class SET_TYPE2>
+    void set(void (*ptr)(BASE&, SET_TYPE), DERIVED& obj, const SET_TYPE2& val)
+    {
+        ptr(obj, val);
+    }
+
+    template <class BASE, class DERIVED, class GET_PTR, class SET_TYPE>
+    SET_TYPE setMutable(SET_TYPE (BASE::*ptr)(), GET_PTR, DERIVED& obj)
+    {
+        return (obj.*ptr)();
+    }
+
+    template <class BASE, class DERIVED, class GET_PTR, class SET_TYPE>
+    SET_TYPE setMutable(SET_TYPE (*ptr)(BASE&), GET_PTR, DERIVED& obj)
+    {
+        return ptr(obj);
+    }
+
+    // access token setters
+    template <class DTYPE, class BASE, class DERIVED, class GET_PTR>
+    AccessToken<void (BASE::*)(DTYPE)> setMutable(void (BASE::*set_ptr)(DTYPE), GET_PTR get_ptr, DERIVED& obj)
+    {
+        return AccessToken<void (BASE::*)(DTYPE)>(obj, set_ptr, get(get_ptr, obj));
+    }
+
+    template <class DTYPE, class BASE, class DERIVED, class GET_PTR>
+    AccessToken<void (*)(BASE&, DTYPE)> setMutable(void (*set_ptr)(BASE&, DTYPE), GET_PTR get_ptr, DERIVED& obj)
+    {
+        return AccessToken<void (*)(BASE&, DTYPE)>(obj, set_ptr, get(get_ptr, obj));
+    }
+
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = NONE, class METADATA = metadata::Empty>
     struct MemberPropertyPointer
     {
-        using Class_t = typename InferPointerType<GET_PTR>::Class_t;
-        using Data_t = typename InferPointerType<GET_PTR>::Data_t;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE | WRITABLE
-        };
-
-        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, SET_PTR setter, const METADATA metadata)
-            : m_name(name), m_getter(getter), m_setter(setter), m_metadata(metadata)
-        {
-        }
-
         StringView m_name;
         GET_PTR m_getter;
         SET_PTR m_setter;
         METADATA m_metadata;
-    };
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS>
-    struct MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, void>
-    {
         using Class_t = typename InferPointerType<GET_PTR>::Class_t;
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
         enum : int64_t
@@ -271,106 +273,32 @@ namespace ct
             Flags = FLAGS | READABLE | WRITABLE
         };
 
-        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, SET_PTR setter)
-            : m_name(name), m_getter(getter), m_setter(setter)
+        constexpr MemberPropertyPointer(StringView name,
+                                        GET_PTR getter,
+                                        SET_PTR setter,
+                                        const METADATA metadata = METADATA())
+            : m_name(name), m_getter(getter), m_setter(setter), m_metadata(metadata)
         {
         }
 
-        StringView m_name;
-        GET_PTR m_getter;
-        SET_PTR m_setter;
+        template <class DERIVED>
+        auto get(const DERIVED& obj) const
+        {
+            return ct::get(m_getter, obj);
+        }
+
+        template <class DERIVED, class T>
+        void set(DERIVED& obj, const T& val) const
+        {
+            ct::set(m_setter, obj, val);
+        }
+
+        template <class DERIVED>
+        auto set(DERIVED& obj) const -> decltype(ct::setMutable(m_setter, m_getter, obj))
+        {
+            return ct::setMutable(m_setter, m_getter, obj);
+        }
     };
-
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-    struct GetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
-    {
-        using type = typename MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>::Data_t;
-    };
-
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-    struct SetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
-    {
-        using type = typename InferSetterType<SET_PTR>::type;
-    };
-
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-    typename GetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>::type
-    get(const MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-        const typename MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>::Class_t& obj)
-    {
-        return (obj.*ptr.m_getter)();
-    }
-
-    template <class DTYPE, class CTYPE, class SET_PTR, Flag_t FLAGS, class METADATA>
-    typename GetType<MemberPropertyPointer<DTYPE (*)(CTYPE), SET_PTR, FLAGS, METADATA>>::type
-    get(const MemberPropertyPointer<DTYPE (*)(CTYPE), SET_PTR, FLAGS, METADATA> ptr,
-        const typename MemberPropertyPointer<DTYPE (*)(CTYPE), SET_PTR, FLAGS, METADATA>::Class_t& obj)
-    {
-        return ptr.m_getter(obj);
-    }
-
-    // traditional setter
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    void set(const MemberPropertyPointer<GET_PTR, void (CLASS::*)(SET_TYPE), FLAGS, METADATA> ptr,
-             typename MemberPropertyPointer<GET_PTR, void (CLASS::*)(SET_TYPE), FLAGS, METADATA>::Class_t& obj,
-             const SET_TYPE& val)
-    {
-        (obj.*ptr.m_setter)(val);
-    }
-
-    // Implicit this version
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    void set(const MemberPropertyPointer<GET_PTR, void (*)(CLASS&, SET_TYPE), FLAGS, METADATA> ptr,
-             CLASS& obj,
-             const SET_TYPE& val)
-    {
-        ptr.m_setter(obj, val);
-    }
-
-    // Mutable ref setter
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    void set(const MemberPropertyPointer<GET_PTR, SET_TYPE (CLASS::*)(), FLAGS, METADATA> ptr,
-             typename MemberPropertyPointer<GET_PTR, SET_TYPE (CLASS::*)(), FLAGS, METADATA>::Class_t& obj,
-             const SET_TYPE& val)
-    {
-        (obj.*ptr.m_setter)() = val;
-    }
-
-    // Implicit this version
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    void set(const MemberPropertyPointer<GET_PTR, SET_TYPE (*)(CLASS&), FLAGS, METADATA> ptr,
-             CLASS& obj,
-             const SET_TYPE& val)
-    {
-        ptr.m_setter(obj) = val;
-    }
-
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    AccessToken<void (CLASS::*)(SET_TYPE)>
-    set(const MemberPropertyPointer<GET_PTR, void (CLASS::*)(SET_TYPE), FLAGS, METADATA> ptr, CLASS& obj)
-    {
-        return AccessToken<void (CLASS::*)(SET_TYPE)>(obj, ptr.m_setter, get(ptr, obj));
-    }
-
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    SET_TYPE set(const MemberPropertyPointer<GET_PTR, SET_TYPE (*)(CLASS&), FLAGS, METADATA> ptr, CLASS& obj)
-    {
-        return ptr.m_setter(obj);
-    }
-
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    AccessToken<void (*)(CLASS&, SET_TYPE)>
-    set(const MemberPropertyPointer<GET_PTR, void (*)(CLASS&, SET_TYPE), FLAGS, METADATA> ptr, CLASS& obj)
-    {
-        return AccessToken<void (*)(CLASS&, SET_TYPE)>(obj, ptr.m_setter, get(ptr, obj));
-    }
-
-    template <class GET_PTR, class CLASS, class SET_TYPE, Flag_t FLAGS, class METADATA>
-    SET_TYPE set(const MemberPropertyPointer<GET_PTR, SET_TYPE (CLASS::*)(), FLAGS, METADATA> ptr,
-                 typename MemberPropertyPointer<GET_PTR, SET_TYPE (CLASS::*)(), FLAGS, METADATA>::Class_t& obj)
-    {
-        return (obj.*ptr.m_setter)();
-    }
 
     template <class GET_PTR, Flag_t FLAGS, class METADATA>
     struct MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS, METADATA>
@@ -382,9 +310,15 @@ namespace ct
             Flags = FLAGS | READABLE
         };
 
-        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, const METADATA metadata)
+        constexpr MemberPropertyPointer(StringView name, GET_PTR getter, const METADATA metadata = METADATA())
             : m_name(name), m_getter(getter), m_metadata(metadata)
         {
+        }
+
+        template <class DERIVED>
+        auto get(const DERIVED& obj) const
+        {
+            return ct::get(m_getter, obj);
         }
 
         StringView m_name;
@@ -392,20 +326,28 @@ namespace ct
         METADATA m_metadata;
     };
 
-    template <class GET_PTR, Flag_t FLAGS>
-    struct MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS, void>
+    template <class FIELD>
+    auto getMetadata(const FIELD& field)
     {
-        using Class_t = typename InferPointerType<GET_PTR>::Class_t;
-        using Data_t = typename InferPointerType<GET_PTR>::Data_t;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE
-        };
+        return &field.m_metadata;
+    }
 
-        constexpr MemberPropertyPointer(StringView name, GET_PTR getter) : m_name(name), m_getter(getter) {}
+    template <class FIELD>
+    auto getMetadata(FIELD& field)
+    {
+        return &field.m_metadata;
+    }
 
-        StringView m_name;
-        GET_PTR m_getter;
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+    struct GetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
+    {
+        using type = typename MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>::Data_t;
+    };
+
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+    struct SetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
+    {
+        using type = typename InferSetterType<SET_PTR>::type;
     };
 
     template <class T>
@@ -590,25 +532,25 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(const T& obj, ARGS&&... args) const
+        auto invoke(const T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(T& obj, ARGS&&... args) const
+        auto invoke(T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I>
-        auto bind(T* obj) const
+        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
 
         template <index_t I>
-        auto bind(const T* obj) const
+        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
@@ -632,25 +574,26 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(const T& obj, ARGS&&... args) const
+        auto invoke(const T& obj, ARGS&&... args) const ->
+            typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(T& obj, ARGS&&... args) const
+        auto invoke(T& obj, ARGS&&... args) const -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I>
-        auto bind(T* obj) const
+        auto bind(T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
 
         template <index_t I>
-        auto bind(const T* obj) const
+        auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
@@ -717,7 +660,7 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(ARGS&&... args)
+        auto invoke(ARGS&&... args) -> typename decltype(std::get<I>(m_ptrs))::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
@@ -747,7 +690,7 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(ARGS&&... args)
+        auto invoke(ARGS&&... args) -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
@@ -796,71 +739,73 @@ namespace ct
     };
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS, void, ARGS...> makeMemberFunctionPointers(const char* name,
-                                                                                         const ARGS... args)
+    constexpr MemberFunctionPointers<T, FLAGS | READABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
+                                                                                                    const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS, void, ARGS...>(name, args...);
+        return MemberFunctionPointers<T, FLAGS | READABLE, void, ARGS...>(name, args...);
     }
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class METADATA, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS, METADATA, ARGS...>
+    constexpr MemberFunctionPointers<T, FLAGS | READABLE, METADATA, ARGS...>
     makeMemberFunctionPointersWithMetadata(const char* name, const METADATA metadata, const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS, METADATA, ARGS...>(name, metadata, args...);
+        return MemberFunctionPointers<T, FLAGS | READABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS, void, ARGS...> makeStaticFunctionPointers(StringView name, const ARGS... args)
+    constexpr StaticFunctions<T, FLAGS | READABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
+                                                                                             const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS, void, ARGS...>(name, args...);
+        return StaticFunctions<T, FLAGS | READABLE, void, ARGS...>(name, args...);
     }
 
     template <class T, class METADATA, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS, METADATA, ARGS...>
+    constexpr StaticFunctions<T, FLAGS | READABLE, METADATA, ARGS...>
     makeStaticFunctionPointersWithMetadata(StringView name, const METADATA metadata, const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS, METADATA, ARGS...>(name, metadata, args...);
+        return StaticFunctions<T, FLAGS | READABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
     template <Flag_t FLAGS = NONE, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS> makeMemberObjectPointer(const char* name, const PTR ptr)
+    constexpr MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE> makeMemberObjectPointer(const char* name,
+                                                                                            const PTR ptr)
     {
-        return MemberObjectPointer<PTR, FLAGS>(name, ptr);
+        return MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE>(name, ptr);
     }
 
     template <Flag_t FLAGS = NONE, class METADATA, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS, METADATA>
+    constexpr MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE, METADATA>
     makeMemberObjectPointer(const char* name, const PTR ptr, const METADATA metadata)
     {
-        return MemberObjectPointer<PTR, FLAGS, METADATA>(name, ptr, metadata);
+        return MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE, METADATA>(name, ptr, metadata);
     }
 
     template <Flag_t FLAGS = NONE, class GET_PTR, class SET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS>
+    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS>(name, get, set);
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE>(name, get, set);
     }
 
     template <Flag_t FLAGS = NONE, class GET_PTR, class SET_PTR, class METADATA>
-    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>
+    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set, const METADATA metadata)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>(name, get, set, metadata);
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE, METADATA>(name, get, set, metadata);
     }
 
     template <Flag_t FLAGS = NONE, class GET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS>
+    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t)
     {
-        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS>(name, get);
+        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE>(name, get);
     }
 
     template <Flag_t FLAGS = NONE, class GET_PTR, class METADATA>
-    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS, METADATA>
+    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t, const METADATA metadata)
     {
-        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS, METADATA>(name, get, metadata);
+        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE, METADATA>(name, get, metadata);
     }
 }
 

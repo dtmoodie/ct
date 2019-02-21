@@ -23,14 +23,14 @@ template <class T>
 void mulImpl(T& obj, const ct::Indexer<0> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
-    set(accessor, obj) *= 2;
+    accessor.set(obj) *= 2;
 }
 
 template <class T, ct::index_t I>
 void mulImpl(T& obj, const ct::Indexer<I> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
-    set(accessor, obj) *= 2;
+    accessor.set(obj) *= 2;
     mulImpl(obj, --idx);
 }
 

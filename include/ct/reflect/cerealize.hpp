@@ -15,12 +15,257 @@ namespace ct
 
 #include <cereal/cereal.hpp>
 
+// TODO make specialization for text archives that uses a size tag
+#include <cereal/types/array.hpp>
+
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
 #include <ct/type_traits.hpp>
+#include <ct/types/TArrayView.hpp>
 
 namespace ct
 {
+    namespace cereal
+    {
+
+        template <class T>
+        constexpr bool isArrayContainer()
+        {
+            return (indexOfField<T>("data") != -1) && (indexOfField<T>("size") != -1);
+        }
+
+        template <class T>
+        constexpr bool isNDArrayContainer()
+        {
+            return (indexOfField<T>("data") != -1) && (indexOfField<T>("shape") != -1);
+        }
+
+        template <class T, class PTR, class ENABLE = void>
+        struct FieldCerealizer
+        {
+            template <class AR>
+            static void load(AR&, T&, const PTR)
+            {
+            }
+            template <class AR>
+            static void save(AR&, const T&, const PTR)
+            {
+            }
+        };
+
+        template <class T, class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
+        struct FieldCerealizer<T, MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>, void>
+        {
+            using Ptr_t = MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>;
+
+            template <class AR>
+            static void load(AR& ar, T& obj, const Ptr_t ptr)
+            {
+                using Set_t = typename SetType<Ptr_t>::type;
+                using Ref_t = typename ReferenceType<Set_t>::Type;
+                ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj, const Ptr_t ptr)
+            {
+                ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
+            }
+        };
+
+        template <class T, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+        struct FieldCerealizer<T, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, void>
+        {
+            using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
+
+            template <class AR>
+            static auto load(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<getFlags<Ptr_t>() & ct::WRITABLE>
+            {
+                using Set_t = typename SetType<Ptr_t>::type;
+                using Ref_t = typename ReferenceType<Set_t>::Type;
+                ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
+            }
+
+            template <class AR>
+            static auto load(AR&, T&, const Ptr_t) -> EnableIf<!(getFlags<Ptr_t>() & ct::WRITABLE)>
+            {
+            }
+
+            template <class AR>
+            static auto save(AR& ar, const T& obj, const Ptr_t ptr)
+                -> EnableIf<getFlags<Ptr_t>() & ct::READABLE && !(getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT)>
+            {
+                ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
+            }
+
+            template <class AR>
+            static auto save(AR&, const T&, const Ptr_t)
+                -> EnableIf<!getFlags<Ptr_t>() & ct::READABLE || getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT>
+            {
+            }
+        };
+
+        template <class T>
+        struct IsTensor
+        {
+            constexpr static const bool value = indexOfField<T>("data") != -1 && indexOfField<T>("shape") != -1;
+        };
+
+        template <class T, class ENABLE = void>
+        struct StructCerealizer;
+
+        template <class T>
+        class StructCerealizer<T, EnableIf<!IsTensor<T>::value>>
+        {
+            template <class AR>
+            static void load(AR& ar, T& obj, const Indexer<0> idx)
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
+            }
+
+            template <class AR, index_t I>
+            static void load(AR& ar, T& obj, const Indexer<I> idx)
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
+                load(ar, obj, --idx);
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj, const Indexer<0> idx)
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
+            }
+
+            template <class AR, index_t I>
+            static void save(AR& ar, const T& obj, const Indexer<I> idx)
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
+                save(ar, obj, --idx);
+            }
+
+          public:
+            template <class AR>
+            static void load(AR& ar, T& obj)
+            {
+                load(ar, obj, ct::Reflect<T>::end());
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj)
+            {
+                save(ar, obj, ct::Reflect<T>::end());
+            }
+        };
+
+        template <class T>
+        class StructCerealizer<T, EnableIf<IsTensor<T>::value>>
+        {
+            constexpr static const auto DATA_INDEX = indexOfField<T>("data");
+            constexpr static const auto SHAPE_INDEX = indexOfField<T>("shape");
+            constexpr static const bool DYNAMIC_SHAPE = IsWritable<T, SHAPE_INDEX>::value;
+
+            template <class AR, index_t I>
+            static auto load(AR&, T&, const Indexer<I>) -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX>
+            {
+            }
+
+            template <class AR, index_t I>
+            static auto save(AR&, const T&, const Indexer<I>) -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX>
+            {
+            }
+
+            template <class AR, index_t I>
+            static auto load(AR& ar, T& obj, const Indexer<I> idx) -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX>
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
+            }
+
+            template <class AR, index_t I>
+            static auto save(AR& ar, const T& obj, const Indexer<I> idx)
+                -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX>
+            {
+                auto ptr = ct::Reflect<T>::getPtr(idx);
+                FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
+            }
+
+            template <class AR>
+            static void loadItr(AR& ar, T& obj, const Indexer<0> idx)
+            {
+                load(ar, obj, idx);
+            }
+
+            template <class AR, index_t I>
+            static void loadItr(AR& ar, T& obj, const Indexer<I> idx)
+            {
+                load(ar, obj, idx);
+                loadItr(ar, obj, --idx);
+            }
+
+            template <class AR>
+            static void saveItr(AR& ar, const T& obj, const Indexer<0> idx)
+            {
+                save(ar, obj, idx);
+            }
+
+            template <class AR, index_t I>
+            static void saveItr(AR& ar, const T& obj, const Indexer<I> idx)
+            {
+                save(ar, obj, idx);
+                saveItr(ar, obj, --idx);
+            }
+
+            template <class SHAPE, class PTR>
+            static auto reshape(const SHAPE& shape, PTR ptr, T& obj) -> EnableIf<getFlags<PTR>() & WRITABLE>
+            {
+                ptr.set(obj, shape);
+            }
+
+            template <class SHAPE, class PTR>
+            static auto reshape(const SHAPE&, PTR, T&) -> EnableIf<!(getFlags<PTR>() & WRITABLE)>
+            {
+                // means shape is set at compile time, can't do anything
+            }
+
+          public:
+            template <class AR>
+            static void load(AR& ar, T& obj)
+            {
+                auto data_ptr = Reflect<T>::getPtr(Indexer<DATA_INDEX>());
+                auto shape_ptr = Reflect<T>::getPtr(Indexer<SHAPE_INDEX>());
+                auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
+                const auto size = size_ptr.get(obj);
+                auto shape = shape_ptr.get(obj);
+                if (!(getFlags<decltype(shape_ptr)>() & COMPILE_TIME_CONSTANT))
+                {
+                    ar(::cereal::make_nvp("shape", shape));
+                    reshape(shape, shape_ptr, obj);
+                }
+                // FieldCerealizer<T, decltype(shape_ptr)>::load(ar, obj, shape_ptr);
+                auto view = makeArrayView(data_ptr.set(obj), size);
+                ar(::cereal::make_nvp("data", view));
+                loadItr(ar, obj, ct::Reflect<T>::end());
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj)
+            {
+                auto data_ptr = Reflect<T>::getPtr(Indexer<DATA_INDEX>());
+                auto shape_ptr = Reflect<T>::getPtr(Indexer<SHAPE_INDEX>());
+                auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
+                const auto size = size_ptr.get(obj);
+                FieldCerealizer<T, decltype(shape_ptr)>::save(ar, obj, shape_ptr);
+                auto view = makeArrayView(data_ptr.get(obj), size);
+                ar(::cereal::make_nvp("data", view));
+                saveItr(ar, obj, Reflect<T>::end());
+            }
+        };
+    }
+
     template <class T, index_t I>
     struct CountSerializableFieldsHelper
     {
@@ -39,70 +284,6 @@ namespace ct
     {
         constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::NUM_FIELDS - 1>::count;
     };
-
-    template <class AR, class T, index_t I>
-    auto loadValue(AR& ar, T& obj) -> EnableIf<ShouldSerialize<T, I>::value>
-    {
-        auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
-        ar(cereal::make_nvp(
-            accessor.m_name.toString(),
-            static_cast<typename ReferenceType<typename SetType<decltype(accessor)>::type>::Type>(set(accessor, obj))));
-    }
-
-    template <class AR, class T, index_t I>
-    auto loadValue(AR&, T&) -> EnableIf<!ShouldSerialize<T, I>::value>
-    {
-    }
-
-    template <class AR, class T>
-    void loadStructHelper(AR& ar, T& obj, const ct::Indexer<0>)
-    {
-        loadValue<AR, T, 0>(ar, obj);
-    }
-
-    template <index_t I, class AR, class T>
-    void loadStructHelper(AR& ar, T& obj, const ct::Indexer<I> idx)
-    {
-        loadStructHelper(ar, obj, --idx);
-        loadValue<AR, T, I>(ar, obj);
-    }
-
-    template <class AR, class T>
-    void loadStruct(AR& ar, T& obj)
-    {
-        loadStructHelper(ar, obj, Reflect<T>::end());
-    }
-
-    template <class AR, class T, index_t I>
-    auto saveValue(AR&, const T&, const ct::Indexer<I>) -> EnableIf<!ShouldSerialize<T, I>::value>
-    {
-    }
-
-    template <class AR, class T, index_t I>
-    auto saveValue(AR& ar, const T& obj, const ct::Indexer<I> idx) -> EnableIf<ShouldSerialize<T, I>::value>
-    {
-        auto accessor = Reflect<T>::getPtr(idx);
-        ar(cereal::make_nvp(accessor.m_name.toString(), get(accessor, obj)));
-    }
-
-    template <class AR, class T>
-    void saveStructHelper(AR& ar, const T& obj, const ct::Indexer<0> idx)
-    {
-        saveValue<AR, T, 0>(ar, obj, idx);
-    }
-
-    template <index_t I, class AR, class T>
-    void saveStructHelper(AR& ar, const T& obj, const ct::Indexer<I> idx)
-    {
-        saveStructHelper(ar, obj, --idx);
-        saveValue<AR, T, I>(ar, obj, idx);
-    }
-
-    template <class AR, class T>
-    void saveStruct(AR& ar, const T& obj)
-    {
-        saveStructHelper(ar, obj, Reflect<T>::end());
-    }
 }
 
 namespace cereal
@@ -111,14 +292,13 @@ namespace cereal
     template <class AR, class T>
     auto save(AR& ar, const T& data) -> ct::EnableIfReflected<T>
     {
-        // ct::StaticGreater<uint32_t, ct::CountSerializableFields<T>::value, 0>{};
-        ct::saveStruct(ar, data);
+        ct::cereal::StructCerealizer<T>::save(ar, data);
     }
 
     template <class AR, class T>
     auto load(AR& ar, T& data) -> ct::EnableIfReflected<T>
     {
-        ct::loadStruct(ar, data);
+        ct::cereal::StructCerealizer<T>::load(ar, data);
     }
 }
 #endif // CT_REFLECT_CEREALIZE_HPP

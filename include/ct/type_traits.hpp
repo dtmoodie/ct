@@ -16,6 +16,13 @@ namespace ct
     };
 
     template <class T>
+    struct ReferenceType<T*>
+    {
+        using Type = T*;
+        using ConstType = const T*;
+    };
+
+    template <class T>
     struct IsReferenceType
     {
         static const bool value = std::is_same<typename ReferenceType<T>::Type, T>::value;
