@@ -248,6 +248,8 @@ void testTypes(Tester& tester)
     {
         cv::Mat_<cv::Vec3f> mat(4, 4);
         mat *= 0;
+        mat += 1;
+        mat *= 3.14159;
         tester.test(mat);
     }
     {
