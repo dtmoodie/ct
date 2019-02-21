@@ -241,7 +241,13 @@ void testTypes(Tester& tester)
         tester.test(data);
     }
     {
-        cv::Mat_<float> mat(4, 4);
+        cv::Mat_<float> mat = cv::Mat_<float>::eye(4, 4);
+        tester.test(mat);
+    }
+
+    {
+        cv::Mat_<cv::Vec3f> mat(4, 4);
+        mat *= 0;
         tester.test(mat);
     }
     {
