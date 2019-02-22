@@ -307,7 +307,7 @@ namespace ct
                 path = ptr.m_name.toString();
             }
 
-            static_cast<DERIVED*>(this)->template visitData<I>(get(ptr, obj), path, std::forward<ARGS>(args)...);
+            static_cast<DERIVED*>(this)->template visitData<I>(ptr.get(obj), path, std::forward<ARGS>(args)...);
         }
 
         template <class R, class T, class U, class SIG, class... ARGS>

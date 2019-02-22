@@ -28,6 +28,7 @@ if(NOT TARGET ct)
     add_library(ct INTERFACE)
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
             target_compile_features(ct
                 INTERFACE cxx_return_type_deduction

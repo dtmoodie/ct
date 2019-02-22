@@ -2,11 +2,30 @@
 #define CT_REFLECT_COMPARE_CONTAINTER_HPP
 #include "compare-inl.hpp"
 #include "compare.hpp"
+#include <ct/types/TArrayView.hpp>
+
 #include <map>
 #include <vector>
 
 namespace ct
 {
+    template <class T, class Comparator>
+    bool compare(const TArrayView<T>& lhs, const TArrayView<T>& rhs, const Comparator& cmp)
+    {
+        if (lhs.size != rhs.size)
+        {
+            return false;
+        }
+        for (size_t i = 0; i < lhs.size; ++i)
+        {
+            if (lhs[i] != rhs[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     template <class T, class Comparator>
     bool compare(const std::vector<T>& lhs, const std::vector<T>& rhs, const Comparator& cmp)
     {

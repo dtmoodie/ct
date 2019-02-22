@@ -1,14 +1,14 @@
+#include "common.hpp"
 
 #include <ct/reflect.hpp>
 #include <ct/reflect/compare.hpp>
 #include <ct/reflect/print.hpp>
-#include "common.hpp"
-#include <iostream>
 
+#include <iostream>
 
 struct TestTrue
 {
-    template<class T>
+    template <class T>
     void test(const T& data)
     {
         T test_data = data;
@@ -18,7 +18,7 @@ struct TestTrue
 
 struct TestFalse
 {
-    template<class T>
+    template <class T>
     void test(const T& data)
     {
         T test_data;
