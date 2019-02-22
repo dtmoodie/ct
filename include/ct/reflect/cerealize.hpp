@@ -16,7 +16,7 @@ namespace ct
 #include <cereal/cereal.hpp>
 
 // TODO make specialization for text archives that uses a size tag
-#include <cereal/types/array.hpp>
+#include <ct/types/std_array.hpp>
 
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
@@ -111,11 +111,8 @@ namespace ct
             constexpr static const bool value = indexOfField<T>("data") != -1 && indexOfField<T>("shape") != -1;
         };
 
-        template <class T, class ENABLE = void>
-        struct StructCerealizer;
-
         template <class T>
-        class StructCerealizer<T, EnableIf<!IsTensor<T>::value>>
+        class StructCerealizer
         {
             template <class AR>
             static void load(AR& ar, T& obj, const Indexer<0> idx)
@@ -127,9 +124,9 @@ namespace ct
             template <class AR, index_t I>
             static void load(AR& ar, T& obj, const Indexer<I> idx)
             {
+                load(ar, obj, --idx);
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
-                load(ar, obj, --idx);
             }
 
             template <class AR>
@@ -142,9 +139,9 @@ namespace ct
             template <class AR, index_t I>
             static void save(AR& ar, const T& obj, const Indexer<I> idx)
             {
+                save(ar, obj, --idx);
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
-                save(ar, obj, --idx);
             }
 
           public:
@@ -162,24 +159,28 @@ namespace ct
         };
 
         template <class T>
-        class StructCerealizer<T, EnableIf<IsTensor<T>::value>>
+        class TensorCerealizer
         {
             constexpr static const auto DATA_INDEX = indexOfField<T>("data");
             constexpr static const auto SHAPE_INDEX = indexOfField<T>("shape");
+            constexpr static const auto SIZE_INDEX = indexOfField<T>("size");
             constexpr static const bool DYNAMIC_SHAPE = IsWritable<T, SHAPE_INDEX>::value;
 
             template <class AR, index_t I>
-            static auto load(AR&, T&, const Indexer<I>) -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX>
+            static auto load(AR&, T&, const Indexer<I>)
+                -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX || I == SIZE_INDEX>
             {
             }
 
             template <class AR, index_t I>
-            static auto save(AR&, const T&, const Indexer<I>) -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX>
+            static auto save(AR&, const T&, const Indexer<I>)
+                -> EnableIf<I == DATA_INDEX || I == SHAPE_INDEX || I == SIZE_INDEX>
             {
             }
 
             template <class AR, index_t I>
-            static auto load(AR& ar, T& obj, const Indexer<I> idx) -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX>
+            static auto load(AR& ar, T& obj, const Indexer<I> idx)
+                -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX && I != SIZE_INDEX>
             {
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
@@ -187,7 +188,7 @@ namespace ct
 
             template <class AR, index_t I>
             static auto save(AR& ar, const T& obj, const Indexer<I> idx)
-                -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX>
+                -> EnableIf<I != DATA_INDEX && I != SHAPE_INDEX && I != SIZE_INDEX>
             {
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
@@ -202,8 +203,8 @@ namespace ct
             template <class AR, index_t I>
             static void loadItr(AR& ar, T& obj, const Indexer<I> idx)
             {
-                load(ar, obj, idx);
                 loadItr(ar, obj, --idx);
+                load(ar, obj, idx);
             }
 
             template <class AR>
@@ -215,8 +216,8 @@ namespace ct
             template <class AR, index_t I>
             static void saveItr(AR& ar, const T& obj, const Indexer<I> idx)
             {
-                save(ar, obj, idx);
                 saveItr(ar, obj, --idx);
+                save(ar, obj, idx);
             }
 
             template <class SHAPE, class PTR>
@@ -264,41 +265,130 @@ namespace ct
                 saveItr(ar, obj, Reflect<T>::end());
             }
         };
+
+        template <class T>
+        struct SingleValueCerealizer
+        {
+            template <class AR>
+            static void load(AR& ar, T& obj)
+            {
+                auto data_ptr = Reflect<T>::getPtr(Indexer<0>());
+                ar(data_ptr.set(obj));
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj)
+            {
+                // TODO this should be the first serializable field not necessarily the first field
+                auto data_ptr = Reflect<T>::getPtr(Indexer<0>());
+                ar(data_ptr.get(obj));
+            }
+        };
+
+        template <class T, index_t I>
+        struct CountSerializableFieldsHelper
+        {
+            constexpr static const uint32_t value = ShouldSerialize<T, I>::value ? 1 : 0;
+            constexpr static const uint32_t count = CountSerializableFieldsHelper<T, I - 1>::count + value;
+        };
+
+        template <class T>
+        struct CountSerializableFieldsHelper<T, 0>
+        {
+            constexpr static const uint32_t value = ShouldSerialize<T, 0>::value ? 1 : 0;
+            constexpr static const uint32_t count = value;
+        };
+        template <class T, class ENABLE = void>
+        struct CountSerializableFields;
+
+        template <class T>
+        struct CountSerializableFields<T, EnableIfReflected<T>>
+        {
+            constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::NUM_FIELDS - 1>::count;
+        };
+
+        template <class T>
+        struct CountSerializableFields<T, DisableIfReflected<T>>
+        {
+            constexpr static const uint32_t value = 0;
+        };
+
+        template <class T, index_t PRIORITY = 10, class ENABLE = void>
+        struct CerealizerSelector : public CerealizerSelector<T, PRIORITY - 1, void>
+        {
+        };
+
+        // lowest priority select the generic StructCerealizer
+        template <class T>
+        struct CerealizerSelector<T, 0, void> : public StructCerealizer<T>
+        {
+        };
+
+        // Higher priority if IsTensor<T> is true, use the TensorCerealizer
+        template <class T>
+        struct CerealizerSelector<T, 1, EnableIf<IsTensor<T>::value>> : public TensorCerealizer<T>
+        {
+        };
+
+        /*template <class T>
+        struct CerealizerSelector<T, 1, EnableIf<CountSerializableFields<T>::value == 1>>
+            : public SingleValueCerealizer<T>
+        {
+        };*/
+
+        template <class T, class ENABLE = void>
+        struct CerealMinimalRepresentation;
+
+        template <class T>
+        struct CerealMinimalRepresentation<T, EnableIfReflected<T>>
+        {
+            using type = typename ct::FieldGetType<T, 0>::type;
+        };
+
+        template <class T>
+        struct CerealMinimalRepresentation<T, DisableIfReflected<T>>
+        {
+            using type = int;
+        };
     }
-
-    template <class T, index_t I>
-    struct CountSerializableFieldsHelper
-    {
-        constexpr static const uint32_t value = ShouldSerialize<T, I>::value ? 1 : 0;
-        constexpr static const uint32_t count = CountSerializableFieldsHelper<T, I - 1>::count + value;
-    };
-
-    template <class T>
-    struct CountSerializableFieldsHelper<T, 0>
-    {
-        constexpr static const uint32_t value = ShouldSerialize<T, 0>::value ? 1 : 0;
-        constexpr static const uint32_t count = value;
-    };
-    template <class T>
-    struct CountSerializableFields
-    {
-        constexpr static const uint32_t value = CountSerializableFieldsHelper<T, Reflect<T>::NUM_FIELDS - 1>::count;
-    };
 }
 
 namespace cereal
 {
 
     template <class AR, class T>
-    auto save(AR& ar, const T& data) -> ct::EnableIfReflected<T>
+    auto save(AR& ar, const T& data) -> ct::EnableIf<ct::IsReflected<T>::value>
     {
-        ct::cereal::StructCerealizer<T>::save(ar, data);
+        ct::cereal::CerealizerSelector<T>::save(ar, data);
     }
 
     template <class AR, class T>
-    auto load(AR& ar, T& data) -> ct::EnableIfReflected<T>
+    auto load(AR& ar, T& data) -> ct::EnableIf<ct::IsReflected<T>::value>
     {
-        ct::cereal::StructCerealizer<T>::load(ar, data);
+        ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
+
+    /*template <class AR, class T>
+    auto save_minimal(const AR&, const T& data)
+        -> ct::EnableIf<ct::IsReflected<T>::value && ct::cereal::CountSerializableFields<T>::value == 1 &&
+                            std::is_arithmetic<typename std::decay<
+                                typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>::value,
+                        typename std::decay<typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>
+    {
+        auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<0>());
+        return ptr.get(data);
+    }
+
+    template <class AR, class T>
+    auto load_minimal(const AR&,
+                      T& data,
+                      typename std::decay<typename ct::cereal::CerealMinimalRepresentation<T>::type>::type val)
+        -> ct::EnableIf<ct::IsReflected<T>::value && ct::cereal::CountSerializableFields<T>::value == 1 &&
+                        std::is_arithmetic<typename std::decay<
+                            typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>::value>
+    {
+        auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<0>());
+        ptr.set(data, val);
+    }*/
 }
 #endif // CT_REFLECT_CEREALIZE_HPP

@@ -44,14 +44,14 @@ namespace ct
         static size_t getSize(const DataType&) { return C * R; }
 
         REFLECT_STUB
+            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
+            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
+            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
             STATIC_FUNCTION(eye, &DataType::eye)
             STATIC_FUNCTION(zeros, &DataType::zeros)
             STATIC_FUNCTION(ones, &DataType::ones)
             STATIC_FUNCTION(randu, &DataType::randu)
             STATIC_FUNCTION(randn, &DataType::randn)
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
             MEMBER_FUNCTION(row)
             MEMBER_FUNCTION(col)
             STATIC_FUNCTION(rows, &Reflect<DataType>::rows)

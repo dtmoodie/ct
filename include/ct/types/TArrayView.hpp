@@ -1,5 +1,7 @@
 #ifndef CT_ARRAY_VIEW_HPP
 #define CT_ARRAY_VIEW_HPP
+#include <ct/type_traits.hpp>
+
 #include <cereal/cereal.hpp>
 #include <cstdint>
 #include <iostream>
@@ -75,6 +77,13 @@ namespace ct
         os << "]";
         return os;
     }
+
+    template <class T>
+    struct ReferenceType<TArrayView<T>>
+    {
+        using Type = TArrayView<T>;
+        using ConstType = TArrayView<const T>;
+    };
 }
 
 #endif // CT_ARRAY_VIEW_HPP

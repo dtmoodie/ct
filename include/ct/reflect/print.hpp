@@ -307,5 +307,10 @@ namespace ct
             os << Options::object_end;
         }
     }
+
+    // https://cukic.co/2019/02/19/tmp-testing-and-debugging-templates/
+    // Only really useful on clang
+    template <class... TS>
+    struct[[deprecated]] CompilerPrintTypes{};
 }
 #endif

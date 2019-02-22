@@ -8,6 +8,7 @@
 #include <ct/Indexer.hpp>
 #include <ct/StringView.hpp>
 #include <ct/VariadicTypedef.hpp>
+#include <ct/type_traits.hpp>
 
 #include <cstdint>
 #include <cstring>
@@ -22,7 +23,8 @@ namespace ct
         DO_NOT_SERIALIZE = 1,
         READABLE = DO_NOT_SERIALIZE << 1,
         WRITABLE = READABLE << 1,
-        REQUIRED = WRITABLE << 1,
+        INVOKABLE = WRITABLE << 1,
+        REQUIRED = INVOKABLE << 1,
         COMPILE_TIME_CONSTANT = REQUIRED << 1,
 
         // reserve the first 8 bits of the flag field for ct flags
@@ -100,6 +102,30 @@ namespace ct
         Data_t Class_t::*m_ptr;
         METADATA m_metadata;
     };
+
+    template <class M, class T, Flag_t F>
+    const M* getMetadata(const MemberObjectPointer<T, F, M>& ptr)
+    {
+        return &ptr.m_metadata;
+    }
+
+    template <class M, class T, Flag_t F>
+    M* getMetadata(MemberObjectPointer<T, F, M>& ptr)
+    {
+        return &ptr.m_metadata;
+    }
+
+    template <class M, class T, Flag_t F, class M2>
+    EnableIf<!std::is_same<M, M2>::value, const M*> getMetadata(const MemberObjectPointer<T, F, M2>&)
+    {
+        return nullptr;
+    }
+
+    template <class M, class T, Flag_t F, class M2>
+    EnableIf<!std::is_same<M, M2>::value, M*> getMetadata(MemberObjectPointer<T, F, M2>&)
+    {
+        return nullptr;
+    }
 
     template <class DTYPE, class CTYPE, class METADATA, Flag_t FLAGS>
     struct GetType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
@@ -205,13 +231,13 @@ namespace ct
     //////////////////////////////////////////////////
 
     template <class DTYPE, class CTYPE, class DERIVED>
-    auto get(DTYPE (CTYPE::*ptr)() const, const DERIVED& obj)
+    DTYPE get(DTYPE (CTYPE::*ptr)() const, const DERIVED& obj)
     {
         return (obj.*ptr)();
     }
 
     template <class DTYPE, class CTYPE, class DERIVED>
-    auto get(DTYPE (*ptr)(const CTYPE&), const DERIVED& obj)
+    DTYPE get(DTYPE (*ptr)(const CTYPE&), const DERIVED& obj)
     {
         return ptr(obj);
     }
@@ -282,7 +308,7 @@ namespace ct
         }
 
         template <class DERIVED>
-        auto get(const DERIVED& obj) const
+        auto get(const DERIVED& obj) const -> decltype(ct::get(m_getter, obj))
         {
             return ct::get(m_getter, obj);
         }
@@ -303,6 +329,10 @@ namespace ct
     template <class GET_PTR, Flag_t FLAGS, class METADATA>
     struct MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS, METADATA>
     {
+        StringView m_name;
+        GET_PTR m_getter;
+        METADATA m_metadata;
+
         using Class_t = typename InferPointerType<GET_PTR>::Class_t;
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
         enum : int64_t
@@ -316,27 +346,11 @@ namespace ct
         }
 
         template <class DERIVED>
-        auto get(const DERIVED& obj) const
+        auto get(const DERIVED& obj) const -> decltype(ct::get(m_getter, obj))
         {
             return ct::get(m_getter, obj);
         }
-
-        StringView m_name;
-        GET_PTR m_getter;
-        METADATA m_metadata;
     };
-
-    template <class FIELD>
-    auto getMetadata(const FIELD& field)
-    {
-        return &field.m_metadata;
-    }
-
-    template <class FIELD>
-    auto getMetadata(FIELD& field)
-    {
-        return &field.m_metadata;
-    }
 
     template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
     struct GetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
@@ -739,31 +753,31 @@ namespace ct
     };
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS | READABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
-                                                                                                    const ARGS... args)
+    constexpr MemberFunctionPointers<T, FLAGS | INVOKABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
+                                                                                                     const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS | READABLE, void, ARGS...>(name, args...);
+        return MemberFunctionPointers<T, FLAGS | INVOKABLE, void, ARGS...>(name, args...);
     }
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class METADATA, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS | READABLE, METADATA, ARGS...>
+    constexpr MemberFunctionPointers<T, FLAGS | INVOKABLE, METADATA, ARGS...>
     makeMemberFunctionPointersWithMetadata(const char* name, const METADATA metadata, const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS | READABLE, METADATA, ARGS...>(name, metadata, args...);
+        return MemberFunctionPointers<T, FLAGS | INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
     template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS | READABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
-                                                                                             const ARGS... args)
+    constexpr StaticFunctions<T, FLAGS | INVOKABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
+                                                                                              const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS | READABLE, void, ARGS...>(name, args...);
+        return StaticFunctions<T, FLAGS | INVOKABLE, void, ARGS...>(name, args...);
     }
 
     template <class T, class METADATA, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS | READABLE, METADATA, ARGS...>
+    constexpr StaticFunctions<T, FLAGS | INVOKABLE, METADATA, ARGS...>
     makeStaticFunctionPointersWithMetadata(StringView name, const METADATA metadata, const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS | READABLE, METADATA, ARGS...>(name, metadata, args...);
+        return StaticFunctions<T, FLAGS | INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
     template <Flag_t FLAGS = NONE, class PTR>

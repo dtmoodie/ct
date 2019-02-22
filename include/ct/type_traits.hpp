@@ -8,6 +8,9 @@
 
 namespace ct
 {
+    template <bool VAL, class U = void>
+    using EnableIf = typename std::enable_if<VAL, U>::type;
+
     template <class T>
     struct ReferenceType
     {
