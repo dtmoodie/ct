@@ -23,14 +23,14 @@ template <class T>
 void mulImpl(T& obj, const ct::Indexer<0> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
-    set(accessor, obj) *= 2;
+    accessor.set(obj) *= 2;
 }
 
 template <class T, ct::index_t I>
 void mulImpl(T& obj, const ct::Indexer<I> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
-    set(accessor, obj) *= 2;
+    accessor.set(obj) *= 2;
     mulImpl(obj, --idx);
 }
 
@@ -241,7 +241,14 @@ void testTypes(Tester& tester)
         tester.test(data);
     }
     {
-        cv::Mat_<float> mat(4, 4);
+        cv::Mat_<float> mat = cv::Mat_<float>::eye(4, 4);
+        tester.test(mat);
+    }
+
+    {
+        cv::Mat_<cv::Vec3f> mat = cv::Mat_<cv::Vec3f>::zeros(4, 4);
+        mat += 1;
+        mat *= 3.14159;
         tester.test(mat);
     }
     {
@@ -252,6 +259,11 @@ void testTypes(Tester& tester)
 #ifdef HAVE_EIGEN
     {
         Eigen::Matrix<float, 3, 3> mat = Eigen::Matrix<float, 3, 3>::Identity();
+        tester.test(mat);
+    }
+    {
+        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> mat =
+            Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>::Identity(5, 5);
         tester.test(mat);
     }
 #endif

@@ -11,7 +11,7 @@ namespace ct
     {
         auto accessor = Reflect<T>::getPtr(idx);
         const char* name = accessor.m_name;
-        if (!cmp.test(name, get(accessor, lhs), get(accessor, rhs)))
+        if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;
         }
@@ -31,7 +31,7 @@ namespace ct
     {
         auto accessor = Reflect<T>::getPtr(idx);
         const char* name = accessor.m_name;
-        if (!cmp.test(name, get(accessor, lhs), get(accessor, rhs)))
+        if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;
         }
