@@ -98,7 +98,7 @@ struct PrintVisitor : public ct::VisitorBase<PrintVisitor, PrintVisitorParams>
         {
             path = ptr.m_name.toString();
         }
-        visitData<I>(ptr.get(obj), path);
+        visitData<I>(ct::get(ptr, obj), path);
     }
 };
 
@@ -131,8 +131,5 @@ int main()
     std::cout << std::endl;
     ct::Reflect<DerivedC>::printHierarchy(std::cout);
     std::cout << ct::GetNameGCC<DerivedC>::funcName() << std::endl;
-    using T1 = TestA;
-    using T2 = TestB;
-    using T3 = ReflectedStruct;
-    ct::CompilerPrintTypes<T1, T2, T3>{};
+
 }

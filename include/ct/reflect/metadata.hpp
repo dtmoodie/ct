@@ -7,37 +7,30 @@
 
 namespace ct
 {
-    namespace metadata
+    struct Description
     {
-        struct Empty
-        {
-        };
+        constexpr Description(const char* desc) : m_desc(desc) {}
 
-        struct Description
-        {
-            constexpr Description(const char* desc) : m_desc(desc) {}
+        const char* m_desc;
+    };
 
-            const char* m_desc;
-        };
+    template <class T>
+    struct Initializer
+    {
+        constexpr Initializer(T (*ptr)(), StringView str) : m_ptr(ptr), m_str(str) {}
 
-        template <class T>
-        struct Initializer
-        {
-            constexpr Initializer(T (*ptr)(), StringView str) : m_ptr(ptr), m_str(str) {}
+        T operator()() const { return m_ptr(); }
 
-            T operator()() const { return m_ptr(); }
+        T getInitialValue() const { return m_ptr(); }
 
-            T getInitialValue() const { return m_ptr(); }
+        T (*m_ptr)();
+        StringView m_str;
+    };
 
-            T (*m_ptr)();
-            StringView m_str;
-        };
-
-        template <class T>
-        constexpr Initializer<T> makeInitializer(T (*ptr)(), StringView str)
-        {
-            return Initializer<T>(ptr, str);
-        }
+    template <class T>
+    constexpr Initializer<T> makeInitializer(T (*ptr)(), StringView str)
+    {
+        return Initializer<T>(ptr, str);
     }
 }
 

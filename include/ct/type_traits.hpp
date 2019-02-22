@@ -8,21 +8,11 @@
 
 namespace ct
 {
-    template <bool VAL, class U = void>
-    using EnableIf = typename std::enable_if<VAL, U>::type;
-
     template <class T>
     struct ReferenceType
     {
         using Type = T&;
         using ConstType = const T&;
-    };
-
-    template <class T>
-    struct ReferenceType<T*>
-    {
-        using Type = T*;
-        using ConstType = const T*;
     };
 
     template <class T>

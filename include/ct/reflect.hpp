@@ -7,7 +7,6 @@
 #include "macros.hpp"
 #include "reflect/member_pointer.hpp"
 #include "static_asserts.hpp"
-#include "type_traits.hpp"
 
 #include <cstdint>
 #include <ostream>
@@ -51,6 +50,9 @@ namespace ct
     template <class T>
     using GetName = GetNameGCC<T>;
 #endif
+
+    template <bool VAL, class U = void>
+    using EnableIf = typename std::enable_if<VAL, U>::type;
 
     template <class T, class VISITED = VariadicTypedef<>, class ENABLE = void>
     struct Reflect
@@ -247,17 +249,11 @@ namespace ct
     {
     };
 
-    template <class T>
-    struct IsReflected
-    {
-        constexpr static const bool value = Reflect<T>::SPECIALIZED;
-    };
+    template <class T, class U = void>
+    using EnableIfReflected = EnableIf<Reflect<T>::SPECIALIZED, U>;
 
     template <class T, class U = void>
-    using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
-
-    template <class T, class U = void>
-    using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
+    using DisableIfReflected = EnableIf<!Reflect<T>::SPECIALIZED, U>;
 
     template <class T, index_t I>
     using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));

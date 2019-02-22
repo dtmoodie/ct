@@ -35,12 +35,6 @@ namespace ct
         STATIC_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(Templated)
-        PUBLIC_ACCESS(x)
-        PUBLIC_ACCESS(y)
-        PUBLIC_ACCESS(z)
-    REFLECT_END;
-
     REFLECT_BEGIN(TestB)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)

@@ -130,17 +130,12 @@ struct Virtual
 template <class DType>
 struct Templated
 {
-    DType x;
-    DType y;
-    DType z;
-
-    // Also does not work on gcc 4.8 :/
-    /*REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START
         ;
         REFLECT_INTERNAL_MEMBER(DType, x)
         REFLECT_INTERNAL_MEMBER(DType, y)
         REFLECT_INTERNAL_MEMBER(DType, z)
-    REFLECT_INTERNAL_END;*/
+    REFLECT_INTERNAL_END;
 };
 
 struct ExplicitThisProperty

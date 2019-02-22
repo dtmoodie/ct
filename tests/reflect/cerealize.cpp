@@ -5,7 +5,6 @@
 #include <ct/reflect/compare.hpp>
 #include <ct/reflect/print.hpp>
 
-#include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 #include <cereal/types/map.hpp>
@@ -18,7 +17,8 @@ struct CerealizationTester
     CerealizationTester(std::string path) : m_path(std::move(path)) {}
 
     template <class T>
-    void test(const T& data)
+    void
+    test(const T& data)
     {
         {
             std::ofstream ofs(m_path);
@@ -49,15 +49,6 @@ struct CerealizationTester
 
 int main()
 {
-    {
-        CerealizationTester<cereal::JSONInputArchive, cereal::JSONOutputArchive> json_tester("test.json");
-        testTypes(json_tester);
-    }
-    std::cout << "====================" << std::endl;
-    std::cout << "Binary serialization" << std::endl;
-    std::cout << "====================" << std::endl;
-    {
-        CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
-        testTypes(json_tester);
-    }
+    CerealizationTester<cereal::JSONInputArchive, cereal::JSONOutputArchive> json_tester("test.json");
+    testTypes(json_tester);
 }

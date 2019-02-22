@@ -25,7 +25,7 @@ namespace ct
     template <class T>
     DisableIfReflected<T> registerWithMetadata(const T& field,
                                                po::options_description& desc,
-                                               const metadata::Description* field_desc,
+                                               const Description* field_desc,
                                                const std::string& path)
     {
         desc.add_options()(path.c_str(), po::value<T>()->default_value(field), field_desc->m_desc);
@@ -42,7 +42,7 @@ namespace ct
     void registerOption(const T& obj, po::options_description& desc, Indexer<I> idx, std::string path)
     {
         auto ptr = Reflect<T>::getPtr(idx);
-        const auto& field = ptr.get(obj);
+        const auto& field = get(ptr, obj);
         if (!path.empty())
         {
             path += '.';
@@ -95,7 +95,7 @@ namespace ct
 
         if (vm.count(path))
         {
-            ptr.set(obj, vm[path].as<typename std::decay<type>::type>());
+            set(ptr, obj, vm[path].as<typename std::decay<type>::type>());
         }
     }
 
@@ -111,7 +111,7 @@ namespace ct
         }
         const auto name = getName<I, T>();
         path += name.toString();
-        readOptions(ptr.set(obj), vm, path);
+        readOptions(set(ptr, obj), vm, path);
     }
 
     template <class T>

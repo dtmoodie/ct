@@ -40,12 +40,6 @@
     #endif // _MSC_VER
 
 #endif // __CUDA_ACC__
-#ifndef CT_FUNCTION_NAME
-#define CT_FUNCTION_NAME ""
-#endif
-#ifndef CT_CONSTEXPR_NAME
-#define CT_CONSTEXPR_NAME
-#endif
 
 // clang-format on
 

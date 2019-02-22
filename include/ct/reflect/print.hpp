@@ -155,20 +155,6 @@ namespace std
         }
         return os;
     }
-
-    template <class T, size_t N>
-    ostream& operator<<(ostream& os, const std::array<T, N>& arr)
-    {
-        os << "[";
-        for (size_t i = 0; i < N; ++i)
-        {
-            if (i != 0)
-                os << ' ';
-            os << arr[i];
-        }
-        os << ']';
-        return os;
-    }
 }
 
 namespace ct
@@ -212,7 +198,7 @@ namespace ct
             os << accessor.m_name << Options::name_separator;
         }
 
-        os << accessor.get(obj);
+        os << get(accessor, obj);
     }
 
     template <class T, index_t I, class U = void>
@@ -307,10 +293,5 @@ namespace ct
             os << Options::object_end;
         }
     }
-
-    // https://cukic.co/2019/02/19/tmp-testing-and-debugging-templates/
-    // Only really useful on clang
-    template <class... TS>
-    struct[[deprecated]] CompilerPrintTypes{};
 }
 #endif
