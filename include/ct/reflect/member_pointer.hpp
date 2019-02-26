@@ -252,11 +252,23 @@ namespace ct
         (obj.*ptr)(val);
     }
 
+    template <class BASE, class DERIVED, class SET_TYPE, class SET_TYPE2>
+    void set(SET_TYPE (BASE::*ptr)(), DERIVED& obj, SET_TYPE2 val)
+    {
+        (obj.*ptr)() = val;
+    }
+
     // explicit this setter
     template <class BASE, class DERIVED, class SET_TYPE, class SET_TYPE2>
     void set(void (*ptr)(BASE&, SET_TYPE), DERIVED& obj, const SET_TYPE2& val)
     {
         ptr(obj, val);
+    }
+
+    template <class BASE, class DERIVED, class SET_TYPE, class SET_TYPE2>
+    void set(SET_TYPE (*ptr)(BASE&), DERIVED& obj, const SET_TYPE2& val)
+    {
+        ptr(obj) = val;
     }
 
     template <class BASE, class DERIVED, class GET_PTR, class SET_TYPE>
