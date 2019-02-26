@@ -190,5 +190,21 @@ namespace ct
     {
         using type = typename InsertUniqueMultiple<VariadicTypedef<T1...>, T2>::type;
     };
+
+    template <class T>
+    struct LenVariadicTypedef;
+
+    template <class... T>
+    struct LenVariadicTypedef<ct::VariadicTypedef<T...>>
+    {
+        constexpr static const auto value = sizeof...(T);
+    };
+
+    template <class T>
+    struct PrintVariadicTypedef;
+    template <class... T>
+    struct[[deprecated]] PrintVariadicTypedef<ct::VariadicTypedef<T...>>{
+
+    };
 }
 #endif // CT_VARIADIC_TYPEDEF_HPP
