@@ -378,6 +378,9 @@ namespace ct
     using EnableIfIsWritable = EnableIf<IsWritable<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
+    using DisableIfIsWritable = EnableIf<!IsWritable<T, I>::value, U>;
+
+    template <class T, index_t I, class U = void>
     using EnableIfMemberFunction = EnableIf<IsMemberFunction<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
@@ -391,9 +394,6 @@ namespace ct
 
     template <class T, index_t I, class U = void>
     using DisableIfIsReadable = EnableIf<!IsReadable<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using DisableIfIsWritable = EnableIf<!IsWritable<T, I>::value, U>;
 
     template <class T, index_t I, class ENABLE = EnableIfIsMemberObject<T, I>>
     struct GlobMemberObjectsHelper
@@ -419,13 +419,14 @@ namespace ct
     template <class T>
     struct GlobMemberObjectsHelper<T, 0, DisableIfIsMemberObject<T, 0>>
     {
-        using types = VariadicTypedef<void>;
+        using types = VariadicTypedef<>;
     };
 
     template <class T>
     struct GlobMemberObjects
     {
         using types = typename GlobMemberObjectsHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
+        constexpr static const auto num = LenVariadicTypedef<types>::value;
     };
 } // namespace ct
 
