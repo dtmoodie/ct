@@ -52,5 +52,20 @@ int main()
 
     ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 0>::value, false>{};
     ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 1>::value, false>{};
+
+    ct::StaticEqualTypes<typename ct::GlobMemberObjects<ReflectedStruct>::types,
+                         ct::VariadicTypedef<float, float, float, int>>{};
+    ct::StaticEquality<size_t, ct::GlobMemberObjects<ReflectedStruct>::num, 4>{};
+
+    ct::StaticEqualTypes<typename ct::GlobMemberObjects<Inherited>::types,
+                         ct::VariadicTypedef<float, float, float, int, double>>{};
+    ct::StaticEquality<size_t, ct::GlobMemberObjects<Inherited>::num, 5>{};
+
+    ct::StaticEqualTypes<typename ct::GlobMemberObjects<TestA>::types, ct::VariadicTypedef<float, float, float>>{};
+    ct::StaticEquality<size_t, ct::GlobMemberObjects<TestA>::num, 3>{};
+
+    ct::StaticEqualTypes<typename ct::GlobMemberObjects<DerivedC>::types,
+                         ct::VariadicTypedef<float, float, float, float, float, float>>{};
+    ct::StaticEquality<size_t, ct::GlobMemberObjects<DerivedC>::num, 6>{};
     return 0;
 }
