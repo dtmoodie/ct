@@ -2,7 +2,6 @@
 #define CT_ARRAY_VIEW_HPP
 #include <ct/type_traits.hpp>
 
-#include <cereal/cereal.hpp>
 #include <cstdint>
 #include <iostream>
 
@@ -11,7 +10,6 @@ namespace ct
     template <class T>
     struct TArrayView
     {
-
         bool operator==(const TArrayView& other) const
         {
             if (other.data == data && other.size == size)
@@ -34,16 +32,6 @@ namespace ct
         }
 
         bool operator!=(const TArrayView& other) const { return !(*this == other); }
-
-        template <class AR>
-        void serialize(AR& ar)
-        {
-            ar(cereal::make_size_tag(size));
-            for (size_t i = 0; i < size; ++i)
-            {
-                ar(data[i]);
-            }
-        }
 
         T* data;
         size_t size;

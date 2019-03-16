@@ -351,6 +351,16 @@ namespace ct
             using type = int;
         };
     }
+
+    template <class AR, class T>
+    void serialize(AR& ar, TArrayView<T>& view)
+    {
+        ar(::cereal::make_size_tag(view.size));
+        for (size_t i = 0; i < view.size; ++i)
+        {
+            ar(view.data[i]);
+        }
+    }
 }
 
 namespace cereal
