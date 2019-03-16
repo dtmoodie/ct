@@ -79,7 +79,7 @@ namespace ct
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
 
             template <class AR>
-            static auto load(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<getFlags<Ptr_t>() & ct::WRITABLE>
+            static auto load(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<(getFlags<Ptr_t>() & ct::WRITABLE)>
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
@@ -93,14 +93,14 @@ namespace ct
 
             template <class AR>
             static auto save(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<getFlags<Ptr_t>() & ct::READABLE && !(getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT)>
+                -> EnableIf<(getFlags<Ptr_t>() & ct::READABLE) && !(getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT)>
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
             template <class AR>
             static auto save(AR&, const T&, const Ptr_t)
-                -> EnableIf<!getFlags<Ptr_t>() & ct::READABLE || getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT>
+                -> EnableIf<!(getFlags<Ptr_t>() & ct::READABLE) || (getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT)>
             {
             }
         };
