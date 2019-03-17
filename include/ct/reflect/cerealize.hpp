@@ -79,28 +79,41 @@ namespace ct
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
 
             template <class AR>
-            static auto load(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FLAGS & ct::WRITABLE>
+            static void load(AR& ar, T& obj, const Ptr_t ptr)
+            {
+                loadImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj, const Ptr_t ptr)
+            {
+                saveImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+            }
+
+          private:
+            template <Flag_t FG, class AR>
+            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::WRITABLE>
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
                 ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
             }
 
-            template <class AR>
-            static auto load(AR&, T&, const Ptr_t) -> EnableIf<!(FLAGS & ct::WRITABLE)>
+            template <Flag_t FG, class AR>
+            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<!(FG & ct::WRITABLE)>
             {
             }
 
-            template <class AR>
-            static auto save(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<(FLAGS & ct::READABLE) && !(FLAGS & ct::COMPILE_TIME_CONSTANT)>
+            template <Flag_t FG, class AR>
+            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
+                -> EnableIf<(FG & ct::READABLE) && !(FG & ct::COMPILE_TIME_CONSTANT)>
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
-            template <class AR>
-            static auto save(AR&, const T&, const Ptr_t)
-                -> EnableIf<!(FLAGS & ct::READABLE) || (FLAGS & ct::COMPILE_TIME_CONSTANT)>
+            template <Flag_t FG, class AR>
+            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
+                -> EnableIf<!(FG & ct::READABLE) || (FG & ct::COMPILE_TIME_CONSTANT)>
             {
             }
         };
