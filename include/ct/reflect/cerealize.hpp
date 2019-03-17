@@ -220,14 +220,17 @@ namespace ct
                 save(ar, obj, idx);
             }
 
-            template <class SHAPE, class PTR>
-            static auto reshape(const SHAPE& shape, PTR ptr, T& obj) -> EnableIf<getFlags<PTR>() & WRITABLE>
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static auto reshape(const SHAPE& shape,
+                                MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
+                                T& obj) -> EnableIf<FLAGS & WRITABLE>
             {
                 ptr.set(obj, shape);
             }
 
-            template <class SHAPE, class PTR>
-            static auto reshape(const SHAPE&, PTR, T&) -> EnableIf<!(getFlags<PTR>() & WRITABLE)>
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static auto reshape(const SHAPE&, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, T&)
+                -> EnableIf<!(FLAGS & WRITABLE)>
             {
                 // means shape is set at compile time, can't do anything
             }
