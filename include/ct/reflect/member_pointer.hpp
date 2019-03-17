@@ -749,7 +749,8 @@ namespace ct
     template <class PTR_TYPE>
     constexpr Flag_t getFlags()
     {
-        return PTR_TYPE::Flags;
+        using type = typename std::decay<PTR_TYPE>::type;
+        return type::Flags;
     }
 
     template <class T>
