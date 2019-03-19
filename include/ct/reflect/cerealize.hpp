@@ -100,7 +100,7 @@ namespace ct
             }
 
             template <Flag_t FG, class AR>
-            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<!(FG & ct::WRITABLE)>
+            static auto loadImpl(AR&, T&, const Ptr_t) -> EnableIf<!(FG & ct::WRITABLE)>
             {
             }
 
@@ -112,7 +112,7 @@ namespace ct
             }
 
             template <Flag_t FG, class AR>
-            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
+            static auto saveImpl(AR&, const T&, const Ptr_t)
                 -> EnableIf<!(FG & ct::READABLE) || (FG & ct::COMPILE_TIME_CONSTANT)>
             {
             }
