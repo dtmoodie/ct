@@ -76,7 +76,7 @@ int main()
 
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
-
+#if !(defined(_MSC_VER) && _MSC_VER == 1900)
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getName()), ct::crc32("ReflectedStruct")>{};
 
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<Inherited>::getName()), ct::crc32("Inherited")>{};
@@ -84,7 +84,7 @@ int main()
     ct::StaticEquality<uint32_t,
                        ct::crc32(ct::Reflect<MultipleInheritance>::getName()),
                        ct::crc32("MultipleInheritance")>{};
-
+#endif
     ct::StaticEquality<bool, ct::ConstFunction<Virtual, 0>::value, false>{};
     ct::StaticEquality<bool, ct::ConstFunction<Virtual, 1>::value, false>{};
 

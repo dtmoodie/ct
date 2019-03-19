@@ -143,7 +143,7 @@ void testTypes(Tester& tester)
     }
     {
         PrivateGetAndSet pgs;
-        pgs.setX(5.2);
+        pgs.setX(5.2f);
         tester.test(pgs);
     }
     {

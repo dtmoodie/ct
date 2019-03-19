@@ -134,5 +134,4 @@ int main()
     using T1 = TestA;
     using T2 = TestB;
     using T3 = ReflectedStruct;
-    ct::CompilerPrintTypes<T1, T2, T3>{};
 }
