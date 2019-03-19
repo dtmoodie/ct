@@ -558,13 +558,15 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(const T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(const T& obj, ARGS&&... args) const
+            -> decltype(std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...))
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(T& obj, ARGS&&... args) const -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(T& obj, ARGS&&... args) const
+            -> decltype(std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...))
         {
             return std::get<I>(m_ptrs).invoke(obj, std::forward<ARGS>(args)...);
         }
@@ -686,7 +688,7 @@ namespace ct
         }
 
         template <index_t I, class... ARGS>
-        auto invoke(ARGS&&... args) -> typename decltype(std::get<I>(m_ptrs))::Ret_t
+        auto invoke(ARGS&&... args) -> decltype(std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...))
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
@@ -749,7 +751,8 @@ namespace ct
     template <class PTR_TYPE>
     constexpr Flag_t getFlags()
     {
-        return PTR_TYPE::Flags;
+        using type = typename std::decay<PTR_TYPE>::type;
+        return type::Flags;
     }
 
     template <class T>

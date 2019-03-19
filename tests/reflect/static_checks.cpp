@@ -13,10 +13,48 @@ void checkFieldRange()
     ct::StaticEquality<ct::index_t, ct::Reflect<T>::NUM_FIELDS, COUNT>{};
 }
 
+template <class PTR>
+void checkWritable(PTR)
+{
+    static_assert(ct::getFlags<PTR>() & ct::WRITABLE, "Field not writable");
+}
+
+template <class PTR>
+void checkReadable(PTR)
+{
+    static_assert(ct::getFlags<PTR>() & ct::READABLE, "Field not readable");
+}
+
+template <class PTR>
+void checkInvokable(PTR)
+{
+    static_assert(ct::getFlags<PTR>() & ct::INVOKABLE, "Field not invokable");
+}
+
 int main()
 {
     checkFieldRange<ReflectedStruct, 0, 4, 4>();
+    checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<0>()));
+    checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<1>()));
+    checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<2>()));
+    checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<3>()));
+    checkReadable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<0>()));
+    checkReadable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<1>()));
+    checkReadable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<2>()));
+    checkReadable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<3>()));
     checkFieldRange<TestA, 0, 8, 8>();
+    checkWritable(ct::Reflect<TestA>::getPtr(ct::Indexer<0>()));
+    checkWritable(ct::Reflect<TestA>::getPtr(ct::Indexer<1>()));
+    checkWritable(ct::Reflect<TestA>::getPtr(ct::Indexer<2>()));
+    checkReadable(ct::Reflect<TestA>::getPtr(ct::Indexer<0>()));
+    checkReadable(ct::Reflect<TestA>::getPtr(ct::Indexer<1>()));
+    checkReadable(ct::Reflect<TestA>::getPtr(ct::Indexer<2>()));
+
+    checkInvokable(ct::Reflect<TestA>::getPtr(ct::Indexer<3>()));
+    checkInvokable(ct::Reflect<TestA>::getPtr(ct::Indexer<4>()));
+    checkInvokable(ct::Reflect<TestA>::getPtr(ct::Indexer<5>()));
+    checkInvokable(ct::Reflect<TestA>::getPtr(ct::Indexer<6>()));
+
     checkFieldRange<TestB, 0, 3, 3>();
     checkFieldRange<TestC, 0, 3, 3>();
     checkFieldRange<Inherited, 4, 5, 5>();

@@ -57,7 +57,7 @@ int main()
     std::cout << "Binary serialization" << std::endl;
     std::cout << "====================" << std::endl;
     {
-        CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
-        testTypes(json_tester);
+        // CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
+        // testTypes(json_tester);
     }
 }

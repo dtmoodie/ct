@@ -198,10 +198,10 @@ namespace ct
         constexpr static StringView getName() { return IMPL::getName(); }
 
         template <index_t I>
-            constexpr static auto getPtr(const Indexer<I>) -> EnableIf < I
-            >= START_INDEX&& I<END_INDEX, decltype(IMPL::getPtr(Indexer<I - START_INDEX>{}))>
+        constexpr static auto getPtr(const Indexer<I>)
+            -> EnableIf<(I >= START_INDEX) && (I < END_INDEX), decltype(IMPL::getPtr(Indexer<I - START_INDEX>()))>
         {
-            return IMPL::getPtr(Indexer<I - START_INDEX>{});
+            return IMPL::getPtr(Indexer<I - START_INDEX>());
         }
 
         template <index_t I>
@@ -222,7 +222,7 @@ namespace ct
             Bases_t::printHierarchy(os, indent + "  ");
         }
 
-        static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>{}; }
+        static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
     };
 
     // We've already visited this class, so exclude the implementation

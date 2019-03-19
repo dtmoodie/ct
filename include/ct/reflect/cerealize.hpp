@@ -79,28 +79,41 @@ namespace ct
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
 
             template <class AR>
-            static auto load(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<getFlags<Ptr_t>() & ct::WRITABLE>
+            static void load(AR& ar, T& obj, const Ptr_t ptr)
+            {
+                loadImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj, const Ptr_t ptr)
+            {
+                saveImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+            }
+
+          private:
+            template <Flag_t FG, class AR>
+            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::WRITABLE>
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
                 ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
             }
 
-            template <class AR>
-            static auto load(AR&, T&, const Ptr_t) -> EnableIf<!(getFlags<Ptr_t>() & ct::WRITABLE)>
+            template <Flag_t FG, class AR>
+            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<!(FG & ct::WRITABLE)>
             {
             }
 
-            template <class AR>
-            static auto save(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<getFlags<Ptr_t>() & ct::READABLE && !(getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT)>
+            template <Flag_t FG, class AR>
+            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
+                -> EnableIf<(FG & ct::READABLE) && !(FG & ct::COMPILE_TIME_CONSTANT)>
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
-            template <class AR>
-            static auto save(AR&, const T&, const Ptr_t)
-                -> EnableIf<!getFlags<Ptr_t>() & ct::READABLE || getFlags<Ptr_t>() & ct::COMPILE_TIME_CONSTANT>
+            template <Flag_t FG, class AR>
+            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
+                -> EnableIf<!(FG & ct::READABLE) || (FG & ct::COMPILE_TIME_CONSTANT)>
             {
             }
         };
@@ -220,14 +233,17 @@ namespace ct
                 save(ar, obj, idx);
             }
 
-            template <class SHAPE, class PTR>
-            static auto reshape(const SHAPE& shape, PTR ptr, T& obj) -> EnableIf<getFlags<PTR>() & WRITABLE>
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static auto reshape(const SHAPE& shape,
+                                MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
+                                T& obj) -> EnableIf<FLAGS & WRITABLE>
             {
                 ptr.set(obj, shape);
             }
 
-            template <class SHAPE, class PTR>
-            static auto reshape(const SHAPE&, PTR, T&) -> EnableIf<!(getFlags<PTR>() & WRITABLE)>
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static auto reshape(const SHAPE&, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, T&)
+                -> EnableIf<!(FLAGS & WRITABLE)>
             {
                 // means shape is set at compile time, can't do anything
             }
@@ -350,6 +366,16 @@ namespace ct
         {
             using type = int;
         };
+    }
+
+    template <class AR, class T>
+    void serialize(AR& ar, TArrayView<T>& view)
+    {
+        ar(::cereal::make_size_tag(view.size));
+        for (size_t i = 0; i < view.size; ++i)
+        {
+            ar(view.data[i]);
+        }
     }
 }
 

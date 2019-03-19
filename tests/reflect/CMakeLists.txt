@@ -1,5 +1,9 @@
 file(GLOB hdr "*.hpp")
 
+add_executable(test_ct_static_checks ${hdr} static_checks.cpp)
+target_link_libraries(test_ct_static_checks ct)
+set_target_properties(test_ct_static_checks PROPERTIES FOLDER Tests/ct)
+
 find_package(Eigen3 QUIET)
 if(Eigen3_FOUND)
     include_directories(${EIGEN3_INCLUDE_DIRS})
@@ -45,10 +49,6 @@ set_target_properties(test_ct_reflect_hash PROPERTIES FOLDER Tests/ct)
 add_executable(test_ct_data_table ${hdr} datatable.cpp)
 target_link_libraries(test_ct_data_table ct)
 set_target_properties(test_ct_data_table PROPERTIES FOLDER Tests/ct)
-
-add_executable(test_ct_static_checks ${hdr} static_checks.cpp)
-target_link_libraries(test_ct_static_checks ct)
-set_target_properties(test_ct_static_checks PROPERTIES FOLDER Tests/ct)
 
 add_executable(test_ct_get_name ${hdr} get_name.cpp)
 target_link_libraries(test_ct_get_name ct)
