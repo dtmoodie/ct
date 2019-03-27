@@ -1,6 +1,5 @@
 #ifndef CT_STRING_VIEW_HPP
 #define CT_STRING_VIEW_HPP
-
 #include <array>
 #include <cstddef>
 #include <ostream>
@@ -13,19 +12,6 @@ using ssize_t = SSIZE_T;
 
 namespace ct
 {
-    namespace detail
-    {
-        constexpr size_t findFirst(const char* str, size_t N, size_t idx, char del);
-
-        template <size_t idx, size_t N>
-        constexpr size_t findFirst(const char* str, char del);
-
-        constexpr size_t findDeliminator(const char* str, size_t len);
-
-        constexpr size_t findDeliminator(const char* str, size_t len, char del);
-
-        constexpr size_t findLast(const char* str, size_t len, char Del);
-    }
     template <class T = char>
     struct BasicStringView
     {
@@ -41,7 +27,7 @@ namespace ct
 
         constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
 
-        constexpr BasicStringView substr(size_t pos = 0, size_t count = 0) const;
+        constexpr BasicStringView substr(ssize_t pos = 0, size_t count = 0) const;
 
         constexpr size_t find(T character, size_t n = 0, size_t pos = 0) const;
 
@@ -79,6 +65,20 @@ namespace ct
     };
 
     using StringView = BasicStringView<>;
+
+    namespace detail
+    {
+        constexpr size_t findFirst(const char* str, size_t N, size_t idx, char del);
+
+        template <size_t idx, size_t N>
+        constexpr size_t findFirst(const char* str, char del);
+
+        constexpr size_t findDeliminator(const char* str, size_t len);
+
+        constexpr size_t findDeliminator(const char* str, size_t len, char del);
+
+        constexpr size_t findLast(const char* str, size_t len, char Del);
+    }
 
     template <class T>
     inline std::ostream& operator<<(std::ostream& os, const BasicStringView<T>& view)
@@ -236,9 +236,9 @@ namespace ct
     }
 
     template <class T>
-    constexpr BasicStringView<T> BasicStringView<T>::substr(size_t pos, size_t count) const
+    constexpr BasicStringView<T> BasicStringView<T>::substr(ssize_t pos, size_t count) const
     {
-        return count == 0 ? slice(pos, m_size - pos) : slice(pos, pos + count);
+        return count == 0 ? slice(revIndex(pos), m_size - pos) : slice(revIndex(pos), revIndex(pos) + count);
     }
 
     template <class T>

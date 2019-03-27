@@ -131,7 +131,4 @@ int main()
     std::cout << std::endl;
     ct::Reflect<DerivedC>::printHierarchy(std::cout);
     std::cout << ct::GetNameGCC<DerivedC>::funcName() << std::endl;
-    using T1 = TestA;
-    using T2 = TestB;
-    using T3 = ReflectedStruct;
 }

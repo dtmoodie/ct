@@ -186,6 +186,12 @@ namespace ct
             static_cast<DERIVED*>(this)->visitReturn(std::move(ret), path);
         }
 
+        template <class R, class U, class SIG, class... FARGS, class... ARGS>
+        EnableIf<!std::is_same<R, void>::value>
+        visitStaticFunction(StaticFunction<U, SIG>, const std::string&, R*, VariadicTypedef<FARGS...>*, ARGS&&...)
+        {
+            // cannot invoke
+        }
 
         template <class T, index_t I, class U, Flag_t FLAGS, class... PTRS, class... ARGS>
         void visitStaticFunctions(const std::string& path,
@@ -317,17 +323,15 @@ namespace ct
         }
 
         template <class R, class T, class U, class SIG>
-        EnableIf<!std::is_same<R, void>::value> visitMemberFunction(
-            const T& obj, MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<>*)
+        EnableIf<!std::is_same<R, void>::value>
+        visitMemberFunction(const T& obj, MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<>*)
         {
             auto ret = func.invoke(obj);
             static_cast<DERIVED*>(this)->visitReturn(std::move(ret), path);
         }
 
-
         template <class T, class U, class SIG>
-        void visitMemberFunction(
-            const T&, MemberFunction<U, SIG>, const std::string&, void*, VariadicTypedef<>*)
+        void visitMemberFunction(const T&, MemberFunction<U, SIG>, const std::string&, void*, VariadicTypedef<>*)
         {
             // cannot invoke
         }
