@@ -121,7 +121,9 @@ namespace ct
         template <class T>
         struct IsTensor
         {
-            constexpr static const bool value = indexOfField<T>("data") != -1 && indexOfField<T>("shape") != -1;
+			constexpr static const auto data_index = indexOfField<T>("data");
+			constexpr static const auto shape_index = indexOfField<T>("shape");
+            constexpr static const bool value =  (data_index != -1) && (shape_index != -1);
         };
 
         template <class T>
