@@ -26,8 +26,8 @@ namespace ct
         return true;
     }
 
-    template <class T, class Comparator>
-    bool compare(const std::vector<T>& lhs, const std::vector<T>& rhs, const Comparator& cmp)
+    template <class T, class A, class B, class Comparator>
+    bool compare(const std::vector<T, A>& lhs, const std::vector<T, B>& rhs, const Comparator& cmp)
     {
         if (lhs.size() != rhs.size())
         {

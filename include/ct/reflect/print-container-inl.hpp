@@ -8,8 +8,8 @@
 
 namespace ct
 {
-    template <class Options = PrintOptions, class T>
-    auto printStruct(std::ostream& os, const std::vector<T>& obj) -> ct::EnableIfReflected<T>
+    template <class Options = PrintOptions, class T, class A>
+    auto printStruct(std::ostream& os, const std::vector<T, A>& obj) -> ct::EnableIfReflected<T>
     {
         if (!obj.empty())
         {

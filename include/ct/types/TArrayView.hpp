@@ -10,7 +10,7 @@ namespace ct
     template <class T>
     struct TArrayView
     {
-        TArrayView(T* ptr, size_t sz);
+        TArrayView(T* ptr = nullptr, size_t sz = 0);
         TArrayView(T* begin, T* end);
 
         const T& operator[](size_t idx) const;
@@ -24,6 +24,11 @@ namespace ct
 
         T* data();
         const T* data() const;
+
+        T* begin();
+        const T* begin() const;
+        T* end();
+        const T* end() const;
 
         TArrayView slice(ssize_t begin, ssize_t end = 0);
         TArrayView subView(ssize_t begin, size_t count = 0);
@@ -40,7 +45,7 @@ namespace ct
     template <class T>
     struct TArrayView<const T>
     {
-        TArrayView(const T* ptr, size_t sz);
+        TArrayView(const T* ptr = nullptr, size_t sz = 0);
         TArrayView(const T* begin, const T* end);
 
         const T& operator[](size_t idx) const;
@@ -52,6 +57,9 @@ namespace ct
         size_t size() const;
 
         const T* data() const;
+
+        const T* begin() const;
+        const T* end() const;
 
         TArrayView<const T> slice(ssize_t begin, ssize_t end = 0) const;
         TArrayView<const T> subView(ssize_t begin, size_t count = 0) const;
@@ -177,6 +185,30 @@ namespace ct
         return m_data;
     }
 
+    template <class T>
+    T* TArrayView<T>::begin()
+    {
+        return m_data;
+    }
+
+    template <class T>
+    const T* TArrayView<T>::begin() const
+    {
+        return m_data;
+    }
+
+    template <class T>
+    T* TArrayView<T>::end()
+    {
+        return m_data + m_size;
+    }
+
+    template <class T>
+    const T* TArrayView<T>::end() const
+    {
+        return m_data + m_size;
+    }
+
     ///////////////////////////////////////////////////////////////////////
 
     template <class T>
@@ -261,6 +293,18 @@ namespace ct
     const T* TArrayView<const T>::data() const
     {
         return m_data;
+    }
+
+    template <class T>
+    const T* TArrayView<const T>::begin() const
+    {
+        return m_data;
+    }
+
+    template <class T>
+    const T* TArrayView<const T>::end() const
+    {
+        return m_data + m_size;
     }
 
     template <class T>

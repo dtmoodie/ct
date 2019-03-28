@@ -184,8 +184,7 @@ void testTypes(Tester& tester)
     {
         // WeirdWeakOwnerShip data;
         // tester.test(data);
-    } 
-	{
+    } {
         MultipleInheritance asdf;
         asdf.ReflectedStruct::x = 0;
         asdf.ReflectedStruct::y = 1;
@@ -199,7 +198,6 @@ void testTypes(Tester& tester)
         ExplicitThisProperty data;
         tester.test(data);
     }
-#if !(defined(_MSC_VER) && _MSC_VER == 1900)
     {
         DerivedC derived;
         derived.base_x = 0;
@@ -211,7 +209,6 @@ void testTypes(Tester& tester)
 
         tester.test(derived);
     }
-#endif
     {
         Virtual virt;
         tester.test(virt);

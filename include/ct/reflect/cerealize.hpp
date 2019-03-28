@@ -121,9 +121,7 @@ namespace ct
         template <class T>
         struct IsTensor
         {
-			constexpr static const auto data_index = indexOfField<T>("data");
-			constexpr static const auto shape_index = indexOfField<T>("shape");
-            constexpr static const bool value =  (data_index != -1) && (shape_index != -1);
+            constexpr static const bool value = indexOfField<T>("data") != -1 && indexOfField<T>("shape") != -1;
         };
 
         template <class T>
@@ -395,28 +393,5 @@ namespace cereal
     {
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
-
-    /*template <class AR, class T>
-    auto save_minimal(const AR&, const T& data)
-        -> ct::EnableIf<ct::IsReflected<T>::value && ct::cereal::CountSerializableFields<T>::value == 1 &&
-                            std::is_arithmetic<typename std::decay<
-                                typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>::value,
-                        typename std::decay<typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>
-    {
-        auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<0>());
-        return ptr.get(data);
-    }
-
-    template <class AR, class T>
-    auto load_minimal(const AR&,
-                      T& data,
-                      typename std::decay<typename ct::cereal::CerealMinimalRepresentation<T>::type>::type val)
-        -> ct::EnableIf<ct::IsReflected<T>::value && ct::cereal::CountSerializableFields<T>::value == 1 &&
-                        std::is_arithmetic<typename std::decay<
-                            typename ct::cereal::CerealMinimalRepresentation<T>::type>::type>::value>
-    {
-        auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<0>());
-        ptr.set(data, val);
-    }*/
 }
 #endif // CT_REFLECT_CEREALIZE_HPP
