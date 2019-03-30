@@ -12,13 +12,13 @@ cache:
 before_install:
  - sudo apt-get install -y libboost-test-dev
  - sudo apt-get install -y libopencv-core-dev
- - sudo apt-get install -y libeigen3-dev
+ - git clone https://github.com/eigenteam/eigen-git-mirror
+ - git clone https://github.com/USCiLab/cereal
 
 script:
- - git clone https://github.com/USCiLab/cereal
  - mkdir build
  - cd build
- - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include
+ - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror
  - make
  - cd tests
  - hash/test_ct_string_hash
