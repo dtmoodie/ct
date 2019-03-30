@@ -172,6 +172,16 @@ namespace ct
         static constexpr const int NUM_ARGS = sizeof...(ARGS);
     };
 
+    // Visual studio has issues so we make an explicit version for when args is nothing
+    template <class DTYPE, class CTYPE>
+    struct InferPointerType<DTYPE (CTYPE::*)() const>
+    {
+        using Class_t = CTYPE;
+        using Data_t = DTYPE;
+        static constexpr const bool IMPLICIT_THIS = false;
+        static constexpr const int NUM_ARGS = 0;
+    };
+
     template <class DTYPE, class CTYPE, class... ARGS>
     struct InferPointerType<DTYPE (*)(CTYPE, ARGS...)>
     {
