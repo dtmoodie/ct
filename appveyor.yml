@@ -10,13 +10,14 @@ image:
 clone_depth: 1
 before_build:
 - git clone https://github.com/USCiLab/cereal
+- git clone https://github.com/eigenteam/eigen-git-mirror
 
 - cmd: >-
    if not exist "build" mkdir build
    
    cd build
    
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/
 
 - sh: >-
     mkdir -p build
