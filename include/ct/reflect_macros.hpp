@@ -69,7 +69,7 @@
         static constexpr auto getTypeHelper()->decltype(this);                                                         \
         using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                \
         static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                 \
-    using BaseTypes = ct::VariadicTypedef<>
+        using BaseTypes = ct::VariadicTypedef<>;
 
 #define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
@@ -77,7 +77,7 @@
         static constexpr auto getTypeHelper()->decltype(this);                                                         \
         using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                \
         static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                 \
-    using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>
+        using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \

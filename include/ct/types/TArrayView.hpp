@@ -45,6 +45,7 @@ namespace ct
     template <class T>
     struct TArrayView<const T>
     {
+        TArrayView(const TArrayView<T>&);
         TArrayView(const T* ptr = nullptr, size_t sz = 0);
         TArrayView(const T* begin, const T* end);
 
@@ -53,6 +54,8 @@ namespace ct
         bool operator==(const TArrayView& other) const;
 
         bool operator!=(const TArrayView& other) const;
+
+        TArrayView& operator=(const TArrayView<T>& other);
 
         size_t size() const;
 
@@ -212,6 +215,11 @@ namespace ct
     ///////////////////////////////////////////////////////////////////////
 
     template <class T>
+    TArrayView<const T>::TArrayView(const TArrayView<T>& other) : m_data(other.data()), m_size(other.size())
+    {
+    }
+
+    template <class T>
     TArrayView<const T>::TArrayView(const T* ptr, size_t sz) : m_data(ptr), m_size(sz)
     {
     }
@@ -281,6 +289,14 @@ namespace ct
     bool TArrayView<const T>::operator!=(const TArrayView<const T>& other) const
     {
         return !(*this == other);
+    }
+
+    template <class T>
+    TArrayView<const T>& TArrayView<const T>::operator=(const TArrayView<T>& other)
+    {
+        m_data = other.data();
+        m_size = other.size();
+        return *this;
     }
 
     template <class T>

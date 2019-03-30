@@ -86,10 +86,10 @@ int main()
                        ct::crc32("MultipleInheritance")>{};
 #endif
     ct::StaticEquality<bool, ct::ConstFunction<Virtual, 0>::value, false>{};
-    ct::StaticEquality<bool, ct::ConstFunction<Virtual, 1>::value, false>{};
+    // ct::StaticEquality<bool, ct::ConstFunction<Virtual, 1>::value, false>{};
 
     ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 0>::value, false>{};
-    ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 1>::value, false>{};
+    // ct::StaticEquality<bool, ct::ShouldSerialize<Virtual, 1>::value, false>{};
 
     ct::StaticEqualTypes<typename ct::GlobMemberObjects<ReflectedStruct>::types,
                          ct::VariadicTypedef<float, float, float, int>>{};

@@ -23,12 +23,6 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
-        // GCC 4.8 doesn't like this, can't do overloads this way while maintaining compatibility
-        // need to re-evaluate now that we use c++1y on 4.8
-        //        MEMBER_FUNCTION(mul,
-        //                        static_cast<TestA (TestA::*)(float) const>(&TestA::mul),
-        //                        static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul),
-        //                        static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
         MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
         MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
         MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))

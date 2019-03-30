@@ -44,6 +44,24 @@ namespace ct
         return true;
     }
 
+    template <class T, class Comparator>
+    bool compare(const std::vector<T>& lhs, const std::vector<T>& rhs, const Comparator& cmp)
+    {
+        if (lhs.size() != rhs.size())
+        {
+            return false;
+        }
+        for (size_t i = 0; i < lhs.size(); ++i)
+        {
+            if (lhs[i] != rhs[i])
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     template <class K, class V, class Comparator>
     bool compare(const std::map<K, V>& lhs, const std::map<K, V>& rhs, const Comparator& cmp)
     {

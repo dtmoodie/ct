@@ -64,7 +64,6 @@ struct DerivedC : virtual public DerivedA, virtual public DerivedB
 struct Wrapper
 {
     REFLECT_INTERNAL_START
-        ;
         REFLECT_INTERNAL_MEMBER(float, val)
     REFLECT_INTERNAL_END;
 };
@@ -119,12 +118,9 @@ struct Virtual
 {
     virtual ~Virtual() {}
     REFLECT_INTERNAL_START
-        ;
-        MEMBER_FUNCTION(foo, static_cast<void (DataType::*)()>(&Virtual::foo))
-        MEMBER_FUNCTION(foo, static_cast<void (DataType::*)(int)>(&Virtual::foo))
+        MEMBER_FUNCTION(foo)
     REFLECT_INTERNAL_END;
     virtual void foo() {}
-    virtual void foo(int) {}
 };
 
 template <class DType>
@@ -133,14 +129,6 @@ struct Templated
     DType x;
     DType y;
     DType z;
-
-    // Also does not work on gcc 4.8 :/
-    /*REFLECT_INTERNAL_START
-        ;
-        REFLECT_INTERNAL_MEMBER(DType, x)
-        REFLECT_INTERNAL_MEMBER(DType, y)
-        REFLECT_INTERNAL_MEMBER(DType, z)
-    REFLECT_INTERNAL_END;*/
 };
 
 struct ExplicitThisProperty
@@ -177,7 +165,6 @@ struct WeirdWeakOwnerShip
 struct InternallyReflected
 {
     REFLECT_INTERNAL_START
-        ;
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
