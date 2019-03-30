@@ -371,7 +371,7 @@ namespace ct
     template <class AR, class T>
     void serialize(AR& ar, TArrayView<T>& view)
     {
-        cereal::size_type size = view.size();
+        ::cereal::size_type size = view.size();
         ar(::cereal::make_size_tag(size));
         for (size_t i = 0; i < view.size(); ++i)
         {
