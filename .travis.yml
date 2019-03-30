@@ -13,7 +13,7 @@ before_install:
  - sudo apt-get install -y libboost-test-dev
  - sudo apt-get install -y libopencv-core-dev
  - git clone https://github.com/eigenteam/eigen-git-mirror
- - git clone https://github.com/USCiLab/cereal
+ - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
 
 script:
  - mkdir build

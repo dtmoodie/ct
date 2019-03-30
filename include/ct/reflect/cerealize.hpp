@@ -13,8 +13,8 @@ namespace ct
 /// implementation
 /////////////////////////////////////////////////////////////
 
+#include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
-
 // TODO make specialization for text archives that uses a size tag
 #include <ct/types/std_array.hpp>
 
@@ -371,7 +371,8 @@ namespace ct
     template <class AR, class T>
     void serialize(AR& ar, TArrayView<T>& view)
     {
-        ar(::cereal::make_size_tag(view.size()));
+        cereal::size_type size = view.size();
+        ar(::cereal::make_size_tag(size));
         for (size_t i = 0; i < view.size(); ++i)
         {
             ar(view[i]);

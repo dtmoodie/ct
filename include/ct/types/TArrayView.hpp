@@ -282,7 +282,7 @@ namespace ct
         {
             return m_size - idx;
         }
-        return idx;
+        return static_cast<size_t>(idx);
     }
 
     template <class T>
