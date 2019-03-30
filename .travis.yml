@@ -12,6 +12,7 @@ cache:
 before_install:
  - sudo apt-get install -y libboost-test-dev
  - sudo apt-get install -y libopencv-core-dev
+ - sudo apt-get install -y libeigen3-dev
 
 script:
  - git clone https://github.com/USCiLab/cereal
