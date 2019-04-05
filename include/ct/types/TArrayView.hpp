@@ -127,7 +127,8 @@ namespace ct
     struct TArrayView<const void>
     {
         template <class T>
-        TArrayView(const TArrayView<T>&);
+        TArrayView(const TArrayView<const T>&);
+        TArrayView(const TArrayView<const void>&) = default;
         inline TArrayView(const void* ptr = nullptr, size_t sz = 0);
         inline TArrayView(const void* begin, const void* end);
 
@@ -491,7 +492,7 @@ namespace ct
     // const void specialzation
 
     template <class T>
-    TArrayView<const void>::TArrayView(const TArrayView<T>& other)
+    TArrayView<const void>::TArrayView(const TArrayView<const T>& other)
         : m_data(other.data()), m_size(other.size() * sizeof(T))
     {
     }
