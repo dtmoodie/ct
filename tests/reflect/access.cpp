@@ -18,16 +18,16 @@ int main()
 
     static_assert(ct::CountArgs<TestA, 3>::NUM_ARGS == 0, "asdf");
     {
-        using type = ct::FieldGetType<TestA, 0>;
-        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
+        using type = typename ct::FieldGetType<TestA, 0>::type;
+        ct::StaticEqualTypes<typename std::decay<type>::type, float>();
     }
     {
-        using type = ct::FieldGetType<TestA, 1>;
-        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
+        using type = typename ct::FieldGetType<TestA, 1>::type;
+        ct::StaticEqualTypes<typename std::decay<type>::type, float>();
     }
     {
-        using type = ct::FieldGetType<TestA, 2>;
-        using test = ct::StaticEqualTypes<typename std::decay<type>::type, float>;
+        using type = typename ct::FieldGetType<TestA, 2>::type;
+        ct::StaticEqualTypes<typename std::decay<type>::type, float>();
     }
 
     /*{
@@ -81,7 +81,7 @@ int main()
     std::cout << std::endl;
 
     {
-        const auto accessor = ct::Reflect<TestA>::getPtr(ct::Indexer<3>{});
+        // const auto accessor = ct::Reflect<TestA>::getPtr(ct::Indexer<3>{});
         const auto start1 = std::chrono::high_resolution_clock::now();
 
         static_assert(ct::IsMemberObject<TestA, 0>::value, "asdf");
