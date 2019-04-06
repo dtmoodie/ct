@@ -483,10 +483,13 @@ namespace ct
 
     size_t TArrayView<void>::size() const { return m_size; }
 
+    void* TArrayView<void>::data() { return m_data; }
     const void* TArrayView<void>::data() const { return m_data; }
 
+    void* TArrayView<void>::begin() { return m_data; }
     const void* TArrayView<void>::begin() const { return m_data; }
 
+    void* TArrayView<void>::end() { return ptrCast<void>(ptrCast<uint8_t>(m_data) + m_size); }
     const void* TArrayView<void>::end() const { return ptrCast<void>(ptrCast<uint8_t>(m_data) + m_size); }
 
     // const void specialzation

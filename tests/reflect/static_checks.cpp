@@ -105,5 +105,7 @@ int main()
     ct::StaticEqualTypes<typename ct::GlobMemberObjects<DerivedC>::types,
                          ct::VariadicTypedef<float, float, float, float, float, float>>{};
     ct::StaticEquality<size_t, ct::GlobMemberObjects<DerivedC>::num, 6>{};
+
+    static_assert(ct::IsDefaultConstructible<ReflectedStruct>::value, "asdf");
     return 0;
 }

@@ -269,9 +269,16 @@ namespace ct
     }
 
     template <int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj) -> EnableIf<IsMemberFunction<T, I>::value>
+    auto printValue(std::ostream& os, const T& obj)
+        -> EnableIf<IsMemberFunction<T, I>::value && Options::print_calculated_values>
     {
         printMemberFunctionResult<I, Options>(os, obj);
+    }
+
+    template <int I, class Options = PrintOptions, class T>
+    auto printValue(std::ostream&, const T&)
+        -> EnableIf<IsMemberFunction<T, I>::value && !Options::print_calculated_values>
+    {
     }
 
     template <class Options = PrintOptions, class T>

@@ -276,6 +276,13 @@ namespace ct
         static constexpr const bool value = IsMemberObjectPointer<Accesosr_t>::value;
     };
 
+    template <class T, index_t I>
+    struct IsMemberProperty
+    {
+        using Accessor_t = PtrType<T, I>;
+        static constexpr const bool value = IsMemberPropertyPointer<Accessor_t>::value;
+    };
+
     template <index_t I, class T>
     constexpr StringView getName()
     {
@@ -388,6 +395,9 @@ namespace ct
 
     template <class T, index_t I, class U = void>
     using EnableIfIsMemberObject = EnableIf<IsMemberObject<T, I>::value, U>;
+
+    template <class T, index_t I, class U = void>
+    using EnableIfIsMemberProperty = EnableIf<IsMemberProperty<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
     using DisableIfIsMemberObject = EnableIf<!IsMemberObject<T, I>::value, U>;
