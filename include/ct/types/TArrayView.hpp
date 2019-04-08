@@ -22,7 +22,8 @@ namespace ct
     template <class T>
     struct TArrayView
     {
-        TArrayView(const TArrayView<void>&);
+        TArrayView(TArrayView<void>&);
+        TArrayView(TArrayView<void>&&);
         TArrayView(T* ptr = nullptr, size_t sz = 0);
         TArrayView(T* begin, T* end);
 
@@ -91,6 +92,10 @@ namespace ct
     template <>
     struct TArrayView<void>
     {
+        template <class T>
+        TArrayView(TArrayView<T>&& other);
+        template <class T>
+        TArrayView(TArrayView<T>& other);
         inline TArrayView(void* ptr = nullptr, size_t sz = 0);
         inline TArrayView(void* begin, void* end);
 
@@ -163,7 +168,13 @@ namespace ct
     ///////////////////////////////////////////////////////////
 
     template <class T>
-    TArrayView<T>::TArrayView(const TArrayView<void>& other)
+    TArrayView<T>::TArrayView(TArrayView<void>& other)
+        : m_data(static_cast<T*>(other.data())), m_size(other.size() / sizeof(T))
+    {
+    }
+
+    template <class T>
+    TArrayView<T>::TArrayView(TArrayView<void>&& other)
         : m_data(static_cast<T*>(other.data())), m_size(other.size() / sizeof(T))
     {
     }
@@ -311,7 +322,7 @@ namespace ct
 
     template <class T>
     TArrayView<const T>::TArrayView(const TArrayView<const void>& other)
-        : m_data(static_cast<T*>(other.data())), m_size(other.size() / sizeof(T))
+        : m_data(static_cast<const T*>(other.data())), m_size(other.size() / sizeof(T))
     {
     }
 
@@ -425,6 +436,16 @@ namespace ct
     }
 
     // void specialization
+
+    template <class T>
+    TArrayView<void>::TArrayView(TArrayView<T>&& other) : m_data(other.data()), m_size(other.size() * sizeof(T))
+    {
+    }
+
+    template <class T>
+    TArrayView<void>::TArrayView(TArrayView<T>& other) : m_data(other.data()), m_size(other.size() * sizeof(T))
+    {
+    }
 
     TArrayView<void>::TArrayView(void* ptr, size_t sz) : m_data(ptr), m_size(sz) {}
 
