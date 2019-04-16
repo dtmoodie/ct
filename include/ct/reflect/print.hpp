@@ -1,6 +1,9 @@
 #ifndef CT_REFLECT_PRINT_HPP
 #define CT_REFLECT_PRINT_HPP
+#include "../StringView.hpp"
 #include "../reflect.hpp"
+#include "visitor.hpp"
+
 #include <ostream>
 #include <typeinfo>
 
@@ -8,15 +11,31 @@ namespace ct
 {
     struct PrintOptions
     {
-        static const bool print_name = true;
-        static const char name_separator = ':';
-        static const char value_separator = ' ';
-        static const bool print_calculated_values = false;
-        static const char object_begin = '(';
-        static const char object_end = ')';
-        static const char array_begin = '[';
-        static const char array_end = ']';
-        static const bool error_on_nonprintable = true;
+        static constexpr bool print_name = true;
+        static constexpr char const* name_begin = "\0";
+        static constexpr char const* name_end = ":";
+
+        static constexpr char const* value_begin = ": ";
+        static constexpr char const* value_end = " ";
+
+        static constexpr bool print_calculated_values = false;
+        static constexpr char const* object_begin = "(";
+        static constexpr char const* object_end = ") ";
+
+        static constexpr char const* array_begin = "[";
+        static constexpr char const* array_end = "]";
+
+        static constexpr bool error_on_nonprintable = true;
+
+        static constexpr bool print_description = false;
+        static constexpr char const* description_begin = " (";
+        static constexpr char const* description_end = ")";
+
+        static constexpr bool print_type = false;
+        static constexpr char const* type_begin = "<";
+        static constexpr char const* type_end = ">";
+
+        static constexpr bool indent = false;
         // overload this function to print something to the ostream when a datatype is not printable
         template <class T>
         static std::ostream& onUnprintable(std::ostream& os, const char* /*name*/, const T& /*data*/)
@@ -48,8 +67,8 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::pointerValue(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name
-           << std::endl;
+        os << "  Field  0x" << ct::pointerValue(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
+        os << std::endl;
     }
 
     template <class T, class PTR>
@@ -113,6 +132,162 @@ namespace ct
     {
         printStructInfoHelper<T>(os, ct::Reflect<T>::end());
     }
+
+    struct PrintVisitorParams : public ct::DefaultVisitorParams
+    {
+        constexpr static const bool ACCUMULATE_PATH = false;
+    };
+
+    template <class PRINT_OPTIONS = PrintOptions, class PARAMS = PrintVisitorParams>
+    struct PrintVisitor : public ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>
+    {
+        using Super_t = ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>;
+
+        template <class T>
+        ct::EnableIfReflected<T> visit(const T& obj, const std::string& name, std::ostream& os)
+        {
+            thread_local bool recursion_block = false;
+
+            if (recursion_block)
+            {
+                os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
+                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getName() << PRINT_OPTIONS::type_end;
+                return;
+            }
+            recursion_block = true;
+            /*if (!name.empty())
+            {
+                indent(os);
+                os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
+            }*/
+
+            os << PRINT_OPTIONS::object_begin;
+            if (PRINT_OPTIONS::indent)
+            {
+                ++m_indent;
+            }
+            Super_t::recurseFields(obj, name, ct::Reflect<T>::end(), os);
+            os << PRINT_OPTIONS::object_end;
+
+            if (PRINT_OPTIONS::indent)
+            {
+                --m_indent;
+            }
+            recursion_block = false;
+        }
+
+        template <class T>
+        ct::DisableIfReflected<T> visit(const T& val, const std::string&, std::ostream& os)
+        {
+            os << val;
+        }
+
+        template <ct::index_t I, class DTYPE>
+        ct::DisableIfReflected<typename std::decay<DTYPE>::type>
+        visitData(const DTYPE& data, const std::string& path, std::ostream& os)
+        {
+            indent(os);
+            os << path << PRINT_OPTIONS::value_begin << data << PRINT_OPTIONS::value_end;
+        }
+
+        template <bool ENABLE, class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I>
+        EnableIf<ENABLE> visitMemberObject(const T& obj,
+                                           std::string path,
+                                           MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA> ptr,
+                                           Indexer<I>,
+                                           std::ostream& os)
+        {
+            if (PARAMS::ACCUMULATE_PATH)
+            {
+                path += ptr.m_name.toString();
+            }
+            else
+            {
+                path = ptr.m_name.toString();
+            }
+
+            indent(os);
+            os << path;
+            if (PRINT_OPTIONS::print_description)
+            {
+                auto desc = getMetadata<metadata::Description, I, T>();
+                os << PRINT_OPTIONS::description_begin;
+                if (desc)
+                {
+                    os << getMetadata<metadata::Description, I, T>()->getDescription();
+                }
+                else
+                {
+                    os << "no description provided";
+                }
+                os << PRINT_OPTIONS::description_end;
+            }
+            os << PRINT_OPTIONS::value_begin;
+            visit(ptr.get(obj), path, os);
+            os << PRINT_OPTIONS::value_end;
+        }
+
+        template <class R>
+        ct::EnableIfReflected<R> visitReturn(R&& val, const std::string& path, std::ostream& os)
+        {
+            visit(val, path, os);
+        }
+
+        template <class R>
+        ct::DisableIfReflected<R> visitReturn(R&& val, const std::string& path, std::ostream& os)
+        {
+            indent(os);
+            os << path << PRINT_OPTIONS::value_begin << val << PRINT_OPTIONS::value_end;
+        }
+
+        template <ct::index_t I, class DTYPE>
+        ct::EnableIfReflected<typename std::decay<DTYPE>::type>
+        visitData(const DTYPE& data, const std::string& path, std::ostream& os)
+        {
+            Super_t::template visitData<I>(data, path, os);
+        }
+
+        template <class T, ct::index_t I, class GET_PTR, class SET_PTR, ct::Flag_t FLAGS, class METADATA>
+        void visitProperty(T& obj,
+                           std::string path,
+                           ct::MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
+                           ct::Indexer<I>,
+                           std::ostream& os)
+        {
+            if (PARAMS::ACCUMULATE_PATH)
+            {
+                path += PARAMS::DELIMINATOR;
+                path += ptr.m_name.toString();
+            }
+            else
+            {
+                path = ptr.m_name.toString();
+            }
+            if (PRINT_OPTIONS::indent)
+            {
+                ++m_indent;
+            }
+            visitData<I>(ptr.get(obj), path, os);
+            if (PRINT_OPTIONS::indent)
+            {
+                --m_indent;
+            }
+        }
+
+      private:
+        void indent(std::ostream& os)
+        {
+            if (PRINT_OPTIONS::indent)
+            {
+                for (uint32_t i = 0; i < m_indent; ++i)
+                {
+                    os << ' ';
+                }
+            }
+        }
+        uint32_t m_indent = 0;
+    };
+
 } // namespace ct
 
 #include <cstdint>
@@ -173,134 +348,13 @@ namespace std
 
 namespace ct
 {
-    // implementation
-    template <class T, int I>
-    struct CanWrite
-    {
-        using DType = typename FieldGetType<T, I>::type;
-        enum
-        {
-            value = StreamWritable<typename std::decay<DType>::type>::value
-        };
-    };
-
-    template <class T, class O, int I>
-    struct ShouldWrite
-    {
-        using Ptr_t = PtrType<T, I>;
-        using DType = typename GetType<Ptr_t>::type;
-        constexpr static const bool is_calculated = IsMemberFunctionPointers<Ptr_t>::value;
-        constexpr static const bool is_writable = CanWrite<T, I>::value;
-        constexpr static const bool value =
-            is_writable && ((is_calculated && O::print_calculated_values) || !is_calculated);
-
-        static_assert(is_writable || !O::error_on_nonprintable,
-                      "Either need to be able to write this data type or need to disable it in options");
-    };
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& obj)
-        -> EnableIf<ShouldWrite<T, Options, I>::value && !IsMemberFunction<T, I>::value>
-    {
-        // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
-        // stream writable and your print options do not allow that via the error_on_nonprintable flag
-
-        auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
-
-        if (Options::print_name)
-        {
-            os << accessor.m_name << Options::name_separator;
-        }
-
-        os << accessor.get(obj);
-    }
-
-    template <class T, index_t I, class U = void>
-    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0 && ConstFunction<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1 && ConstFunction<T, I>::value, U>;
-
-    template <int I, class Options, class T>
-    auto printMemberFunctionResult(std::ostream& os, const T& obj) -> EnableIfNoArgs<T, I>
-    {
-        auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
-        if (Options::print_name)
-        {
-            os << accessor.m_name << Options::name_separator;
-        }
-
-        os << accessor.template invoke<0>(obj);
-    }
-
-    template <int I, class Options, class T>
-    auto printMemberFunctionResult(std::ostream&, const T&) -> EnableIf<!ConstFunction<T, I>::value>
-    {
-    }
-
-    template <int I, class Options, class T>
-    auto printMemberFunctionResult(std::ostream&, const T&) -> EnableIfArgs<T, I>
-    {
-    }
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& obj)
-        -> EnableIf<ShouldWrite<T, Options, I>::value && IsMemberFunction<T, I>::value>
-    {
-        // If you get a "no type named 'type' in struct std::enable_if<false, void> here, it's because the type is not
-        // stream writable and your print options do not allow that via the error_on_nonprintable flag
-        printMemberFunctionResult<I, Options, T>(os, obj);
-    }
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printParam(std::ostream& os, const T& data) -> EnableIf<!ShouldWrite<T, Options, I>::value>
-    {
-        if (!ShouldWrite<T, Options, I>::is_writable && !Options::error_on_nonprintable)
-        {
-            auto accessor = Reflect<T>::getPtr(ct::Indexer<I>{});
-            Options::onUnprintable(os, Reflect<T>::getName(ct::Indexer<I>{}), accessor.invoke(data));
-        }
-    }
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj) -> EnableIf<!IsMemberFunction<T, I>::value>
-    {
-        printParam<I, Options>(os, obj);
-    }
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream& os, const T& obj)
-        -> EnableIf<IsMemberFunction<T, I>::value && Options::print_calculated_values>
-    {
-        printMemberFunctionResult<I, Options>(os, obj);
-    }
-
-    template <int I, class Options = PrintOptions, class T>
-    auto printValue(std::ostream&, const T&)
-        -> EnableIf<IsMemberFunction<T, I>::value && !Options::print_calculated_values>
-    {
-    }
-
-    template <class Options = PrintOptions, class T>
-    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<0U>)
-    {
-        printValue<0, Options>(os, obj);
-    }
-
-    template <class Options = PrintOptions, index_t I, class T>
-    void printStructHelper(std::ostream& os, const T& obj, const ct::Indexer<I> idx)
-    {
-        printStructHelper<Options>(os, obj, --idx);
-        os << Options::value_separator;
-        printValue<I, Options>(os, obj);
-    }
 
     template <class Options, class T>
     auto printStruct(std::ostream& os, const T& obj) -> ct::EnableIfReflected<T>
     {
-        os << Options::object_begin;
-        printStructHelper<Options>(os, obj, Reflect<T>::end());
-        os << Options::object_end;
+
+        PrintVisitor<Options> visitor;
+        visitor.visit(obj, "", os);
     }
 
     template <class Options = PrintOptions, class T>
@@ -308,10 +362,8 @@ namespace ct
     {
         if (obj)
         {
-
-            os << Options::object_begin;
-            printStructHelper<Options>(os, *obj, Reflect<T>::end());
-            os << Options::object_end;
+            PrintVisitor<Options> visitor;
+            visitor.visit(*obj, "", os);
         }
     }
 

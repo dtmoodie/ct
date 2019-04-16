@@ -363,6 +363,12 @@ namespace ct
         constexpr static const index_t NUM_ARGS = FunctionPtr_t::NUM_ARGS;
     };
 
+    template <class T, index_t I, class U = void>
+    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1, U>;
+
+    template <class T, index_t I, class U = void>
+    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0, U>;
+
     template <class T, index_t I, index_t J = 0>
     struct ConstFunction
     {
@@ -438,6 +444,14 @@ namespace ct
         using types = typename GlobMemberObjectsHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
         constexpr static const auto num = LenVariadicTypedef<types>::value;
     };
+
+    template <class M, ct::index_t I, class T>
+    M* getMetadata()
+    {
+        auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<I>());
+        auto mdata = ptr.getMetadata();
+        return mdata.template getMetadata<M>();
+    }
 } // namespace ct
 
 #include "reflect_macros.hpp"

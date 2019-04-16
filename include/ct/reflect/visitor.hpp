@@ -120,10 +120,10 @@ namespace ct
 
         template <class R, class T, class U, class SIG, class... ARGS>
         EnableIf<!std::is_same<R, void>::value> visitMemberFunction(
-            T& obj, MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<>*, ARGS&&...)
+            T& obj, MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<>*, ARGS&&... args)
         {
             auto ret = func.invoke(obj);
-            static_cast<DERIVED*>(this)->visitReturn(std::move(ret), path);
+            static_cast<DERIVED*>(this)->visitReturn(std::move(ret), path, std::forward<ARGS>(args)...);
         }
 
         template <class R, class T, class U, class SIG, class... FARGS, class... ARGS>

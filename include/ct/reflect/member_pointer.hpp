@@ -98,6 +98,10 @@ namespace ct
             obj.*m_ptr = std::move(val);
         }
 
+        StringView getName() const { return m_name; }
+
+        METADATA getMetadata() const { return m_metadata; }
+
         StringView m_name;
         Data_t Class_t::*m_ptr;
         METADATA m_metadata;
@@ -346,6 +350,7 @@ namespace ct
         {
             return ct::setMutable(m_setter, m_getter, obj);
         }
+        METADATA getMetadata() const { return m_metadata; }
     };
 
     template <class GET_PTR, Flag_t FLAGS, class METADATA>
@@ -372,6 +377,7 @@ namespace ct
         {
             return ct::get(m_getter, obj);
         }
+        METADATA getMetadata() const { return m_metadata; }
     };
 
     template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
@@ -592,6 +598,8 @@ namespace ct
         {
             return std::get<I>(m_ptrs).bind(obj);
         }
+
+        METADATA getMetadata() const { return m_metadata; }
     };
 
     template <class T, Flag_t FLAGS, class... PTRS>
@@ -702,6 +710,8 @@ namespace ct
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
+
+        METADATA getMetadata() const { return m_metadata; }
     };
 
     template <class T, Flag_t FLAGS, class... PTRS>

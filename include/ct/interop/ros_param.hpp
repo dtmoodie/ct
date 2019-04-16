@@ -1,69 +1,117 @@
 #ifndef CT_ROS_PARAM_HPP
 #define CT_ROS_PARAM_HPP
-
-namespace ros
-{
-    class NodeHandle;
-}
+#include <ct/reflect.hpp>
+#include <ct/reflect/visitor.hpp>
+#include <ct/type_traits.hpp>
+#include <ros/node_handle.h>
 
 namespace ct
 {
-    template <class T>
-    void readParams(T& data, ros::NodeHandle& nh, const std::string& path = "");
-
-    template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
-    auto
-    readParam(MemberObjectPointer<DTYPE CTYPE::*, FLAGS, void> ptr, CTYPE& data, ros::NodeHandle& nh, std::string path)
-        -> EnableIf<!Reflect<typename std::decay<DTYPE>::type>::SPECIALIZED>
+    namespace ros
     {
-        if (!path.empty())
+        struct RosVisitorParams : public ct::DefaultVisitorParams
         {
-            path += '.';
-        }
-        path += ptr.m_name.toString();
-        if (FLAGS & REQUIRED)
+            constexpr static const bool VISIT_OBJECTS = true;
+            constexpr static const bool VISIT_PROPERTIES = false;
+
+            constexpr static const bool SERIALIZER = true;
+
+            constexpr static const char* PREFIX = "";
+            constexpr static const char* DELIMINATOR = "/";
+
+            constexpr static const bool ACCUMULATE_PATH = true;
+
+            template <class T>
+            constexpr static bool visitMemberFunctions(T*)
+            {
+                return false;
+            }
+            template <class T>
+            constexpr static bool visitMemberFunction(T*)
+            {
+                return false;
+            }
+            template <class T>
+            constexpr static bool visitStaticFunctions(T*)
+            {
+                return false;
+            }
+            template <class T>
+            constexpr static bool visitStaticFunction(T*)
+            {
+                return false;
+            }
+            template <class T>
+            constexpr static bool visitMemberObject(T*)
+            {
+                return true;
+            }
+            template <class T>
+            constexpr static bool visitProperty(T*)
+            {
+                return false;
+            }
+        };
+
+        struct ParamVisitor : public ct::VisitorBase<ParamVisitor, RosVisitorParams>
         {
-            set(ptr, data) = nh.param<DTYPE>(path);
-        }
-        else
+            template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I>
+            ct::EnableIfReflected<DTYPE> visitMemberObject(T& obj,
+                                                           std::string path,
+                                                           MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA> ptr,
+                                                           Indexer<I>,
+                                                           ::ros::NodeHandle& nh)
+
+            {
+                if (path.empty())
+                {
+                    path = ptr.getName().toString();
+                }
+                else
+                {
+                    path += '/';
+                    path += ptr.getName().toString();
+                }
+                visit(ptr.set(obj), path, nh);
+            }
+
+            template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I>
+            ct::DisableIfReflected<DTYPE> visitMemberObject(T& obj,
+                                                            std::string path,
+                                                            MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA> ptr,
+                                                            Indexer<I>,
+                                                            ::ros::NodeHandle& nh)
+
+            {
+                if (path.empty())
+                {
+                    path = ptr.getName().toString();
+                }
+                else
+                {
+                    path += '/';
+                    path += ptr.getName().toString();
+                }
+                if (FLAGS & REQUIRED)
+                {
+                    DTYPE value;
+                    const bool success = nh.getParam(path, value);
+                    assert(success);
+                    ptr.set(obj, value);
+                }
+                else
+                {
+                    ptr.set(obj, nh.template param<DTYPE>(path, ptr.get(obj)));
+                }
+            }
+        };
+
+        template <class T>
+        void readParams(T& params, ::ros::NodeHandle& nh)
         {
-            set(ptr, data) = nh.param<DTYPE>(path, get(ptr, data));
+            ct::ros::ParamVisitor visitor;
+            visitor.visit(params, "", nh);
         }
-    }
-
-    template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
-    auto
-    readParam(MemberObjectPointer<DTYPE CTYPE::*, FLAGS, void> ptr, CTYPE& data, ros::NodeHandle& nh, std::string path)
-        -> EnableIf<Reflect<typename std::decay<DTYPE>::type>::SPECIALIZED>
-    {
-        if (!path.empty())
-        {
-            path += '.';
-        }
-        path += ptr.m_name.toString();
-
-        readParams(set(ptr, data), nh, path);
-    }
-
-    template <class T>
-    void readParamsRecurse(T& data, ros::NodeHandle& nh, const std::string& path, Indexer<0> idx)
-    {
-        const auto ptr = ct::Reflect<T>::getPtr(idx);
-        readParam(ptr, nh, path);
-    }
-
-    template <class T, index_t I>
-    void readParamsRecurse(T& data, ros::NodeHandle& nh, const std::string& path, Indexer<I> idx)
-    {
-        const auto ptr = ct::Reflect<T>::getPtr(idx);
-        readParam(ptr, nh, path);
-        readParamsRecurse(data, nh, path, --idx);
-    }
-
-    template <class T>
-    void readParams(T& data, ros::NodeHandle& nh, const std::string& path)
-    {
-        readParamsRecurse(data, nh, path, Reflect<T>::end());
     }
 }
 

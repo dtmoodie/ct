@@ -4,6 +4,7 @@
 #include <ct/static_asserts.hpp>
 #include <iostream>
 
+using ct::metadata::Description;
 // Externally reflected
 struct SubOptions
 {
@@ -23,16 +24,12 @@ namespace ct
 // Internally reflected, reflection metadata embedded in type
 struct ProgramOptions
 {
+    float field;
+
     REFLECT_INTERNAL_START
-        ;
         REFLECT_INTERNAL_MEMBER(int, num_iterations, 10)
         REFLECT_INTERNAL_MEMBER(float, epsilon, 1e-3f)
-        float field;
-        constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)
-        {
-            return ct::makeMemberObjectPointer(
-                "field", &ProgramOptions::field, ct::metadata::Description("Description of field"));
-        }
+        PUBLIC_ACCESS_WITH_METADATA(field, Description("Description of field"))
         REFLECT_INTERNAL_MEMBER(SubOptions, sub)
     REFLECT_INTERNAL_END;
 };

@@ -21,6 +21,20 @@
             #NAME, &DataType::NAME, ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT));                     \
     }
 
+#define REFLECT_INTERNAL_MEMBER_4(TYPE, NAME, INIT, METADATA)                                                          \
+    TYPE NAME = INIT;                                                                                                  \
+                                                                                                                       \
+  private:                                                                                                             \
+    static inline TYPE init_##NAME() { return INIT; }                                                                  \
+  public:                                                                                                              \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    {                                                                                                                  \
+        return ct::makeMemberObjectPointer(                                                                            \
+            #NAME,                                                                                                     \
+            &DataType::NAME,                                                                                           \
+            ct::metadata::makePack(ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
+    }
+
 #ifdef _MSC_VER
 #define REFLECT_INTERNAL_MEMBER(...)                                                                                   \
     CT_PP_CAT(CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
