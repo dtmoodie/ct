@@ -1,10 +1,43 @@
 #ifndef CT_TYPE_TRAITS_HPP
 #define CT_TYPE_TRAITS_HPP
-#include <ct/VariadicTypedef.hpp>
+#include "StringView.hpp"
+#include "VariadicTypedef.hpp"
 
 #include <ostream>
 #include <type_traits>
 #include <vector>
+
+/*!
+    This macro is used for determining of a class has a desired static function.
+    It can be used as follows:
+    DEFINE_HAS_STATIC_FUNCTION(HasFoo, foo, void(*)(int));
+    struct Has
+    {
+        static void foo(int);
+    };
+    struct DoesNotHave
+    {
+        static void foo(int, int);
+    };
+    HasFoo<Has>::value == 1;
+    HasFoo<DoesNotHave>::value == 0;
+*/
+
+#define DEFINE_HAS_STATIC_FUNCTION(TRAITS_NAME, FUNC_NAME, SIGNATURE)                                                  \
+    template <typename U>                                                                                              \
+    class TRAITS_NAME                                                                                                  \
+    {                                                                                                                  \
+      private:                                                                                                         \
+        template <typename V, V>                                                                                       \
+        struct helper;                                                                                                 \
+        template <typename V>                                                                                          \
+        static std::uint8_t check(helper<SIGNATURE, &V::FUNC_NAME>*);                                                  \
+        template <typename V>                                                                                          \
+        static std::uint16_t check(...);                                                                               \
+                                                                                                                       \
+      public:                                                                                                          \
+        static const bool value = sizeof(check<U>(0)) == sizeof(std::uint8_t);                                         \
+    }
 
 namespace ct
 {
@@ -33,6 +66,8 @@ namespace ct
     {
         static const bool value = std::is_same<typename ReferenceType<T>::Type, T>::value;
     };
+
+    DEFINE_HAS_STATIC_FUNCTION(Has_getName, getName, ct::StringView (*)());
 
     template <class T>
     struct StreamWritable

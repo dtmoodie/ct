@@ -27,8 +27,8 @@
                 #define CTCONSTEXPR
             #endif
 
-            #if __GNUC__ > 5
-                #define CT_CONSTEXPR_NAME constexpr
+            #if __GNUC__ >= 5
+                #define CT_CONSTEXPR_NAME CTCONSTEXPR
             #else
                 #define CT_CONSTEXPR_NAME
             #endif

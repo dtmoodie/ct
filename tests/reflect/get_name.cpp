@@ -17,8 +17,9 @@ bool checkName(ct::StringView expected_name)
     return true;
 }
 
-#define CHECK_NAME(NAME) if(!checkName<NAME>(#NAME)) return 1
-
+#define CHECK_NAME(NAME)                                                                                               \
+    if (!checkName<NAME>(#NAME))                                                                                       \
+    return 1
 
 int main()
 {
@@ -42,8 +43,6 @@ int main()
     CHECK_NAME(ExplicitThisProperty);
     CHECK_NAME(WeirdWeakOwnerShip);
 
-
     std::cout << "No errors detected" << std::endl;
     return 0;
 }
-

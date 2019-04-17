@@ -76,6 +76,22 @@ int main()
 
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
+
+    if (ct::crc32(ct::Reflect<ReflectedStruct>::getName()) != ct::crc32("ReflectedStruct"))
+    {
+        std::cout << "crc32 of ReflectedStruct not working" << std::endl;
+    }
+
+    if (ct::crc32(ct::Reflect<Inherited>::getName()) != ct::crc32("Inherited"))
+    {
+        std::cout << "crc32 of Inherited not working" << std::endl;
+    }
+
+    if (ct::crc32(ct::Reflect<MultipleInheritance>::getName()) != ct::crc32("MultipleInheritance"))
+    {
+        std::cout << "crc32 of MultipleInheritance not working" << std::endl;
+    }
+
 #if !(defined(_MSC_VER) && _MSC_VER == 1900)
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getName()), ct::crc32("ReflectedStruct")>{};
 
@@ -107,5 +123,9 @@ int main()
     ct::StaticEquality<size_t, ct::GlobMemberObjects<DerivedC>::num, 6>{};
 
     static_assert(ct::IsDefaultConstructible<ReflectedStruct>::value, "asdf");
+
+    static_assert(!ct::Has_getName<InternallyReflected>::value, "asdf");
+    static_assert(!ct::Has_getName<ReflectedStruct>::value, "asdf");
+
     return 0;
 }

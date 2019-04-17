@@ -49,8 +49,6 @@
     struct ReflectImpl<TYPE>                                                                                           \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
-        using BaseTypes = VariadicTypedef<>;                                                                           \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
 
@@ -59,8 +57,7 @@
     struct ReflectImpl<TYPE>                                                                                           \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
-        using BaseTypes = VariadicTypedef<__VA_ARGS__>;                                                                \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
+        using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
 
@@ -69,28 +66,21 @@
     struct ReflectImpl<TYPE<Args...>>                                                                                  \
     {                                                                                                                  \
         using DataType = TYPE<Args...>;                                                                                \
-        using BaseTypes = VariadicTypedef<>;                                                                           \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
+        using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
 
-// Only used to make clang format nice in weird situations
 #define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
 #define REFLECT_INTERNAL_START                                                                                         \
-    static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     REFLECT_STUB                                                                                                       \
         static constexpr auto getTypeHelper()->decltype(this);                                                         \
-        using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                \
-        static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                 \
-        using BaseTypes = ct::VariadicTypedef<>;
+        using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;
 
 #define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
-    static constexpr const bool INTERNALLY_REFLECTED = true;                                                           \
     REFLECT_STUB                                                                                                       \
         static constexpr auto getTypeHelper()->decltype(this);                                                         \
         using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                \
-        static CT_CONSTEXPR_NAME ct::StringView getName() { return ct::GetName<DataType>::getName(); }                 \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \

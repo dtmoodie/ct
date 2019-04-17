@@ -179,14 +179,26 @@ namespace ct
     template <class T, class IMPL, class VISITED, class ENABLE = void>
     struct ImplementationFilter;
 
+    template <class IMPL, class ENABLE = void>
+    struct BaseSelector
+    {
+        using BaseTypes_t = ct::VariadicTypedef<>;
+    };
+
+    template <class IMPL>
+    struct BaseSelector<IMPL, EnableIf<!std::is_same<typename IMPL::BaseTypes, ct::VariadicTypedef<>>::value>>
+    {
+        using BaseTypes_t = typename IMPL::BaseTypes;
+    };
+
     // Include the implementation
     template <class T, class IMPL, class VISITED>
     struct ImplementationFilter<T, IMPL, VISITED, EnableIf<!ContainsType<T, VISITED>::value>>
     {
         using DataType = T;
-        using BaseTypes = typename IMPL::BaseTypes;
+        using BaseTypes = typename BaseSelector<IMPL>::BaseTypes_t;
 
-        using Bases_t = ReflectBases<typename IMPL::BaseTypes, typename Append<T, VISITED>::type>;
+        using Bases_t = ReflectBases<BaseTypes, typename Append<T, VISITED>::type>;
         using ClassInheritanceList = typename Append<T, typename Bases_t::ClassInheritanceList>::type;
         using VisitationList = typename Bases_t::VisitationList;
 
@@ -195,7 +207,8 @@ namespace ct
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
         constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
 
-        constexpr static StringView getName() { return IMPL::getName(); }
+        // constexpr static StringView getName() { return IMPL::getName(); }
+        CT_CONSTEXPR_NAME static StringView getName() { return getNameImpl<IMPL>(); }
 
         template <index_t I>
         constexpr static auto getPtr(const Indexer<I>)
@@ -216,13 +229,25 @@ namespace ct
             auto num_fields = IMPL::REFLECTION_COUNT;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
-            os << indent << "Reflect<" << IMPL::getName() << ", Visited: ";
+            os << indent << "Reflect<" << getName() << ", Visited: ";
             printTypes(VISITED{}, os);
             os << "> (" << start_index << ":" << num_fields << ":" << end_index << ')' << std::endl;
             Bases_t::printHierarchy(os, indent + "  ");
         }
 
         static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
+      private:
+        template <class U = T>
+        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<Has_getName<U>::value, StringView>
+        {
+            return U::getName();
+        }
+
+        template <class U = T>
+        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<!Has_getName<U>::value, StringView>
+        {
+            return GetName<T>::getName();
+        }
     };
 
     // We've already visited this class, so exclude the implementation
@@ -243,7 +268,7 @@ namespace ct
 
     // Internally defined reflection
     template <class T, class VISITED>
-    struct Reflect<T, VISITED, EnableIf<T::INTERNALLY_REFLECTED>> : public ImplementationFilter<T, T, VISITED>
+    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS>> : public ImplementationFilter<T, T, VISITED>
     {
     };
 
