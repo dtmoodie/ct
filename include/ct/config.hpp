@@ -17,6 +17,7 @@
     #ifdef _MSC_VER
         #define CT_FUNCTION_NAME __FUNCTION__
         #define CT_CONSTEXPR_NAME constexpr
+        #define CT_HAVE_CONSTEXPR_NAME
     #else // _MSC_VER
         #ifdef __GNUC__
             #define CT_FUNCTION_NAME __PRETTY_FUNCTION__
@@ -29,6 +30,8 @@
 
             #if __GNUC__ >= 5
                 #define CT_CONSTEXPR_NAME CTCONSTEXPR
+                #define CT_HAVE_CONSTEXPR_NAME
+
             #else
                 #define CT_CONSTEXPR_NAME
             #endif

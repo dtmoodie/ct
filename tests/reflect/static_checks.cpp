@@ -77,6 +77,9 @@ int main()
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::NUM_FIELDS, 6>();
     ct::StaticEquality<ct::index_t, ct::Reflect<MultipleInheritance>::START_INDEX, 5>();
 
+#ifdef CT_HAVE_CONSTEXPR_NAME
+
+
     if (ct::crc32(ct::Reflect<ReflectedStruct>::getName()) != ct::crc32("ReflectedStruct"))
     {
         std::cout << "crc32 of ReflectedStruct not working" << std::endl;
@@ -91,7 +94,7 @@ int main()
     {
         std::cout << "crc32 of MultipleInheritance not working" << std::endl;
     }
-
+#endif
 #if !(defined(_MSC_VER) && _MSC_VER == 1900)
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getName()), ct::crc32("ReflectedStruct")>{};
 
