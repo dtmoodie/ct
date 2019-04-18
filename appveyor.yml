@@ -20,7 +20,7 @@ for:
         image: ubuntu1804
       environment:
         CC: /usr/bin/gcc-8
-        CC: /usr/bin/g++-8
+        CXX: /usr/bin/g++-8
 
 
 - cmd: >-
