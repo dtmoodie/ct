@@ -27,8 +27,8 @@
             #else // __cplusplus > 2011
                 #define CTCONSTEXPR
             #endif
-
-            #if __GNUC__ >= 5
+            // There is a known bug where PRETTY_FUNCTION is not constexpr between 5.4 and 8.3
+            #if __GNUC__ >= 5 && __GNUC__ < 8
                 #define CT_CONSTEXPR_NAME CTCONSTEXPR
                 #define CT_HAVE_CONSTEXPR_NAME
 
