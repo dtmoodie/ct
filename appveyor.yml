@@ -13,7 +13,7 @@ for:
   -
     matrix:
       only:
-        image: ubuntu1804
+        - image: ubuntu1804
       environment:
         CC: /usr/bin/gcc-8
         CXX: /usr/bin/g++-8
