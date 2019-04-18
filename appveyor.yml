@@ -10,12 +10,13 @@ image:
 clone_depth: 1
 
 for:
-  matrix:
-    only:
-      image: ubuntu1804
-    environment:
-      CC: /usr/bin/gcc-8
-      CXX: /usr/bin/g++-8
+  -
+    matrix:
+      only:
+        image: ubuntu1804
+      environment:
+        CC: /usr/bin/gcc-8
+        CXX: /usr/bin/g++-8
 
 before_build:
 - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
