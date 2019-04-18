@@ -256,7 +256,9 @@ void testTypes(Tester& tester)
         // tester.test(mat);
     }
 #endif
+
 #ifdef HAVE_EIGEN
+#if !(defined(_MSC_VER) && _MSC_VER == 1900)
     {
         Eigen::Matrix<float, 3, 3> mat = Eigen::Matrix<float, 3, 3>::Identity();
         tester.test(mat);
@@ -266,5 +268,6 @@ void testTypes(Tester& tester)
             Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>::Identity(5, 5);
         tester.test(mat);
     }
+#endif
 #endif
 }
