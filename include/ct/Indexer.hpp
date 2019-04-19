@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CT_INDEXER_HPP
+#define CT_INDEXER_HPP
 #include <cstdint>
 namespace ct
 {
@@ -11,13 +12,17 @@ namespace ct
         constexpr Indexer<N - 1> operator--() const { return Indexer<N - 1>{}; }
 
         constexpr Indexer<N + 1> operator++() const { return Indexer<N + 1>{}; }
+        constexpr operator index_t() const { return N; }
     };
 
-    template<>
+    template <>
     struct Indexer<0U>
     {
         static constexpr const index_t index = 0;
         constexpr Indexer() = default;
         constexpr Indexer<1U> operator++() const { return Indexer<1U>{}; }
+        constexpr operator index_t() const { return 0U; }
     };
 }
+
+#endif // CT_INDEXER_HPP

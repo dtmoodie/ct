@@ -1,5 +1,5 @@
 #pragma once
-#include <ct/TypeTraits.hpp>
+#include <ct/type_traits.hpp>
 
 namespace ct
 {

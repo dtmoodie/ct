@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0048 NEW)
 project(ct LANGUAGES CXX VERSION 1.0)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 file(GLOB_RECURSE hdr "include/*.hpp")
 
@@ -21,10 +20,25 @@ ENDMACRO()
 
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
+    option(BUILD_EXAMPLES  "Build examples" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
+
+
+    include_directories(include)
     add_library(ct INTERFACE)
 
-    target_include_directories(ct 
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
+        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+            target_compile_features(ct
+                INTERFACE cxx_return_type_deduction
+            )
+        else()
+            target_compile_options(ct INTERFACE "-std=c++1y")
+        endif()
+    endif()
+
+    target_include_directories(ct
         INTERFACE
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
@@ -41,7 +55,7 @@ if(NOT TARGET ct)
     ) # ignored
 
     install(EXPORT ct FILE ct-config.cmake
-        DESTINATION share/cmake/ct
+        DESTINATION share/ct
     )
     install(DIRECTORY include/ct DESTINATION include)
 
@@ -57,7 +71,7 @@ if(NOT TARGET ct)
             add_definitions(-DHAVE_OPENCV)
             include_directories(${OpenCV_INCLUDE_DIRS})
         endif()
-        
+
         if(NOT cereal_INCLUDE_DIR)
             find_package(cereal QUIET)
             if(cereal_FOUND)
@@ -67,13 +81,13 @@ if(NOT TARGET ct)
             include_directories(${cereal_INCLUDE_DIR})
             set(cereal_FOUND ON)
         endif()
-        
+
         if(cereal_FOUND)
             message(STATUS "cereal: found, building cereal tests")
         else()
             message(STATUS "cereal: not found, not building cereal tests")
         endif()
-        
+
         if(OpenCV_FOUND)
             message(STATUS "OpenCV: found, building OpenCV tests")
         else()
@@ -87,16 +101,24 @@ if(NOT TARGET ct)
         else()
             message(STATUS "Boost unit test: not found, not buildng most tests")
         endif()
-        
+
         include(CTest)
         enable_testing()
         SUBDIRLIST(tests "${CMAKE_CURRENT_LIST_DIR}/tests")
         foreach(test ${tests})
             add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/tests/${test})
         endforeach()
-        
+
     endif(BUILD_TESTS)
+
+    if(BUILD_EXAMPLES)
+        SUBDIRLIST(examples "${CMAKE_CURRENT_LIST_DIR}/examples")
+        foreach(example ${examples})
+            add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/examples/${example})
+        endforeach()
+    endif(BUILD_EXAMPLES)
 endif()
+
 
 if(NOT TARGET ct_files)
     ADD_CUSTOM_TARGET(ct_files SOURCES ${hdr})

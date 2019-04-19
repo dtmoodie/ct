@@ -1,5 +1,5 @@
 #pragma once
-#include "String.hpp"
+#include "StringView.hpp"
 #include <utility>
 namespace ct{
     constexpr size_t formatStringSize(const char* str, size_t sz = 0);

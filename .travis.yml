@@ -12,16 +12,17 @@ cache:
 before_install:
  - sudo apt-get install -y libboost-test-dev
  - sudo apt-get install -y libopencv-core-dev
+ - git clone https://github.com/eigenteam/eigen-git-mirror
+ - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
 
 script:
- - git clone https://github.com/USCiLab/cereal
  - mkdir build
  - cd build
- - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include
+ - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror
  - make
  - cd tests
  - hash/test_ct_string_hash
- - hash/test_ct_object_hash
+
  - string/test_ct_string_static
  - variadic_typedef/test_ct_variadic_typedef
  - type_trait_detectors/test_ct_type_traits
@@ -29,4 +30,5 @@ script:
  - reflect/test_ct_reflect_access
  - reflect/test_ct_reflect_compare
  - reflect/test_ct_reflect_cerealize
- - dynamic_visitor/test_ct_dynamic_access
+ - reflect/test_ct_static_checks
+ - reflect/test_ct_data_table

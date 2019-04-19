@@ -2,26 +2,37 @@ version: 1.0.{build}
 image:
 - Previous Visual Studio 2017
 - Visual Studio 2017
-- Visual Studio 2015
 - Ubuntu
 - Previous Ubuntu
+- ubuntu1804
 
 clone_depth: 1
+
+for:
+  -
+    matrix:
+      only:
+        - image: ubuntu1804
+    environment:
+      CC: /usr/bin/gcc-8
+      CXX: /usr/bin/g++-8
+
 before_build:
-- git clone https://github.com/USCiLab/cereal
+- git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
+- git clone https://github.com/eigenteam/eigen-git-mirror
 
 - cmd: >-
    if not exist "build" mkdir build
-
+   
    cd build
-
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include
+   
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/
 
 - sh: >-
     mkdir -p build
-
+    
     cd build
-
+    
     cmake .. -Dcereal_INCLUDE_DIR=$APPVEYOR_BUILD_FOLDER/cereal/include
 
 build_script:
@@ -36,43 +47,37 @@ test_script:
    
    hash\debug\test_ct_string_hash.exe
    
-   hash\debug\test_ct_object_hash.exe
-   
    string\debug\test_ct_string_static.exe
    
    variadic_typedef\debug\test_ct_variadic_typedef.exe
- 
+   
    type_trait_detectors\debug\test_ct_type_traits.exe
    
    reflect\debug\test_ct_reflect_print.exe
-
-    reflect\debug\test_ct_reflect_access.exe
-
-    reflect\debug\test_ct_reflect_compare.exe
-
-    reflect\debug\test_ct_reflect_cerealize.exe
-
-    dynamic_visitor\debug\test_ct_dynamic_access.exe
+   
+   reflect\debug\test_ct_reflect_access.exe
+   
+   reflect\debug\test_ct_reflect_compare.exe
+   
+   reflect\debug\test_ct_reflect_cerealize.exe
+   
 
 - sh: >-
    cd tests
    
    hash/test_ct_string_hash
    
-   hash/test_ct_object_hash
-   
    string/test_ct_string_static
    
    variadic_typedef/test_ct_variadic_typedef
- 
+   
    type_trait_detectors/test_ct_type_traits
-      
+   
    reflect/test_ct_reflect_print
-
+   
    reflect/test_ct_reflect_access
-
+   
    reflect/test_ct_reflect_compare
-
+   
    reflect/test_ct_reflect_cerealize
-
-   dynamic_visitor/test_ct_dynamic_access
+   
