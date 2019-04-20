@@ -20,6 +20,7 @@ An example of ct's awesome compile time capabilities can be seen with this quick
       std::cout << my_struct << std::endl;
     }
 This will produce the following:
+
     (member_a: 1.0, member_b: 2.0, member_c: 3.0)
 
 
