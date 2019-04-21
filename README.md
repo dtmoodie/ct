@@ -7,7 +7,8 @@ An example of ct's awesome compile time capabilities can be seen with this quick
     #include <ct/reflect/print.hpp>
     #include <iostream>
     
-    struct MyStruct{
+    struct MyStruct
+    {
         REFLECT_INTERNAL_START
           REFLECT_INTERNAL_MEMBER(float, member_a, 1.0)
           REFLECT_INTERNAL_MEMBER(float, member_b, 2.0)
@@ -15,7 +16,8 @@ An example of ct's awesome compile time capabilities can be seen with this quick
         REFLECT_INTERNAL_END;
     };
     
-    int main(){
+    int main()
+    {
       MyStruct my_struct;
       std::cout << my_struct << std::endl;
     }
@@ -30,7 +32,8 @@ Likewise json serialization is trivial using cereal.
 
     #include <ct/reflect/cerealize.hpp>
     #include <cereal/archives/json.hpp>
-    int main(){
+    int main()
+    {
       MyStruct my_struct;
       cereal::JSONOutputArchive ar(std::cout);
       ar(my_struct);
@@ -77,3 +80,29 @@ The std::cout << desc << std::endl call will produce the following:
     --member_c arg (=3)   Member c description
     --member_b arg (=2)   Member b description
     --member_a arg (=1)   Member a description
+
+
+The macros used in MyStruct can also be expanded to just a few lines for projects disallowing macro usage.  The following is equivalent to the previous MyStruct.
+
+    struct MyStruct
+    {
+        float member_a = 1.0;
+        float member_b = 2.0;
+        float member_c = 3.0;
+
+        constexpr static auto getPtr(Indexer<0>)
+        {
+            return makeMemberObjectPointer("member_a", &MyStruct::member_a, Description("Member a description"));
+        }
+
+        constexpr static auto getPtr(Indexer<1>)
+        {
+            return makeMemberObjectPointer("member_b", &MyStruct::member_b, Description("Member b description"));
+        }
+
+        constexpr static auto getPtr(Indexer<2>)
+        {
+            return makeMemberObjectPointer("member_c", &MyStruct::member_c, Description("Member c description"));
+        }
+        static constexpr const ct::index_t NUM_FIELDS = 3;
+    };
