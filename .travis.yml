@@ -18,7 +18,7 @@ before_install:
 script:
  - mkdir build
  - cd build
- - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror
+ - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror -DBUILD_EXAMPLES=OFF
  - make
  - cd tests
  - hash/test_ct_string_hash
