@@ -2,8 +2,13 @@ add_executable(all_the_things main.cpp)
 
 target_link_libraries(all_the_things ct)
 
-if(TARGET cereal OR cereal_INCLUDE_DIR)
+if(TARGET cereal)
     target_compile_definitions(all_the_things PUBLIC HAVE_CEREAL)
+    target_link_libraries(all_the_things cereal)
+endif()
+if(cereal_INCLUDE_DIR)
+    target_compile_definitions(all_the_things PUBLIC HAVE_CEREAL)
+    target_include_directories(all_the_things PUBLIC ${cereal_INCLUDE_DIR})
 endif()
 
 find_package(Boost QUIET COMPONENTS program_options)
