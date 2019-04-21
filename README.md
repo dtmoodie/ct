@@ -1,3 +1,8 @@
+msvc 2017, gcc 5.4, gcc 7.3: [![Build status](https://ci.appveyor.com/api/projects/status/nuxy51ymuak4ab7x?svg=true)](https://ci.appveyor.com/project/dtmoodie/ct)
+
+gcc 4.8: [![Build Status](https://travis-ci.org/dtmoodie/ct.svg?branch=master)](https://travis-ci.org/dtmoodie/ct)
+
+
 ct is a collection of useful compile time utilities for c++.  It originally started as a collection of cool functions that then morphed into a set of tools useful for compile time reflection.
 
 An example of ct's awesome compile time capabilities can be seen with this quick example:
