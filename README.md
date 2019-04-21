@@ -21,7 +21,27 @@ An example of ct's awesome compile time capabilities can be seen with this quick
     }
 This will produce the following:
 
-    (member_a: 1.0, member_b: 2.0, member_c: 3.0)
+    (member_a: 1.0 member_b: 2.0 member_c: 3.0)
 
 
 The above will automatically generate the std::ostream& operator<< for MyStruct.  ct also has facilities to generate load and save functions for cereal, data hashing, object hashing, and python bindings are on the way.
+
+Likewise json serialization is trivial using cereal.
+
+    #include <ct/reflect/cerealize.hpp>
+    #include <cereal/archives/json.hpp>
+    int main(){
+      MyStruct my_struct;
+      cereal::JSONOutputArchive ar(std::cout);
+      ar(my_struct);
+    }
+
+The above will produce the following:
+
+    {
+        "value0": {
+            "member_a": 1.0,
+            "member_b": 2.0,
+            "member_c": 3.0
+        }
+    }
