@@ -106,3 +106,16 @@ The macros used in MyStruct can also be expanded to just a few lines for project
         }
         static constexpr const ct::index_t NUM_FIELDS = 3;
     };
+
+Furthermore the reflection metadata does not need to be embedded into a type, instead it can be declared externally as such:
+
+    namespace ct
+    {
+        REFLECT_BEGIN(MyStruct)
+            PUBLIC_ACCESS_WITH_METADATA(member_a, Description("Member a description"))
+            PUBLIC_ACCESS_WITH_METADATA(member_b, Description("Member b description"))
+            PUBLIC_ACCESS_WITH_METADATA(member_c, Description("Member c description"))
+        REFLECT_END;
+    }
+
+Lastly properties with get and set methods are supported seamlessly the same as publically accessible data, and member functions can be reflected about.
