@@ -28,7 +28,14 @@ namespace ct
                                                const metadata::Description* field_desc,
                                                const std::string& path)
     {
-        desc.add_options()(path.c_str(), po::value<T>()->default_value(field), field_desc->m_desc);
+        if (field_desc)
+        {
+            desc.add_options()(path.c_str(), po::value<T>()->default_value(field), field_desc->m_desc);
+        }
+        else
+        {
+            desc.add_options()(path.c_str(), po::value<T>()->default_value(field));
+        }
     }
 
     template <class T, class METADATA>
@@ -49,7 +56,8 @@ namespace ct
         }
         const auto name = getName<I, T>();
         path += name.toString();
-        registerWithMetadata(field, desc, getMetadata(ptr), path);
+        auto field_desc = ptr.getMetadata().template getMetadata<ct::metadata::Description>();
+        registerWithMetadata(field, desc, field_desc, path);
     }
 
     template <class T>
