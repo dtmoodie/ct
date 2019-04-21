@@ -45,3 +45,35 @@ The above will produce the following:
             "member_c": 3.0
         }
     }
+
+
+Metadata can be added to each field
+
+
+    using Description = ct::metadata::Description;
+    struct MyStruct
+    {
+        REFLECT_INTERNAL_START
+            REFLECT_INTERNAL_MEMBER(float, member_a, 1.0, Description("Member a description"))
+            REFLECT_INTERNAL_MEMBER(float, member_b, 2.0, Description("Member b description"))
+            REFLECT_INTERNAL_MEMBER(float, member_c, 3.0, Description("Member c description"))
+        REFLECT_INTERNAL_END;
+    };
+
+Then the struct can be used with boost program options to load values from the command line.
+
+    ct::po::options_description desc;
+    ct::registerOptions(my_struct, desc);
+    std::cout << desc << std::endl;
+
+    ct::po::variables_map vm;
+    ct::po::store(ct::po::parse_command_line(ac, av, desc), vm);
+    ct::po::notify(vm);
+
+    ct::readOptions(my_struct, vm);
+
+The std::cout << desc << std::endl call will produce the following:
+
+    --member_c arg (=3)   Member c description
+    --member_b arg (=2)   Member b description
+    --member_a arg (=1)   Member a description
