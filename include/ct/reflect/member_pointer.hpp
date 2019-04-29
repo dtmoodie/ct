@@ -98,7 +98,7 @@ namespace ct
             obj.*m_ptr = std::move(val);
         }
 
-        StringView getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
 
         METADATA getMetadata() const { return m_metadata; }
 
