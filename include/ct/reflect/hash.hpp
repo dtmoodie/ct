@@ -2,6 +2,7 @@
 #define CT_REFLECT_HASH_HPP
 #include <cstdint>
 #include <ct/hash.hpp>
+#include <ct/reflect.hpp>
 
 #define DECL_HASHED_TYPE(TYPE)                                                                                         \
     template <>                                                                                                        \
@@ -45,7 +46,140 @@ namespace ct
     DECL_HASHED_TYPE(uint16_t);
     DECL_HASHED_TYPE(uint8_t);
     DECL_HASHED_TYPE(int8_t);
+
+    ///////////////////////////////////////////////////////////////////////////////////
+
+    namespace detail
+    {
+        struct HashOptions
+        {
+            // Include the name of the struct in the hash
+            bool hash_struct_name = false;
+            bool hash_member_types = true;
+            bool hash_member_offsets = true;
+            bool hash_member_names = false;
+        };
+
+        template <class T>
+        constexpr uint32_t hashStructName(HashOptions options = HashOptions())
+        {
+            return options.hash_struct_name ? crc32(Reflect<T>::getName()) : 0;
+        }
+
+        template <class T, index_t I>
+        constexpr uint32_t hashMemberName(HashOptions options = HashOptions())
+        {
+            return options.hash_member_names
+                       ? std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}).getName())>::value
+                       : 0;
+        }
+
+        template <class T, index_t I>
+        constexpr uint32_t hashMemberType(HashOptions options = HashOptions())
+        {
+            return options.hash_member_types
+                       ? TypeHash<typename std::decay<typename FieldGetType<T, I>::type>::type>::value
+                       : 0;
+        }
+
+        template <class T, index_t I>
+        constexpr uint32_t hashMemberOffset(HashOptions options = HashOptions())
+        {
+            return options.hash_member_offsets ? pointerValue(Reflect<T>::getPtr(Indexer<I>{}).m_ptr) : 0;
+        }
+
+        template <class T, index_t I>
+        constexpr auto hashMember(uint32_t seed, HashOptions options = HashOptions())
+            -> EnableIfIsMemberObject<T, I, uint32_t>
+        {
+            return combineHash(seed,
+                               combineHash(combineHash(hashMemberType<T, I>(options), hashMemberOffset<T, I>(options)),
+                                           hashMemberName<T, I>(options)));
+        }
+
+        template <class T, index_t I>
+        constexpr auto hashMember(uint32_t seed, HashOptions) -> DisableIfIsMemberObject<T, I, uint32_t>
+        {
+            return seed;
+        }
+
+        template <class T>
+        constexpr uint32_t hashMembersHelper(HashOptions options, Indexer<0>)
+        {
+            return hashMember<T, 0>(0, options);
+        }
+
+        template <class T, index_t I>
+        constexpr uint32_t hashMembersHelper(HashOptions options, Indexer<I> idx)
+        {
+            return hashMember<T, I>(hashMembersHelper<T>(options, --idx), options);
+        }
+
+        template <class T>
+        constexpr uint32_t hashMembers(HashOptions options = HashOptions())
+        {
+            return hashMembersHelper<T>(options, ct::Reflect<T>::end());
+        }
+
+        template <class T>
+        constexpr uint32_t hash(HashOptions options = HashOptions())
+        {
+            return combineHash(hashStructName<T>(options), hashMembers<T>(options));
+        }
+    }
+
+    template <class T>
+    struct TypeHash<T, EnableIfReflected<T>>
+    {
+        static constexpr const uint32_t value = hashStruct<T>();
+    };
+
+    template <class T>
+    constexpr uint32_t hashStruct()
+    {
+        return crc32(Reflect<T>::getName()) ^ hashMembers<T>();
+    }
+
+    template <class T>
+    uint32_t hashValues(const T& data)
+    {
+        // TODO
+        return 0;
+    }
+
+    template <class T, index_t I>
+    constexpr uint32_t hashMember()
+    {
+        return std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}).m_name)>::value ^
+               TypeHash<typename std::decay<typename FieldGetType<T, I>::type>::type>::value;
+    }
+
+    template <class T>
+    constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<0U> /*idx*/)
+    {
+        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
+        return (hash ^ hashMember<T, 0U>());
+    }
+
+    template <class T, index_t I>
+    constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<I> idx)
+    {
+        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>;
+        return hashMemberHelper<T>((hash ^ hashMember<T, I>()), --idx);
+    }
+
+    template <class T>
+    constexpr uint32_t hashMembers()
+    {
+        return hashMemberHelper<T>(0U, Reflect<T>::end());
+    }
+
+    template <class T>
+    uint32_t hashMemberValues(const T& data)
+    {
+        // TODO
+        return 0;
+    }
 }
 
-#include "hash-inl.hpp"
 #endif // CT_REFLECT_HASH_HPP
