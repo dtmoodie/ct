@@ -60,13 +60,28 @@ namespace ct
             static constexpr bool hash_member_names = false;
         };
 
-        template <class T, class OPTS>
-        constexpr uint32_t hashStructName()
+        struct HashMembers
         {
-            return OPTS::hash_struct_name ? crc32(Reflect<T>::getName()) : 0;
+            // Include the name of the struct in the hash
+            static constexpr bool hash_struct_name = false;
+            static constexpr bool hash_member_types = true;
+            static constexpr bool hash_member_offsets = true;
+            static constexpr bool hash_member_names = true;
+        };
+
+        template <class T, class OPTS = HashOptions>
+        constexpr auto hashStructName() -> EnableIf<OPTS::hash_struct_name, uint32_t>
+        {
+            return crc32(Reflect<T>::getName());
         }
 
-        template <class T, class OPTS, index_t I>
+        template <class T, class OPTS = HashOptions>
+        constexpr auto hashStructName() -> DisableIf<OPTS::hash_struct_name, uint32_t>
+        {
+            return 0;
+        }
+
+        template <class T, index_t I, class OPTS = HashOptions>
         constexpr uint32_t hashMemberName()
         {
             return OPTS::hash_member_names
@@ -74,7 +89,7 @@ namespace ct
                        : 0;
         }
 
-        template <class T, class OPTS, index_t I>
+        template <class T, index_t I, class OPTS = HashOptions>
         constexpr uint32_t hashMemberType()
         {
             return OPTS::hash_member_types
@@ -82,36 +97,36 @@ namespace ct
                        : 0;
         }
 
-        template <class T, class OPTS, index_t I>
+        template <class T, index_t I, class OPTS = HashOptions>
         constexpr uint32_t hashMemberOffset()
         {
             return OPTS::hash_member_offsets ? pointerValue(Reflect<T>::getPtr(Indexer<I>{}).m_ptr) : 0;
         }
 
-        template <class T, class OPTS, index_t I>
+        template <class T, index_t I, class OPTS = HashOptions>
         constexpr auto hashMember(uint32_t seed) -> EnableIfIsMemberObject<T, I, uint32_t>
         {
             return combineHash(seed,
-                               combineHash(combineHash(hashMemberType<T, OPTS, I>(), hashMemberOffset<T, OPTS, I>()),
-                                           hashMemberName<T, OPTS, I>()));
+                               combineHash(combineHash(hashMemberType<T, I, OPTS>(), hashMemberOffset<T, I, OPTS>()),
+                                           hashMemberName<T, I, OPTS>()));
         }
 
-        template <class T, class OPTS, index_t I>
+        template <class T, index_t I, class OPTS = HashOptions>
         constexpr auto hashMember(uint32_t seed) -> DisableIfIsMemberObject<T, I, uint32_t>
         {
             return seed;
         }
 
-        template <class T, class OPTS>
+        template <class T, class OPTS = HashOptions>
         constexpr uint32_t hashMembersHelper(Indexer<0>)
         {
-            return hashMember<T, OPTS, 0>(0);
+            return hashMember<T, 0, OPTS>(0);
         }
 
         template <class T, class OPTS, index_t I>
         constexpr uint32_t hashMembersHelper(Indexer<I> idx)
         {
-            return hashMember<T, OPTS, I>(hashMembersHelper<T, OPTS>(--idx));
+            return hashMember<T, I, OPTS>(hashMembersHelper<T, OPTS>(--idx));
         }
 
         template <class T, class OPTS>

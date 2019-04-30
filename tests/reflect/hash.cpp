@@ -4,8 +4,20 @@
 
 using namespace ct;
 using namespace ct::detail;
+
+struct StructHash
+{
+    // Include the name of the struct in the hash
+    static constexpr bool hash_struct_name = true;
+    static constexpr bool hash_member_types = true;
+    static constexpr bool hash_member_offsets = true;
+    static constexpr bool hash_member_names = true;
+};
+
 int main()
 {
+    using HashOptions = ct::detail::HashOptions;
+    using HashMembers = ct::detail::HashMembers;
     ct::StaticEquality<uint32_t, TypeHash<float>::value, ct::crc32("float")>{};
     static_assert(ct::getName<0, ReflectedStruct>() == ct::StringView("x"), "asdf");
 #if !(defined(_MSC_VER) && _MSC_VER == 1900)
@@ -25,68 +37,39 @@ int main()
 
     // member names
     {
-        ct::StaticEquality<uint32_t,
-                           hashMemberName<TestA, 0>({
-                               hash_struct_name : false,
-                               hash_member_types : true,
-                               hash_member_offsets : true,
-                               hash_member_names : true
-                           }),
-                           hashMemberName<TestB, 0>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberName<TestA, 1>({false, true, true, true}),
-                           hashMemberName<TestB, 1>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberName<TestA, 2>({false, true, true, true}),
-                           hashMemberName<TestB, 2>({false, true, true, true})>{};
+        ct::StaticEquality<uint32_t, hashMemberName<TestA, 0>(), hashMemberName<TestB, 0>()>{};
+        ct::StaticEquality<uint32_t, hashMemberName<TestA, 1>(), hashMemberName<TestB, 1>()>{};
+        ct::StaticEquality<uint32_t, hashMemberName<TestA, 2>(), hashMemberName<TestB, 2>()>{};
 
         ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 0>({false, true, true, true}),
-                             hashMemberName<TestB, 1>({false, true, true, true})>{};
+                             hashMemberName<TestA, 0, HashMembers>(),
+                             hashMemberName<TestB, 1, HashMembers>()>{};
         ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 1>({false, true, true, true}),
-                             hashMemberName<TestB, 2>({false, true, true, true})>{};
+                             hashMemberName<TestA, 1, HashMembers>(),
+                             hashMemberName<TestB, 2, HashMembers>()>{};
 
         ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 2>({false, true, true, true}),
-                             hashMemberName<TestB, 0>({false, true, true, true})>{};
+                             hashMemberName<TestA, 2, HashMembers>(),
+                             hashMemberName<TestB, 0, HashMembers>()>{};
     }
 
     // member types
     {
-        ct::StaticEquality<uint32_t,
-                           hashMemberType<TestA, 0>({false, true, true, true}),
-                           hashMemberType<TestB, 0>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberType<TestA, 1>({false, true, true, true}),
-                           hashMemberType<TestB, 1>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberType<TestA, 2>({false, true, true, true}),
-                           hashMemberType<TestB, 2>({false, true, true, true})>{};
+        ct::StaticEquality<uint32_t, hashMemberType<TestA, 0>(), hashMemberType<TestB, 0>()>{};
+        ct::StaticEquality<uint32_t, hashMemberType<TestA, 1>(), hashMemberType<TestB, 1>()>{};
+        ct::StaticEquality<uint32_t, hashMemberType<TestA, 2>(), hashMemberType<TestB, 2>()>{};
     }
 
     // member offsets
     {
-        ct::StaticEquality<uint32_t,
-                           hashMemberOffset<TestA, 0>({false, true, true, true}),
-                           hashMemberOffset<TestB, 0>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberOffset<TestA, 1>({false, true, true, true}),
-                           hashMemberOffset<TestB, 1>({false, true, true, true})>{};
-        ct::StaticEquality<uint32_t,
-                           hashMemberOffset<TestA, 2>({false, true, true, true}),
-                           hashMemberOffset<TestB, 2>({false, true, true, true})>{};
+        ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 0>()>{};
+        ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 1>()>{};
+        ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 2>()>{};
 
-        ct::StaticInequality<uint32_t,
-                             hashMemberOffset<TestA, 0>({false, true, true, true}),
-                             hashMemberOffset<TestB, 1>({false, true, true, true})>{};
-        ct::StaticInequality<uint32_t,
-                             hashMemberOffset<TestA, 1>({false, true, true, true}),
-                             hashMemberOffset<TestB, 2>({false, true, true, true})>{};
+        ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 1>()>{};
+        ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 2>()>{};
 
-        ct::StaticInequality<uint32_t,
-                             hashMemberOffset<TestA, 2>({false, true, true, true}),
-                             hashMemberOffset<TestB, 0>({false, true, true, true})>{};
+        ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 0>()>{};
     }
 
     ct::StaticInequality<uint32_t, detail::hash<ReflectedStruct>(), ct::detail::hash<Inherited>()>{};
@@ -95,7 +78,7 @@ int main()
     // datatypes, with the same offsets
     // An additonal check ontop of this should be to do sizeof(A) == sizeof(B) in case there are members that are not
     // reflected
-    ct::StaticEquality<uint32_t,
-                       ct::detail::hash<TestA>({false, true, true, true}),
-                       ct::detail::hash<TestB>({false, true, true, true})>{};
+    ct::StaticEquality<uint32_t, ct::detail::hash<TestA>(), ct::detail::hash<TestB>()>{};
+
+    ct::StaticInequality<uint32_t, ct::detail::hash<TestA, StructHash>(), ct::detail::hash<TestB, StructHash>()>{};
 }
