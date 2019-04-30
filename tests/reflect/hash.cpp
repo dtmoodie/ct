@@ -79,6 +79,7 @@ int main()
     // An additonal check ontop of this should be to do sizeof(A) == sizeof(B) in case there are members that are not
     // reflected
     ct::StaticEquality<uint32_t, ct::detail::hash<TestA>(), ct::detail::hash<TestB>()>{};
-
+#ifdef CT_HAVE_CONSTEXPR_NAME
     ct::StaticInequality<uint32_t, ct::detail::hash<TestA, StructHash>(), ct::detail::hash<TestB, StructHash>()>{};
+#endif
 }
