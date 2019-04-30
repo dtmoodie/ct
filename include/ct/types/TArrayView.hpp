@@ -19,8 +19,78 @@ namespace ct
         return static_cast<const T*>(static_cast<const void*>(ptr));
     }
 
+    template <class T, ssize_t N = -1>
+    struct TArrayView;
+
+    template <class T, ssize_t N, class DERIVED>
+    struct TArrayBaseConst
+    {
+        const T* begin() const;
+        const T* end() const;
+        size_t revIndex(ssize_t) const;
+
+        TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
+        TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
+    };
+
+    template <class T, ssize_t N, class DERIVED>
+    struct TArrayBase : public TArrayBaseConst<T, N, DERIVED>
+    {
+        T* begin();
+        T* end();
+        const T* begin() const;
+        const T* end() const;
+
+        TArrayView<T, N> slice(ssize_t begin, ssize_t end = 0);
+        TArrayView<T, N> subView(ssize_t begin, size_t count = 0);
+        TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
+        TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
+    };
+
+    template <class T, ssize_t N>
+    struct TArrayView : public TArrayBase<T, N, TArrayView<T, N>>
+    {
+        TArrayView(TArrayView<void>&);
+        TArrayView(TArrayView<void>&&);
+        TArrayView(T* ptr = nullptr);
+
+        const T& operator[](ssize_t idx) const;
+        T& operator[](ssize_t idx);
+
+        bool operator==(const TArrayView& other) const;
+        bool operator!=(const TArrayView& other) const;
+
+        size_t size() const;
+
+        T* data();
+        const T* data() const;
+
+      private:
+        T* m_data;
+    };
+
+    template <class T, ssize_t N>
+    struct TArrayView<const T, N> : public TArrayBaseConst<T, N, TArrayView<const T, N>>
+    {
+        TArrayView(const TArrayView<const void>&);
+        TArrayView(TArrayView<const void>&&);
+        TArrayView(const T* ptr = nullptr);
+
+        const T& operator[](ssize_t idx) const;
+
+        bool operator==(const TArrayView& other) const;
+        bool operator!=(const TArrayView& other) const;
+
+        size_t size() const;
+
+        const T* data() const;
+
+      private:
+        const T* m_data;
+    };
+
     template <class T>
-    struct TArrayView
+    struct TArrayView<T, -1> : public TArrayBase<T, -1, TArrayView<T, -1>>
     {
         TArrayView(TArrayView<void>&);
         TArrayView(TArrayView<void>&&);
@@ -31,7 +101,6 @@ namespace ct
         T& operator[](ssize_t idx);
 
         bool operator==(const TArrayView& other) const;
-
         bool operator!=(const TArrayView& other) const;
 
         size_t size() const;
@@ -39,50 +108,27 @@ namespace ct
         T* data();
         const T* data() const;
 
-        T* begin();
-        const T* begin() const;
-        T* end();
-        const T* end() const;
-
-        TArrayView slice(ssize_t begin, ssize_t end = 0);
-        TArrayView subView(ssize_t begin, size_t count = 0);
-        TArrayView<const T> slice(ssize_t begin, ssize_t end = 0) const;
-        TArrayView<const T> subView(ssize_t begin, size_t count = 0) const;
-
-        size_t revIndex(ssize_t) const;
-
       private:
         T* m_data;
         size_t m_size;
     };
 
     template <class T>
-    struct TArrayView<const T>
+    struct TArrayView<const T, -1> : public TArrayBaseConst<T, -1, TArrayView<const T, -1>>
     {
         TArrayView(const TArrayView<T>&);
         TArrayView(const TArrayView<const void>&);
         TArrayView(const T* ptr = nullptr, size_t sz = 0);
         TArrayView(const T* begin, const T* end);
+        TArrayView& operator=(const TArrayView<T>& other);
 
         const T& operator[](ssize_t idx) const;
-
         bool operator==(const TArrayView& other) const;
-
         bool operator!=(const TArrayView& other) const;
-
-        TArrayView& operator=(const TArrayView<T>& other);
 
         size_t size() const;
 
         const T* data() const;
-
-        const T* begin() const;
-        const T* end() const;
-
-        TArrayView<const T> slice(ssize_t begin, ssize_t end = 0) const;
-        TArrayView<const T> subView(ssize_t begin, size_t count = 0) const;
-
-        size_t revIndex(ssize_t) const;
 
       private:
         const T* m_data;
@@ -90,7 +136,7 @@ namespace ct
     };
 
     template <>
-    struct TArrayView<void>
+    struct TArrayView<void, -1> : public TArrayBase<void, -1, TArrayView<void, -1>>
     {
         template <class T>
         TArrayView(TArrayView<T>&& other);
@@ -100,7 +146,6 @@ namespace ct
         inline TArrayView(void* begin, void* end);
 
         inline bool operator==(const TArrayView& other) const;
-
         inline bool operator!=(const TArrayView& other) const;
 
         template <class T>
@@ -111,34 +156,22 @@ namespace ct
         inline void* data();
         inline const void* data() const;
 
-        inline void* begin();
-        inline const void* begin() const;
-        inline void* end();
-        inline const void* end() const;
-
-        TArrayView slice(ssize_t begin, ssize_t end = 0);
-        inline TArrayView subView(ssize_t begin, size_t count = 0);
-        inline TArrayView<const void> slice(ssize_t begin, ssize_t end = 0) const;
-        inline TArrayView<const void> subView(ssize_t begin, size_t count = 0) const;
-
-        inline size_t revIndex(ssize_t) const;
-
       private:
         void* m_data;
         size_t m_size;
     };
 
     template <>
-    struct TArrayView<const void>
+    struct TArrayView<const void, -1> : public TArrayBase<const void, -1, TArrayView<void, -1>>
     {
         template <class T>
         TArrayView(const TArrayView<const T>&);
-        TArrayView(const TArrayView<const void>&) = default;
+        template <class T>
+        TArrayView(const TArrayView<T>&);
         inline TArrayView(const void* ptr = nullptr, size_t sz = 0);
         inline TArrayView(const void* begin, const void* end);
 
         inline bool operator==(const TArrayView& other) const;
-
         inline bool operator!=(const TArrayView& other) const;
 
         template <class T>
@@ -150,14 +183,6 @@ namespace ct
 
         inline const void* data() const;
 
-        inline const void* begin() const;
-        inline const void* end() const;
-
-        inline TArrayView<const void> slice(ssize_t begin, ssize_t end = 0) const;
-        inline TArrayView<const void> subView(ssize_t begin, size_t count = 0) const;
-
-        inline size_t revIndex(ssize_t) const;
-
       private:
         const void* m_data;
         size_t m_size;
@@ -167,6 +192,251 @@ namespace ct
     /// Implementation
     ///////////////////////////////////////////////////////////
 
+    ///////////////////////////////////////////////////////////
+    // TArrayBaseConst
+    template <class T, ssize_t N, class D>
+    const T* TArrayBaseConst<T, N, D>::begin() const
+    {
+        return static_cast<const D*>(this)->data();
+    }
+
+    template <class T, ssize_t N, class D>
+    const T* TArrayBaseConst<T, N, D>::end() const
+    {
+        auto This = static_cast<const D*>(this);
+        return This->data() + This->size();
+    }
+
+    template <class T, ssize_t N, class D>
+    size_t TArrayBaseConst<T, N, D>::revIndex(ssize_t idx) const
+    {
+        if (idx < 0)
+        {
+            return static_cast<const D*>(this)->size() - idx;
+        }
+        return static_cast<size_t>(idx);
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<const T, N> TArrayBaseConst<T, N, D>::slice(ssize_t begin, ssize_t end) const
+    {
+        const T* ptr_begin = static_cast<const D*>(this)->data() + revIndex(begin);
+        const T* ptr_end =
+            static_cast<const D*>(this)->data() + (end == 0 ? static_cast<const D*>(this)->size() : revIndex(end));
+        return TArrayView<const T>(ptr_begin, ptr_end);
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<const T, N> TArrayBaseConst<T, N, D>::subView(ssize_t begin, size_t count) const
+    {
+        if (count == 0)
+        {
+            return slice(begin);
+        }
+        return slice(begin, begin + count);
+    }
+
+    ///////////////////////////////////////////////////////////
+    // TArrayBase
+    template <class T, ssize_t N, class D>
+    T* TArrayBase<T, N, D>::begin()
+    {
+        return static_cast<D*>(this)->data();
+    }
+
+    template <class T, ssize_t N, class D>
+    T* TArrayBase<T, N, D>::end()
+    {
+        return static_cast<D*>(this)->data() + static_cast<D*>(this)->size();
+    }
+
+    template <class T, ssize_t N, class D>
+    const T* TArrayBase<T, N, D>::begin() const
+    {
+        return TArrayBaseConst<T, N, D>::begin();
+    }
+
+    template <class T, ssize_t N, class D>
+    const T* TArrayBase<T, N, D>::end() const
+    {
+        return TArrayBaseConst<T, N, D>::end();
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<T, N> TArrayBase<T, N, D>::slice(ssize_t begin, ssize_t end)
+    {
+        T* ptr_begin = static_cast<D*>(this)->data() + this->revIndex(begin);
+        T* ptr_end = static_cast<D*>(this)->data() + (end == 0 ? static_cast<D*>(this)->size() : this->revIndex(end));
+        return TArrayView<T>(ptr_begin, ptr_end);
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<T, N> TArrayBase<T, N, D>::subView(ssize_t begin, size_t count)
+    {
+        if (count == 0)
+        {
+            return slice(begin);
+        }
+        return slice(begin, begin + count);
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<const T, N> TArrayBase<T, N, D>::slice(ssize_t begin, ssize_t end) const
+    {
+        return TArrayBaseConst<T, N, D>::slice(begin, end);
+    }
+
+    template <class T, ssize_t N, class D>
+    TArrayView<const T, N> TArrayBase<T, N, D>::subView(ssize_t begin, size_t count) const
+    {
+        return TArrayBaseConst<T, N, D>::subView(begin, count);
+    }
+
+    ///////////////////////////////////////////////////////////
+    // TArrayView<T, N>
+    template <class T, ssize_t N>
+    TArrayView<T, N>::TArrayView(TArrayView<void>& other) : m_data(ptrCast<T>(other.data()))
+    {
+    }
+
+    template <class T, ssize_t N>
+    TArrayView<T, N>::TArrayView(TArrayView<void>&& other) : m_data(ptrCast<T>(other.data()))
+    {
+    }
+
+    template <class T, ssize_t N>
+    TArrayView<T, N>::TArrayView(T* ptr) : m_data(ptr)
+    {
+    }
+
+    template <class T, ssize_t N>
+    const T& TArrayView<T, N>::operator[](ssize_t idx) const
+    {
+        return m_data[this->revIndex(idx)];
+    }
+
+    template <class T, ssize_t N>
+    T& TArrayView<T, N>::operator[](ssize_t idx)
+    {
+        return m_data[this->revIndex(idx)];
+    }
+
+    template <class T, ssize_t N>
+    bool TArrayView<T, N>::operator==(const TArrayView& other) const
+    {
+        if (other.m_data == m_data)
+        {
+            return true;
+        }
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (m_data[i] != other[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <class T, ssize_t N>
+    bool TArrayView<T, N>::operator!=(const TArrayView& other) const
+    {
+        return !(*this == other);
+    }
+
+    template <class T, ssize_t N>
+    size_t TArrayView<T, N>::size() const
+    {
+        return N;
+    }
+
+    template <class T, ssize_t N>
+    T* TArrayView<T, N>::data()
+    {
+        return m_data;
+    }
+
+    template <class T, ssize_t N>
+    const T* TArrayView<T, N>::data() const
+    {
+        return m_data;
+    }
+
+    ///////////////////////////////////////////////////////////
+    // TArrayView<const T, N>
+
+    template <class T, ssize_t N>
+    TArrayView<const T, N>::TArrayView(const TArrayView<const void>& other) : m_data(ptrCast<T>(other.data()))
+    {
+    }
+
+    template <class T, ssize_t N>
+    TArrayView<const T, N>::TArrayView(TArrayView<const void>&& other) : m_data(ptrCast<T>(other.data()))
+    {
+    }
+
+    template <class T, ssize_t N>
+    TArrayView<const T, N>::TArrayView(const T* ptr) : m_data(ptr)
+    {
+    }
+
+    template <class T, ssize_t N>
+    const T& TArrayView<const T, N>::operator[](ssize_t idx) const
+    {
+        return m_data[this->revIndex(idx)];
+    }
+
+    template <class T, ssize_t N>
+    bool TArrayView<const T, N>::operator==(const TArrayView& other) const
+    {
+        if (other.m_data == m_data)
+        {
+            return true;
+        }
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (m_data[i] != other[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <class T, ssize_t N>
+    bool TArrayView<const T, N>::operator!=(const TArrayView& other) const
+    {
+        if (other.m_data == m_data)
+        {
+            return true;
+        }
+
+        for (size_t i = 0; i < N; ++i)
+        {
+            if (m_data[i] != other[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template <class T, ssize_t N>
+    size_t TArrayView<const T, N>::size() const
+    {
+        return N;
+    }
+
+    template <class T, ssize_t N>
+    const T* TArrayView<const T, N>::data() const
+    {
+        return m_data;
+    }
+
+    ///////////////////////////////////////////////////////////
+    // TArrayView
     template <class T>
     TArrayView<T>::TArrayView(TArrayView<void>& other)
         : m_data(static_cast<T*>(other.data())), m_size(other.size() / sizeof(T))
@@ -192,13 +462,13 @@ namespace ct
     template <class T>
     const T& TArrayView<T>::operator[](ssize_t idx) const
     {
-        return m_data[revIndex(idx)];
+        return m_data[this->revIndex(idx)];
     }
 
     template <class T>
     T& TArrayView<T>::operator[](ssize_t idx)
     {
-        return m_data[revIndex(idx)];
+        return m_data[this->revIndex(idx)];
     }
 
     template <class T>
@@ -224,52 +494,6 @@ namespace ct
     }
 
     template <class T>
-    TArrayView<T> TArrayView<T>::slice(ssize_t begin, ssize_t end)
-    {
-        T* ptr_begin = m_data + revIndex(begin);
-        T* ptr_end = m_data + (end == 0 ? m_size : revIndex(end));
-        return TArrayView<T>(ptr_begin, ptr_end);
-    }
-
-    template <class T>
-    TArrayView<T> TArrayView<T>::subView(ssize_t begin, size_t count)
-    {
-        if (count == 0)
-        {
-            return slice(begin);
-        }
-        return slice(begin, begin + count);
-    }
-
-    template <class T>
-    TArrayView<const T> TArrayView<T>::slice(ssize_t begin, ssize_t end) const
-    {
-        const T* ptr_begin = m_data + revIndex(begin);
-        const T* ptr_end = m_data + (end == 0 ? m_size : revIndex(end));
-        return TArrayView<const T>(ptr_begin, ptr_end);
-    }
-
-    template <class T>
-    TArrayView<const T> TArrayView<T>::subView(ssize_t begin, size_t count) const
-    {
-        if (count == 0)
-        {
-            return slice(begin);
-        }
-        return slice(begin, begin + count);
-    }
-
-    template <class T>
-    size_t TArrayView<T>::revIndex(ssize_t idx) const
-    {
-        if (idx < 0)
-        {
-            return m_size - idx;
-        }
-        return static_cast<size_t>(idx);
-    }
-
-    template <class T>
     bool TArrayView<T>::operator!=(const TArrayView<T>& other) const
     {
         return !(*this == other);
@@ -291,30 +515,6 @@ namespace ct
     const T* TArrayView<T>::data() const
     {
         return m_data;
-    }
-
-    template <class T>
-    T* TArrayView<T>::begin()
-    {
-        return m_data;
-    }
-
-    template <class T>
-    const T* TArrayView<T>::begin() const
-    {
-        return m_data;
-    }
-
-    template <class T>
-    T* TArrayView<T>::end()
-    {
-        return m_data + m_size;
-    }
-
-    template <class T>
-    const T* TArrayView<T>::end() const
-    {
-        return m_data + m_size;
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -370,34 +570,6 @@ namespace ct
     }
 
     template <class T>
-    TArrayView<const T> TArrayView<const T>::slice(ssize_t begin, ssize_t end) const
-    {
-        const T* ptr_begin = m_data + revIndex(begin);
-        const T* ptr_end = m_data + (end == 0 ? m_size : revIndex(end));
-        return TArrayView<const T>(ptr_begin, ptr_end);
-    }
-
-    template <class T>
-    TArrayView<const T> TArrayView<const T>::subView(ssize_t begin, size_t count) const
-    {
-        if (count == 0)
-        {
-            return slice(begin);
-        }
-        return slice(begin, begin + count);
-    }
-
-    template <class T>
-    size_t TArrayView<const T>::revIndex(ssize_t idx) const
-    {
-        if (idx < 0)
-        {
-            return m_size - idx;
-        }
-        return static_cast<size_t>(idx);
-    }
-
-    template <class T>
     bool TArrayView<const T>::operator!=(const TArrayView<const T>& other) const
     {
         return !(*this == other);
@@ -421,18 +593,6 @@ namespace ct
     const T* TArrayView<const T>::data() const
     {
         return m_data;
-    }
-
-    template <class T>
-    const T* TArrayView<const T>::begin() const
-    {
-        return m_data;
-    }
-
-    template <class T>
-    const T* TArrayView<const T>::end() const
-    {
-        return m_data + m_size;
     }
 
     // void specialization
@@ -467,31 +627,6 @@ namespace ct
         return true;
     }
 
-    TArrayView<const void> TArrayView<void>::slice(ssize_t begin, ssize_t end) const
-    {
-        const void* ptr_begin = ptrCast<const void>(ptrCast<const uint8_t>(m_data) + revIndex(begin));
-        const void* ptr_end = ptrCast<const void>(ptrCast<const uint8_t>(m_data) + (end == 0 ? m_size : revIndex(end)));
-        return TArrayView<const void>(ptr_begin, ptr_end);
-    }
-
-    TArrayView<const void> TArrayView<void>::subView(ssize_t begin, size_t count) const
-    {
-        if (count == 0)
-        {
-            return slice(begin);
-        }
-        return slice(begin, begin + count);
-    }
-
-    size_t TArrayView<void>::revIndex(ssize_t idx) const
-    {
-        if (idx < 0)
-        {
-            return m_size - idx;
-        }
-        return static_cast<size_t>(idx);
-    }
-
     bool TArrayView<void>::operator!=(const TArrayView<void>& other) const { return !(*this == other); }
 
     template <class T>
@@ -507,16 +642,16 @@ namespace ct
     void* TArrayView<void>::data() { return m_data; }
     const void* TArrayView<void>::data() const { return m_data; }
 
-    void* TArrayView<void>::begin() { return m_data; }
-    const void* TArrayView<void>::begin() const { return m_data; }
-
-    void* TArrayView<void>::end() { return ptrCast<void>(ptrCast<uint8_t>(m_data) + m_size); }
-    const void* TArrayView<void>::end() const { return ptrCast<void>(ptrCast<uint8_t>(m_data) + m_size); }
-
     // const void specialzation
 
     template <class T>
     TArrayView<const void>::TArrayView(const TArrayView<const T>& other)
+        : m_data(other.data()), m_size(other.size() * sizeof(T))
+    {
+    }
+
+    template <class T>
+    TArrayView<const void>::TArrayView(const TArrayView<T>& other)
         : m_data(other.data()), m_size(other.size() * sizeof(T))
     {
     }
@@ -541,31 +676,6 @@ namespace ct
         return true;
     }
 
-    TArrayView<const void> TArrayView<const void>::slice(ssize_t begin, ssize_t end) const
-    {
-        const void* ptr_begin = ptrCast<const void>(ptrCast<const uint8_t>(m_data) + revIndex(begin));
-        const void* ptr_end = ptrCast<const void>(ptrCast<const uint8_t>(m_data) + (end == 0 ? m_size : revIndex(end)));
-        return TArrayView<const void>(ptr_begin, ptr_end);
-    }
-
-    TArrayView<const void> TArrayView<const void>::subView(ssize_t begin, size_t count) const
-    {
-        if (count == 0)
-        {
-            return slice(begin);
-        }
-        return slice(begin, begin + count);
-    }
-
-    size_t TArrayView<const void>::revIndex(ssize_t idx) const
-    {
-        if (idx < 0)
-        {
-            return m_size - idx;
-        }
-        return static_cast<size_t>(idx);
-    }
-
     bool TArrayView<const void>::operator!=(const TArrayView<const void>& other) const { return !(*this == other); }
 
     TArrayView<const void>& TArrayView<const void>::operator=(const TArrayView<const void>& other)
@@ -586,10 +696,6 @@ namespace ct
     size_t TArrayView<const void>::size() const { return m_size; }
 
     const void* TArrayView<const void>::data() const { return m_data; }
-
-    const void* TArrayView<const void>::begin() const { return m_data; }
-
-    const void* TArrayView<const void>::end() const { return ptrCast<void>(ptrCast<uint8_t>(m_data) + m_size); }
 
     // free functions
 
