@@ -22,6 +22,7 @@ before_build:
 - git clone https://github.com/eigenteam/eigen-git-mirror
 - cd eigen-git-mirror
 - git checkout 3.3.7
+- cd ..
 
 - cmd: >-
    if not exist "build" mkdir build
