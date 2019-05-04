@@ -45,6 +45,7 @@ namespace ct
     void printEnums(std::ostream& os, ct::Indexer<0> idx)
     {
         auto mdata = ct::Reflect<T>::getPtr(idx);
+        os << mdata << '\n';
     }
 
     template <class T, ct::index_t I>
@@ -77,6 +78,39 @@ namespace std
         os << v.name << " " << v.value();
         return os;
     }
+
+    template <class T>
+    void printEnumHelper(ostream& os, T v, ct::Indexer<0> idx)
+    {
+        if (ct::Reflect<T>::getPtr(idx).value() == v.value)
+        {
+            os << ct::Reflect<T>::getPtr(idx).name;
+        }
+        else
+        {
+            os << "Invalid value " << v.value;
+        }
+    }
+
+    template <class T, ct::index_t I>
+    void printEnumHelper(ostream& os, T v, ct::Indexer<I> idx)
+    {
+        if (ct::Reflect<T>::getPtr(idx).value() == v.value)
+        {
+            os << ct::Reflect<T>::getPtr(idx).name;
+        }
+        else
+        {
+            printEnumHelper(os, v, --idx);
+        }
+    }
+
+    template <class T>
+    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
+    {
+        printEnumHelper(os, v, ct::Reflect<T>::end());
+        return os;
+    }
 }
 
 #define ENUM_START(NAME, TYPE)                                                                                         \
@@ -84,6 +118,9 @@ namespace std
     {                                                                                                                  \
         using EnumValueType = TYPE;                                                                                    \
         using EnumType = NAME;                                                                                         \
+        EnumValueType value;                                                                                           \
+        NAME(EnumValueType v) : value(v) {}                                                                            \
+        NAME& operator=(EnumValueType v) { value = v; }                                                                \
         REFLECT_STUB
 
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \

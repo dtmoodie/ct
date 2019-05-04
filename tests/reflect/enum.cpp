@@ -21,4 +21,13 @@ int main()
     static_assert(MyClass::MyEnum::kVALUE0::value == 0, "asdf");
     static_assert(MyClass::MyEnum::kVALUE1::value == 1, "asdf");
     static_assert(MyClass::MyEnum::kVALUE2::value == 2, "asdf");
+
+    std::cout << MyClass::MyEnum::kVALUE0{} << std::endl;
+    std::cout << MyClass::MyEnum::kVALUE1{} << std::endl;
+    std::cout << MyClass::MyEnum::kVALUE2{} << std::endl;
+    std::cout << MyClass::MyEnum::kVALUE3{} << std::endl;
+    MyClass::MyEnum val = MyClass::MyEnum::kVALUE0::value;
+    std::cout << val << std::endl;
+    val = MyClass::MyEnum::kVALUE1::value;
+    std::cout << val << std::endl;
 }
