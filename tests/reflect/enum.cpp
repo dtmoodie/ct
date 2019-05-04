@@ -18,5 +18,7 @@ int main()
     static_assert(ct::IsEnumValue<ct::PtrType<MyClass::MyEnum, 0>>::value, "asdf");
     ct::printEnums<MyClass::MyEnum>(std::cout);
 
-    static_assert(MyClass::MyEnum::kVALUE0::value() == 0, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE0::value == 0, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE1::value == 1, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE2::value == 2, "asdf");
 }

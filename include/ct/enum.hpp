@@ -13,12 +13,12 @@ namespace ct
     struct EnumTag
     {
         constexpr operator T() { return VALUE; }
-        static constexpr T value() { return VALUE; }
+        static constexpr T value = VALUE;
     };
     template <class T>
     struct EnumValue
     {
-        constexpr auto value() { return T::value(); }
+        constexpr auto value() { return T::value; }
         StringView name;
     };
 
