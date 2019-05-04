@@ -61,6 +61,26 @@ namespace ct
     {
         printEnums<T>(ios, ct::Reflect<T>::end());
     }
+
+    template <class T>
+    constexpr T fromString(StringView str, ct::Indexer<0> idx)
+    {
+        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value()
+                                                   : throw std::runtime_error("Invaid string to enum conversion");
+    }
+
+    template <class T, index_t I>
+    constexpr T fromString(StringView str, ct::Indexer<I> idx)
+    {
+
+        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value() : fromString<T>(str, --idx);
+    }
+
+    template <class T>
+    constexpr T fromString(StringView str)
+    {
+        return fromString<T>(str, ct::Reflect<T>::end());
+    }
 }
 
 namespace std
@@ -119,7 +139,7 @@ namespace std
         using EnumValueType = TYPE;                                                                                    \
         using EnumType = NAME;                                                                                         \
         EnumValueType value;                                                                                           \
-        NAME(EnumValueType v) : value(v) {}                                                                            \
+        constexpr NAME(EnumValueType v) : value(v) {}                                                                  \
         NAME& operator=(EnumValueType v) { value = v; }                                                                \
         REFLECT_STUB
 

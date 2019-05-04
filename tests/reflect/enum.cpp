@@ -30,4 +30,15 @@ int main()
     std::cout << val << std::endl;
     val = MyClass::MyEnum::kVALUE1::value;
     std::cout << val << std::endl;
+
+    static_assert(ct::fromString<MyClass::MyEnum>("kVALUE0").value == MyClass::MyEnum::kVALUE0::value, "asdf");
+    static_assert(ct::fromString<MyClass::MyEnum>("kVALUE1").value == MyClass::MyEnum::kVALUE1::value, "asdf");
+    static_assert(ct::fromString<MyClass::MyEnum>("kVALUE2").value == MyClass::MyEnum::kVALUE2::value, "asdf");
+    static_assert(ct::fromString<MyClass::MyEnum>("kVALUE3").value == MyClass::MyEnum::kVALUE3::value, "asdf");
+
+    auto from_string_val = ct::fromString<MyClass::MyEnum>("kVALUE0");
+    if (from_string_val.value != MyClass::MyEnum::kVALUE0::value)
+    {
+        std::cout << "Failed to read kVALUE0 from string" << std::endl;
+    }
 }
