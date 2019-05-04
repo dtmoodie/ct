@@ -190,10 +190,7 @@
         return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
-#define REFLECT_INTERNAL_END                                                                                           \
-    static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__;                                                \
-    static constexpr const ct::index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                     \
-    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT
+#define REFLECT_INTERNAL_END static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START
 
 #define REFLECT_END                                                                                                    \
     REFLECT_INTERNAL_END                                                                                               \

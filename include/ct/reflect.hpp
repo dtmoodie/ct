@@ -226,7 +226,7 @@ namespace ct
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
-            auto num_fields = IMPL::REFLECTION_COUNT;
+            auto num_fields = IMPL::NUM_FIELDS;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
             os << indent << "Reflect<" << getName() << ", Visited: ";
