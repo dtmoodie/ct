@@ -40,5 +40,6 @@ int main()
     if (from_string_val.value != MyClass::MyEnum::kVALUE0::value)
     {
         std::cout << "Failed to read kVALUE0 from string" << std::endl;
+        return -1;
     }
 }
