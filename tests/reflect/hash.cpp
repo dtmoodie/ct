@@ -42,16 +42,10 @@ int main()
         ct::StaticEquality<uint32_t, hashMemberName<TestA, 1>(), hashMemberName<TestB, 1>()>{};
         ct::StaticEquality<uint32_t, hashMemberName<TestA, 2>(), hashMemberName<TestB, 2>()>{};
 
-        ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 0, HashMembers>(),
-                             hashMemberName<TestB, 1, HashMembers>()>{};
-        ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 1, HashMembers>(),
-                             hashMemberName<TestB, 2, HashMembers>()>{};
+        ct::StaticInequality<uint32_t, hashMemberName<TestA, 0, HashMembers>(), hashMemberName<TestB, 1, HashMembers>()>{};
+        ct::StaticInequality<uint32_t, hashMemberName<TestA, 1, HashMembers>(), hashMemberName<TestB, 2, HashMembers>()>{};
 
-        ct::StaticInequality<uint32_t,
-                             hashMemberName<TestA, 2, HashMembers>(),
-                             hashMemberName<TestB, 0, HashMembers>()>{};
+        ct::StaticInequality<uint32_t, hashMemberName<TestA, 2, HashMembers>(), hashMemberName<TestB, 0, HashMembers>()>{};
     }
 
     // member types
@@ -63,6 +57,7 @@ int main()
 
     // member offsets
     {
+#ifndef _MSC_VER
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 0>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 1>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 2>()>{};
@@ -71,6 +66,7 @@ int main()
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 2>()>{};
 
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 0>()>{};
+#endif
     }
 
     ct::StaticInequality<uint32_t, detail::hash<ReflectedStruct>(), ct::detail::hash<Inherited>()>{};

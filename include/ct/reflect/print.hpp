@@ -67,7 +67,7 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::pointerValue(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
+        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
         os << std::endl;
     }
 

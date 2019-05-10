@@ -100,7 +100,7 @@ namespace ct
         template <class T, index_t I, class OPTS = HashOptions>
         constexpr uint32_t hashMemberOffset()
         {
-            return OPTS::hash_member_offsets ? pointerValue(Reflect<T>::getPtr(Indexer<I>{}).m_ptr) : 0;
+            return OPTS::hash_member_offsets ? memberOffset(Reflect<T>::getPtr(Indexer<I>{}).m_ptr) : 0;
         }
 
         template <class T, index_t I, class OPTS = HashOptions>

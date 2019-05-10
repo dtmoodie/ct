@@ -32,7 +32,7 @@ namespace ct
     };
 
     template <typename T, typename U>
-    constexpr size_t pointerValue(U T::*member)
+    constexpr size_t memberOffset(U T::*member)
     {
 #ifdef _MSC_VER
         // Have to test if this works on GCC

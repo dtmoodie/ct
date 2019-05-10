@@ -19,7 +19,41 @@ struct MyClass
         ENUM_VALUE(kYUV, kHSV + 1)
         ENUM_VALUE(kHSL, kYUV + 1)
     ENUM_END;
+
+    enum StandardEnum : uint32_t
+    {
+        k0 = 0,
+        k1,
+        k2,
+        k3
+    };
+
+    enum StandardEnum2 : int32_t
+    {
+        kASDF,
+        k1234
+    };
 };
+
+namespace ct
+{
+    template <>
+    struct ReflectImpl<MyClass::StandardEnum>
+    {
+
+        static constexpr const bool SPECIALIZED = true;
+        static constexpr auto getPtr(ct::Indexer<0>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k0, 0>>("k0"); }
+        static constexpr auto getPtr(ct::Indexer<1>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k1, 1>>("k1"); }
+        static constexpr auto getPtr(ct::Indexer<2>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k2, 2>>("k2"); }
+        static constexpr auto getPtr(ct::Indexer<3>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k3, 3>>("k3"); }
+        static constexpr const index_t NUM_FIELDS = 4;
+    };
+
+    REFLECT_BEGIN(MyClass::StandardEnum2)
+        ENUM(kASDF)
+        ENUM(k1234)
+    REFLECT_END;
+}
 
 template <class E, class T, T V>
 struct EnumValue
@@ -94,4 +128,7 @@ int main()
     std::cout << "==========================" << std::endl;
 
     ct::printEnums<MyClass::SecondEnum>(std::cout);
+
+    ct::printEnums<MyClass::StandardEnum>(std::cout);
+    ct::printEnums<MyClass::StandardEnum2>(std::cout);
 }

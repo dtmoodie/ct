@@ -58,6 +58,3 @@ add_executable(test_ct_get_name ${hdr} get_name.cpp)
 target_link_libraries(test_ct_get_name ct)
 set_target_properties(test_ct_get_name PROPERTIES FOLDER Tests/ct)
 
-add_executable(test_ct_enum ${hdr} enum.cpp)
-target_link_libraries(test_ct_enum ct)
-set_target_properties(test_ct_enum PROPERTIES FOLDER Tests/ct)

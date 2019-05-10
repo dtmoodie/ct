@@ -22,42 +22,42 @@ namespace ct
             template <class T>
             T& access(T U::*mem_ptr, const size_t idx)
             {
-                void* p = ptr(pointerValue(mem_ptr), idx, Reflect<U>::end());
+                void* p = ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
                 return *static_cast<T*>(p);
             }
 
             template <class T>
             const T& access(T U::*mem_ptr, const size_t idx) const
             {
-                const void* p = ptr(pointerValue(mem_ptr), idx, Reflect<U>::end());
+                const void* p = ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
                 return *static_cast<const T*>(p);
             }
 
             template <class T>
             T* begin(T U::*mem_ptr)
             {
-                void* p = ptr(pointerValue(mem_ptr), 0, Reflect<U>::end());
+                void* p = ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
                 return static_cast<T*>(p);
             }
 
             template <class T>
             const T* begin(T U::*mem_ptr) const
             {
-                const void* p = ptr(pointerValue(mem_ptr), 0, Reflect<U>::end());
+                const void* p = ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
                 return static_cast<const T*>(p);
             }
 
             template <class T>
             T* end(T U::*mem_ptr)
             {
-                void* p = ptr(pointerValue(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                void* p = ptr(memberOffset(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
                 return static_cast<T*>(p);
             }
 
             template <class T>
             const T* end(T U::*mem_ptr) const
             {
-                const void* p = ptr(pointerValue(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                const void* p = ptr(memberOffset(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
                 return static_cast<const T*>(p);
             }
 
@@ -151,7 +151,7 @@ namespace ct
             void fillOffsets(const Indexer<0> idx)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                const auto field_offset = pointerValue(accessor.m_ptr);
+                const auto field_offset = memberOffset(accessor.m_ptr);
                 m_field_offsets[0] = field_offset;
             }
 
@@ -159,7 +159,7 @@ namespace ct
             void fillOffsets(const Indexer<I> idx)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                const auto field_offset = pointerValue(accessor.m_ptr);
+                const auto field_offset = memberOffset(accessor.m_ptr);
                 m_field_offsets[I] = field_offset;
                 fillOffsets(--idx);
             }

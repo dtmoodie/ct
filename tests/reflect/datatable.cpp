@@ -24,10 +24,10 @@ int main()
 {
     {
         ct::ext::DataTable<TestB> table;
-        // std::integral_constant<size_t, pointerValue(&TestA::x)>::value;
-        std::cout << pointerValue(&TestA::x) << std::endl;
-        std::cout << pointerValue(&TestA::y) << std::endl;
-        std::cout << pointerValue(&TestA::z) << std::endl;
+        // std::integral_constant<size_t, memberOffset(&TestA::x)>::value;
+        std::cout << memberOffset(&TestA::x) << std::endl;
+        std::cout << memberOffset(&TestA::y) << std::endl;
+        std::cout << memberOffset(&TestA::z) << std::endl;
 
         TestB val;
         val.x = 1;
