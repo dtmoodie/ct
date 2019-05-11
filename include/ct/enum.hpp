@@ -14,7 +14,11 @@ namespace ct
     {
         static constexpr uint16_t index = I;
         constexpr operator T() const { return VALUE; }
+#ifdef _MSC_VER
+        static constexpr T value = VALUE;
+#else
         static constexpr E value = E(VALUE);
+#endif
         constexpr T operator()() const { return VALUE; }
     };
 
@@ -31,10 +35,10 @@ namespace ct
         TYPE value;
 
         constexpr EnumBase(TYPE v) : value(v) {}
-        constexpr EnumBase() {}
+        constexpr EnumBase(): value{} {}
 
         template <TYPE V, uint16_t I>
-        constexpr EnumBase& operator=(EnumValue<TAG, TYPE, V, I>)
+        EnumBase& operator=(EnumValue<TAG, TYPE, V, I>)
         {
             value = V;
             return *this;
@@ -42,38 +46,38 @@ namespace ct
 
         constexpr operator TYPE() const { return value; }
 
-        constexpr EnumBase& operator=(TYPE v)
+        EnumBase& operator=(TYPE v)
         {
             value = v;
             return *this;
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator!=(EnumValue<TAG, TYPE, V, I>)
+        constexpr bool operator!=(EnumValue<TAG, TYPE, V, I>) const
         {
             return value != V;
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator==(ct::EnumValue<TAG, TYPE, V, I>)
+        constexpr bool operator==(ct::EnumValue<TAG, TYPE, V, I>) const
         {
             return value == V;
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator>(EnumValue<TAG, TYPE, V, I>)
+        constexpr bool operator>(EnumValue<TAG, TYPE, V, I>) const
         {
             return value > V;
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator<(EnumValue<TAG, TYPE, V, I>)
+        constexpr bool operator<(EnumValue<TAG, TYPE, V, I>) const
         {
             return value < V;
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator>=(EnumValue<TAG, TYPE, V, I>)
+        constexpr bool operator>=(EnumValue<TAG, TYPE, V, I>) const
         {
             return value >= V;
         }
@@ -82,7 +86,7 @@ namespace ct
     template <class T>
     struct EnumField
     {
-        constexpr auto value() { return T::value; }
+        constexpr auto value() const { return T::value; }
         StringView name;
     };
 
@@ -102,8 +106,20 @@ namespace ct
     {
     };
 
+	template<class T, class E = void>
+    struct EnumChecker
+    {
+        static constexpr const bool value = false;
+	};
+
+	template<class T>
+	struct EnumChecker<T, ct::EnableIfReflected<T>>
+	{
+        static constexpr const bool value = IsEnumField<typename PtrType<T, 0>>::value;
+	};
+
     template <class T, class U = void>
-    using EnableIfIsEnum = ct::EnableIf<IsEnumField<typename ct::PtrType<T, 0>>::value, U>;
+    using EnableIfIsEnum = EnableIf<EnumChecker<T>::value, U>;
 
     template <class T>
     void printEnums(std::ostream& os, ct::Indexer<0> idx)

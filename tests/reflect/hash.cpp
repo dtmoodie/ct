@@ -58,6 +58,7 @@ int main()
     // member offsets
     {
 #ifndef _MSC_VER
+		// https://developercommunity.visualstudio.com/content/problem/22196/static-assert-cannot-compile-constexprs-method-tha.html
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 0>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 1>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 2>()>{};
