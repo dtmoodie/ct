@@ -7,7 +7,7 @@ namespace ct
 
     template <class AR, class T>
     void saveStruct(AR& ar, const T& obj);
-}
+} // namespace ct
 
 /////////////////////////////////////////////////////////////
 /// implementation
@@ -341,11 +341,13 @@ namespace ct
         };
 
         // Higher priority if IsTensor<T> is true, use the TensorCerealizer
+#ifndef _MSC_VER
+		// automatic tensor detection and serialization does not work with msvc since IsTensor fails to be constexpr
         template <class T>
         struct CerealizerSelector<T, 1, EnableIf<IsTensor<T>::value>> : public TensorCerealizer<T>
         {
         };
-
+#endif
         /*template <class T>
         struct CerealizerSelector<T, 1, EnableIf<CountSerializableFields<T>::value == 1>>
             : public SingleValueCerealizer<T>
@@ -394,5 +396,5 @@ namespace cereal
     {
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
-}
+} // namespace cereal
 #endif // CT_REFLECT_CEREALIZE_HPP

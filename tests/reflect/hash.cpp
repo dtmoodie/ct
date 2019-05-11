@@ -36,28 +36,33 @@ int main()
     ct::StaticInequality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<0>{}).m_name), 0>{};
 #endif
 
-    // member names
-    {
-        ct::StaticEquality<uint32_t, hashMemberName<TestA, 0>(), hashMemberName<TestB, 0>()>{};
-        ct::StaticEquality<uint32_t, hashMemberName<TestA, 1>(), hashMemberName<TestB, 1>()>{};
-        ct::StaticEquality<uint32_t, hashMemberName<TestA, 2>(), hashMemberName<TestB, 2>()>{};
-
-        ct::StaticInequality<uint32_t, hashMemberName<TestA, 0, HashMembers>(), hashMemberName<TestB, 1, HashMembers>()>{};
-        ct::StaticInequality<uint32_t, hashMemberName<TestA, 1, HashMembers>(), hashMemberName<TestB, 2, HashMembers>()>{};
-
-        ct::StaticInequality<uint32_t, hashMemberName<TestA, 2, HashMembers>(), hashMemberName<TestB, 0, HashMembers>()>{};
-    }
-
     // member types
     {
         ct::StaticEquality<uint32_t, hashMemberType<TestA, 0>(), hashMemberType<TestB, 0>()>{};
         ct::StaticEquality<uint32_t, hashMemberType<TestA, 1>(), hashMemberType<TestB, 1>()>{};
         ct::StaticEquality<uint32_t, hashMemberType<TestA, 2>(), hashMemberType<TestB, 2>()>{};
     }
-
+#ifndef _MSC_VER
     // member offsets
     {
-#ifndef _MSC_VER
+	    // member names
+        {
+            ct::StaticEquality<uint32_t, hashMemberName<TestA, 0>(), hashMemberName<TestB, 0>()>{};
+            ct::StaticEquality<uint32_t, hashMemberName<TestA, 1>(), hashMemberName<TestB, 1>()>{};
+            ct::StaticEquality<uint32_t, hashMemberName<TestA, 2>(), hashMemberName<TestB, 2>()>{};
+
+            ct::StaticInequality<uint32_t,
+                                 hashMemberName<TestA, 0, HashMembers>(),
+                                 hashMemberName<TestB, 1, HashMembers>()>{};
+            ct::StaticInequality<uint32_t,
+                                 hashMemberName<TestA, 1, HashMembers>(),
+                                 hashMemberName<TestB, 2, HashMembers>()>{};
+
+            ct::StaticInequality<uint32_t,
+                                 hashMemberName<TestA, 2, HashMembers>(),
+                                 hashMemberName<TestB, 0, HashMembers>()>{};
+        }
+
 		// https://developercommunity.visualstudio.com/content/problem/22196/static-assert-cannot-compile-constexprs-method-tha.html
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 0>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 1>()>{};
@@ -67,7 +72,7 @@ int main()
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 2>()>{};
 
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 0>()>{};
-#endif
+
     }
 
     ct::StaticInequality<uint32_t, detail::hash<ReflectedStruct>(), ct::detail::hash<Inherited>()>{};
@@ -80,4 +85,6 @@ int main()
 #ifdef CT_HAVE_CONSTEXPR_NAME
     ct::StaticInequality<uint32_t, ct::detail::hash<TestA, StructHash>(), ct::detail::hash<TestB, StructHash>()>{};
 #endif
+
+#endif  // _MSC_VER
 }

@@ -6,6 +6,7 @@
 
 #include <ostream>
 #include <typeinfo>
+#include <string>
 
 namespace ct
 {

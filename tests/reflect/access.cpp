@@ -1,8 +1,12 @@
 #include "../common.hpp"
 #include "common.hpp"
-#include "ct/reflect/print.hpp"
-#include <chrono>
+
+#include <ct/reflect/print.hpp>
 #include <ct/hash.hpp>
+
+#include <iostream>
+#include <string>
+#include <chrono>
 
 ct::EnableIfReflected<TestA, void> testEnabledFunction()
 {
