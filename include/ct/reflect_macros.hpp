@@ -42,6 +42,8 @@
 #define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
 #endif
 
+#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
+
 #ifndef __NVCC__
 
 #define REFLECT_BEGIN(TYPE)                                                                                            \
@@ -69,8 +71,6 @@
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
-
-#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
 #define REFLECT_INTERNAL_START                                                                                         \
     REFLECT_STUB                                                                                                       \

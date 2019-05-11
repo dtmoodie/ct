@@ -1,6 +1,8 @@
 #include <ct/Indexer.hpp>
 #include <ct/enum.hpp>
 #include <ct/reflect.hpp>
+#include <ct/reflect/print.hpp>
+
 #include <iostream>
 
 struct MyClass

@@ -86,7 +86,7 @@ namespace ct
     template <class T>
     struct EnumField
     {
-        constexpr auto value() const { return T::value; }
+        constexpr auto value() const -> decltype(T::value) { return T::value; }
         StringView name;
     };
 
@@ -258,12 +258,15 @@ namespace std
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \
     static constexpr const ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {}; \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
+        ->decltype(ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME))                \
     {                                                                                                                  \
         return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                    \
     }
 
 #define ENUM(NAME)                                                                                                     \
     static constexpr auto getPtr(ct::Indexer<__COUNTER__ - REFLECT_COUNT_START> idx)                                   \
+        ->decltype(                                                                                                    \
+            ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME))    \
     {                                                                                                                  \
         return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME); \
     }

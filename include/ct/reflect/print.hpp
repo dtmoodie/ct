@@ -1,12 +1,13 @@
 #ifndef CT_REFLECT_PRINT_HPP
 #define CT_REFLECT_PRINT_HPP
 #include "../StringView.hpp"
+#include "../enum.hpp"
 #include "../reflect.hpp"
 #include "visitor.hpp"
 
 #include <ostream>
-#include <typeinfo>
 #include <string>
+#include <typeinfo>
 
 namespace ct
 {
@@ -298,7 +299,8 @@ namespace ct
 namespace std
 {
     template <class T>
-    auto operator<<(ostream& os, const T& obj) -> ct::EnableIfReflected<T, ostream&>
+    auto operator<<(ostream& os, const T& obj)
+        -> ct::EnableIf<ct::IsReflected<T>::value && !ct::EnumChecker<T>::value, ostream&>
     {
         thread_local bool recursion_block = false;
         if (recursion_block)
