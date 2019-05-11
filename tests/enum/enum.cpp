@@ -20,6 +20,12 @@ struct MyClass
         ENUM_VALUE(kHSL, kYUV + 1)
     ENUM_END;
 
+    ENUM_START(BitwiseEnum, uint8_t)
+        ENUM_VALUE(kVALUE0, 1)
+        ENUM_VALUE(kVALUE1, 8)
+        ENUM_VALUE(kVALUE2, 16)
+    ENUM_END;
+
     enum StandardEnum : uint32_t
     {
         k0 = 0,
@@ -42,10 +48,26 @@ namespace ct
     {
 
         static constexpr const bool SPECIALIZED = true;
-        static constexpr auto getPtr(ct::Indexer<0>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k0, 0>>("k0"); }
-        static constexpr auto getPtr(ct::Indexer<1>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k1, 1>>("k1"); }
-        static constexpr auto getPtr(ct::Indexer<2>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k2, 2>>("k2"); }
-        static constexpr auto getPtr(ct::Indexer<3>) { return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k3, 3>>("k3"); }
+        static constexpr auto getPtr(ct::Indexer<0>)
+        {
+            return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k0, 0>>(
+                "k0");
+        }
+        static constexpr auto getPtr(ct::Indexer<1>)
+        {
+            return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k1, 1>>(
+                "k1");
+        }
+        static constexpr auto getPtr(ct::Indexer<2>)
+        {
+            return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k2, 2>>(
+                "k2");
+        }
+        static constexpr auto getPtr(ct::Indexer<3>)
+        {
+            return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k3, 3>>(
+                "k3");
+        }
         static constexpr const index_t NUM_FIELDS = 4;
     };
 
@@ -131,4 +153,10 @@ int main()
 
     ct::printEnums<MyClass::StandardEnum>(std::cout);
     ct::printEnums<MyClass::StandardEnum2>(std::cout);
+
+    MyClass::BitwiseEnum bitwise_enum;
+    bitwise_enum = MyClass::BitwiseEnum::kVALUE0 | MyClass::BitwiseEnum::kVALUE2;
+    ct::printEnums<MyClass::BitwiseEnum>(std::cout);
+
+    std::cout << bitwise_enum << std::endl;
 }

@@ -18,12 +18,20 @@ namespace ct
         constexpr T operator()() const { return VALUE; }
     };
 
+    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
+    constexpr EnumValue<E, T, V1 | V2, static_cast<uint16_t>(-1)> operator|(EnumValue<E, T, V1, I>,
+                                                                            EnumValue<E, T, V2, J>)
+    {
+        return {};
+    }
+
     template <class TAG, class TYPE>
     struct EnumBase
     {
         TYPE value;
 
         constexpr EnumBase(TYPE v) : value(v) {}
+        constexpr EnumBase() {}
 
         template <TYPE V, uint16_t I>
         constexpr EnumBase& operator=(EnumValue<TAG, TYPE, V, I>)
@@ -121,7 +129,8 @@ namespace ct
     template <class T>
     constexpr T fromString(StringView str, ct::Indexer<0> idx)
     {
-        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value() : throw std::runtime_error("Invaid string to enum conversion");
+        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value()
+                                                   : throw std::runtime_error("Invaid string to enum conversion");
     }
 
     template <class T, index_t I>
@@ -157,70 +166,94 @@ namespace std
         else
         {
             // os << v.name << " " << v.value();
-            os << v.value();
+            auto value = v.value();
+            os << value;
         }
 
         return os;
     }
 
     template <class T>
-    void printEnumHelper(ostream& os, T v, ct::Indexer<0> idx)
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<0> idx, bool check_bitwise, bool multi_value = false)
     {
-        if (ct::Reflect<T>::getPtr(idx).value() == v)
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        if (value == v || (check_bitwise && (value & v)))
         {
+            if (multi_value)
+            {
+                os << "|";
+            }
             os << ct::Reflect<T>::getPtr(idx).name;
+            return true;
         }
         else
         {
-            os << "Invalid value " << v;
+            return false;
         }
     }
 
     template <class T, ct::index_t I>
-    void printEnumHelper(ostream& os, T v, ct::Indexer<I> idx)
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<I> idx, bool check_bitwise, bool multi_value = false)
     {
-        if (ct::Reflect<T>::getPtr(idx).value() == v)
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        if (value == v || (check_bitwise && (value & v)))
         {
+            if (multi_value)
+            {
+                os << "|";
+            }
             os << ct::Reflect<T>::getPtr(idx).name;
+            if (!check_bitwise)
+            {
+                return true;
+            }
+            multi_value = true;
         }
-        else
-        {
-            printEnumHelper(os, v, --idx);
-        }
+        return printEnumHelper(os, v, --idx, check_bitwise, multi_value);
     }
 
     template <class T>
     ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
     {
-        printEnumHelper(os, v, ct::Reflect<T>::end());
+        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), false))
+        {
+            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
+            {
+                os << "Invalid value";
+            }
+        }
         return os;
     }
 }
 
-#define ENUM_START(NAME, TYPE)                                                                                                                                                     \
-    struct NAME : ct::EnumBase<NAME, TYPE>                                                                                                                                         \
-    {                                                                                                                                                                              \
-        using EnumValueType = TYPE;                                                                                                                                                \
-        using EnumType = NAME;                                                                                                                                                     \
-        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                                                                                        \
-        template <TYPE V, uint16_t I>                                                                                                                                              \
-        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                                                                                  \
-        {                                                                                                                                                                          \
-        }                                                                                                                                                                          \
+#define ENUM_START(NAME, TYPE)                                                                                         \
+    struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
+    {                                                                                                                  \
+        using EnumValueType = TYPE;                                                                                    \
+        using EnumType = NAME;                                                                                         \
+        constexpr NAME() {}                                                                                            \
+        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
+        template <TYPE V, uint16_t I>                                                                                  \
+        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
+        {                                                                                                              \
+        }                                                                                                              \
         REFLECT_STUB
 
-#define ENUM_VALUE(NAME, VALUE)                                                                                                                                                    \
-    static constexpr const ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {};                                                             \
-    static constexpr auto getPtr(ct::Indexer<NAME.index>) { return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME); }
-
-#define ENUM(NAME)                                                                                                                                                                 \
-    static constexpr auto getPtr(ct::Indexer<__COUNTER__ - REFLECT_COUNT_START> idx)                                                                                               \
-    {                                                                                                                                                                              \
-        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME);                                                             \
+#define ENUM_VALUE(NAME, VALUE)                                                                                        \
+    static constexpr const ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {}; \
+    static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
+    {                                                                                                                  \
+        return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                    \
     }
 
-#define ENUM_END                                                                                                                                                                   \
-    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                                                                             \
+#define ENUM(NAME)                                                                                                     \
+    static constexpr auto getPtr(ct::Indexer<__COUNTER__ - REFLECT_COUNT_START> idx)                                   \
+    {                                                                                                                  \
+        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME); \
+    }
+
+#define ENUM_END                                                                                                       \
+    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
     }
 
 #endif // CT_ENUM_HPP
