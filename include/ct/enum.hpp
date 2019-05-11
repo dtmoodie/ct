@@ -35,7 +35,7 @@ namespace ct
         TYPE value;
 
         constexpr EnumBase(TYPE v) : value(v) {}
-        constexpr EnumBase(): value{} {}
+        constexpr EnumBase() : value{} {}
 
         template <TYPE V, uint16_t I>
         EnumBase& operator=(EnumValue<TAG, TYPE, V, I>)
@@ -106,17 +106,17 @@ namespace ct
     {
     };
 
-	template<class T, class E = void>
+    template <class T, class E = void>
     struct EnumChecker
     {
         static constexpr const bool value = false;
-	};
+    };
 
-	template<class T>
-	struct EnumChecker<T, ct::EnableIfReflected<T>>
-	{
-        static constexpr const bool value = IsEnumField<typename PtrType<T, 0>>::value;
-	};
+    template <class T>
+    struct EnumChecker<T, ct::EnableIfReflected<T>>
+    {
+        static constexpr const bool value = IsEnumField<PtrType<T, 0>>::value;
+    };
 
     template <class T, class U = void>
     using EnableIfIsEnum = EnableIf<EnumChecker<T>::value, U>;
