@@ -33,4 +33,4 @@ script:
  - reflect/test_ct_reflect_cerealize
  - reflect/test_ct_static_checks
  - reflect/test_ct_data_table
- - reflect/test_ct_enum
+ - enum/test_ct_enum
