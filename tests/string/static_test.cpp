@@ -70,6 +70,18 @@ int main()
 
     StaticEquality<uint32_t, crc32(StringView(str1)), crc32(str1)>{};
 
+    static_assert(StringView("asdf") == StringView("asdf"), "asdf");
+
+    static_assert(StringView("asdf") != StringView("asdfg"), "asdf");
+
+    static_assert(StringView("asdf") != StringView("asdg"), "asdf");
+
+    static_assert(StringView("asdf") != StringView("ssdf"), "asdf");
+
+    static_assert(ct::compare('a', 'A', false), "asdf");
+
+    static_assert(StringView("asdf").equal(StringView("ASDF"), false), "asdf");
+
     // StaticEquality < size_t, StringView("asdf").
 
     // The following is not portable to gcc 4.8 :(
@@ -88,7 +100,8 @@ int main()
 
     static_assert(
         ct::crc32(ct::detail::parseClassNameMSVC(
-            "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")) > 0,
+            "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")) >
+    0,
         "asdf");
 
     using type = TestStruct::DataType;
@@ -101,7 +114,8 @@ int main()
     std::cout << ct::findNthFromBeginning("asdfasdfasdf", 2, 'a') << std::endl;
 
     std::cout << ct::detail::parseClassNameMSVC(
-                     "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")
+                     "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> >
+    >::getName")
               << std::endl;*/
 
     return 0;

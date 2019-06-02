@@ -161,22 +161,38 @@ namespace ct
     }
 
     template <class T>
-    constexpr T fromString(StringView str, ct::Indexer<0> idx)
+    struct Success
     {
-        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value()
-                                                   : throw std::runtime_error("Invaid string to enum conversion");
+        constexpr Success(const StringView msg) : m_msg(msg) {}
+        constexpr Success(T val) : m_value(val) {}
+        constexpr operator T() const { return value(); }
+        constexpr bool success() const { return m_msg.empty(); }
+        constexpr T value() const { return success() ? m_value : throw std::runtime_error(m_msg.toString()); }
+        constexpr bool operator==(T v) const { return value() == v; }
+        constexpr bool operator!=(T v) const { return value() != v; }
+        T m_value;
+        StringView m_msg;
+    };
+
+    template <class T>
+    constexpr Success<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
+    {
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive)
+                   ? Success<T>(Reflect<T>::getPtr(idx).value())
+                   : Success<T>(StringView("Invaid string to enum conversion"));
     }
 
     template <class T, index_t I>
-    constexpr T fromString(StringView str, ct::Indexer<I> idx)
+    constexpr Success<T> fromString(StringView str, ct::Indexer<I> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name == str ? Reflect<T>::getPtr(idx).value() : fromString<T>(str, --idx);
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? Success<T>(Reflect<T>::getPtr(idx).value())
+                                                                       : fromString<T>(str, --idx, case_sensitive);
     }
 
     template <class T>
-    constexpr T fromString(StringView str)
+    constexpr Success<T> fromString(StringView str, bool case_sensitive = false)
     {
-        return fromString<T>(str, ct::Reflect<T>::end());
+        return fromString<T>(str, ct::Reflect<T>::end(), case_sensitive);
     }
 }
 

@@ -24,6 +24,7 @@ namespace ct
 
         constexpr BasicStringView(const T* data, size_t n);
         constexpr BasicStringView(const T* data);
+        constexpr BasicStringView() = default;
 
         constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
 
@@ -44,11 +45,13 @@ namespace ct
         constexpr const T* data() const;
         constexpr size_t size() const;
 
+        constexpr bool empty() const;
+
         constexpr int toInteger() const;
 
         constexpr uint32_t hash() const;
 
-        constexpr bool equal(const BasicStringView other) const;
+        constexpr bool equal(const BasicStringView other, bool case_sensitive = true) const;
 
         constexpr bool operator==(const BasicStringView other) const;
         constexpr bool operator!=(const BasicStringView other) const;
@@ -56,12 +59,12 @@ namespace ct
         constexpr size_t revIndex(const ssize_t idx) const;
 
       private:
-        constexpr bool equalImpl(const BasicStringView other, size_t pos) const;
+        constexpr bool equalImpl(const BasicStringView other, size_t pos, bool case_sensitive = true) const;
 
         constexpr size_t rfindImpl(T character, size_t n, size_t pos) const;
 
-        const T* m_data;
-        size_t m_size;
+        const T* m_data = nullptr;
+        size_t m_size = 0;
     };
 
     using StringView = BasicStringView<>;
@@ -91,7 +94,7 @@ namespace ct
     }
 
     template <size_t N>
-    constexpr size_t strLen(const char (&str)[N])
+    constexpr size_t strLen(const char (&)[N])
     {
         return N;
     }
@@ -311,9 +314,15 @@ namespace ct
     }
 
     template <class T>
-    constexpr bool BasicStringView<T>::equal(const BasicStringView other) const
+    constexpr bool BasicStringView<T>::empty() const
     {
-        return other.size() == size() ? (size() == other.size() && equalImpl(other, 0)) : false;
+        return m_size == 0;
+    }
+
+    template <class T>
+    constexpr bool BasicStringView<T>::equal(const BasicStringView other, bool case_sensitive) const
+    {
+        return other.size() == size() ? equalImpl(other, 0, case_sensitive) : false;
     }
 
     template <class T>
@@ -328,12 +337,20 @@ namespace ct
         return !(*this == other);
     }
 
-    template <class T>
-    constexpr bool BasicStringView<T>::equalImpl(const BasicStringView other, size_t pos) const
+    constexpr char lower(const char c) { return (c >= 'A' && c <= 'Z') ? c + ('a' - 'A') : c; }
+
+    constexpr bool compare(char a, char b, bool case_sensitive = true)
     {
-        return (pos == (m_size - 1) || pos == (other.size() - 1))
-                   ? m_data[pos] == other[pos]
-                   : (m_data[pos] == other[pos] ? equalImpl(other, pos + 1) : false);
+        return case_sensitive ? (a == b) : lower(a) == lower(b);
+    }
+
+    template <class T>
+    constexpr bool BasicStringView<T>::equalImpl(const BasicStringView other, size_t pos, bool case_sensitive) const
+    {
+        return (pos == (m_size - 1))
+                   ? compare(m_data[pos], other[pos], case_sensitive)
+                   : (compare(m_data[pos], other[pos], case_sensitive) ? equalImpl(other, pos + 1, case_sensitive)
+                                                                       : false);
     }
 
     template <class T>

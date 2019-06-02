@@ -42,7 +42,7 @@ int main()
         return -1;
     }
 
-    switch (from_string_val.value)
+    switch (from_string_val.value().value)
     {
     case MyClass::MyEnum::kVALUE0:
         std::cout << "Switch working as expected" << std::endl;

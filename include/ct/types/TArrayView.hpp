@@ -65,7 +65,7 @@ namespace ct
         T* data();
         const T* data() const;
 
-      private:
+      protected:
         T* m_data;
     };
 
@@ -85,7 +85,7 @@ namespace ct
 
         const T* data() const;
 
-      private:
+      protected:
         const T* m_data;
     };
 
@@ -108,7 +108,7 @@ namespace ct
         T* data();
         const T* data() const;
 
-      private:
+      protected:
         T* m_data;
         size_t m_size;
     };
@@ -130,7 +130,7 @@ namespace ct
 
         const T* data() const;
 
-      private:
+      protected:
         const T* m_data;
         size_t m_size;
     };
@@ -156,7 +156,7 @@ namespace ct
         inline void* data();
         inline const void* data() const;
 
-      private:
+      protected:
         void* m_data;
         size_t m_size;
     };
@@ -183,7 +183,7 @@ namespace ct
 
         inline const void* data() const;
 
-      private:
+      protected:
         const void* m_data;
         size_t m_size;
     };
