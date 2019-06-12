@@ -264,12 +264,14 @@ namespace ct
     struct Reflect<T, VISITED, EnableIf<ReflectImpl<T>::SPECIALIZED>>
         : public ImplementationFilter<T, ReflectImpl<T>, VISITED>
     {
+        using ImplementationFilter_t = ImplementationFilter<T, ReflectImpl<T>, VISITED>;
     };
 
     // Internally defined reflection
     template <class T, class VISITED>
-    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS>> : public ImplementationFilter<T, T, VISITED>
+    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS != -1>> : public ImplementationFilter<T, T, VISITED>
     {
+        using ImplementationFilter_t = ImplementationFilter<T, T, VISITED>;
     };
 
     template <class T>
