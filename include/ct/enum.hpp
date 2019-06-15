@@ -169,15 +169,14 @@ namespace ct
     template <class T>
     constexpr Result<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive)
-                   ? Result<T>(Reflect<T>::getPtr(idx).value())
-                   : Result<T>(StringView("Invaid string to enum conversion"));
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(Reflect<T>::getPtr(idx).value())
+                                                                       : error<T>("Invaid string to enum conversion");
     }
 
     template <class T, index_t I>
     constexpr Result<T> fromString(StringView str, ct::Indexer<I> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? Result<T>(Reflect<T>::getPtr(idx).value())
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(Reflect<T>::getPtr(idx).value())
                                                                        : fromString<T>(str, --idx, case_sensitive);
     }
 
