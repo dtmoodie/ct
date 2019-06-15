@@ -2,6 +2,20 @@
 
 #include <iostream>
 
+// foo has to use value semantics in < c++17, if it uses const & semantics we try to take a reference to a constexpr
+// static variable that is not inlined :/
+#if __cplusplus < 201703L
+template <class T>
+void foo(T)
+{
+}
+#else
+template <class T>
+void foo(const T&)
+{
+}
+#endif
+
 int main()
 {
     static_assert(ct::IsEnumField<ct::PtrType<MyClass::MyEnum, 0>>::value, "asdf");
@@ -42,7 +56,7 @@ int main()
         return -1;
     }
 
-    switch (from_string_val.value().value)
+    switch (from_string_val.value())
     {
     case MyClass::MyEnum::kVALUE0:
         std::cout << "Switch working as expected" << std::endl;
@@ -87,4 +101,6 @@ int main()
     ct::printEnums<MyClass::BitwiseEnum>(std::cout);
 
     std::cout << bitwise_enum << std::endl;
+
+    foo(MyClass::MyEnum::kVALUE0);
 }
