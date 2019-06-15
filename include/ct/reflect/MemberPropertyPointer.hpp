@@ -2,7 +2,7 @@
 #define CT_MEMBER_PROPERTY_POINTER_HPP
 #include "../StringView.hpp"
 #include "../types.hpp"
-#include "access_token.hpp"
+#include "AccessToken.hpp"
 #include "metadata.hpp"
 #include "pointer_traits.hpp"
 

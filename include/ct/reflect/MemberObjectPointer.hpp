@@ -1,5 +1,5 @@
-#ifndef CT_MEMBER_POINTER_HPP
-#define CT_MEMBER_POINTER_HPP
+#ifndef CT_MEMBER_OBJECT_POINTER_HPP
+#define CT_MEMBER_OBJECT_POINTER_HPP
 
 #include "../bind.hpp"
 #include "../types.hpp"
@@ -166,4 +166,4 @@ namespace ct
     }
 }
 
-#endif // CT_MEMBER_POINTER_HPP
+#endif // CT_MEMBER_OBJECT_POINTER_HPP

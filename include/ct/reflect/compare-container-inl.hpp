@@ -1,6 +1,5 @@
 #ifndef CT_REFLECT_COMPARE_CONTAINTER_HPP
 #define CT_REFLECT_COMPARE_CONTAINTER_HPP
-#include "compare-inl.hpp"
 #include "compare.hpp"
 #include <ct/types/TArrayView.hpp>
 
