@@ -10,6 +10,7 @@
 #include "reflect/MemberPropertyPointer.hpp"
 #include "static_asserts.hpp"
 #include "type_traits.hpp"
+#include "typename.hpp"
 
 #include <cstdint>
 #include <ostream>
@@ -17,42 +18,9 @@
 
 namespace ct
 {
-    namespace detail
-    {
-        constexpr StringView parseClassNameGCC(const StringView name)
-        {
-            return name.slice(name.rfind('=') + 2, name.size() - 1);
-        }
-
-        constexpr StringView parseClassNameMSVC(const StringView name)
-        {
-            return name.slice(ct::findFirst(name.data(), ' ') + 1, ct::findLast(name.data(), '>'));
-        }
-    }
-
-    // This works at compile time on gcc 5.4 but not 4.8 :(
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55425
-    // Which is why CT_CONSTEXPR_NAME is constexpr on 5.4 and not 4.8
-    template <class T>
-    struct GetNameGCC
-    {
-        static CT_CONSTEXPR_NAME const char* funcName() { return CT_FUNCTION_NAME; }
-        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(funcName()); }
-    };
-
-    template <class T>
-    struct GetNameMSVC
-    {
-        static constexpr StringView funcName() { return StringView(CT_FUNCTION_NAME); }
-        static constexpr StringView getName() { return detail::parseClassNameMSVC(funcName()); }
-    };
-#ifdef _MSC_VER
-    template <class T>
-    using GetName = GetNameMSVC<T>;
-#else
-    template <class T>
-    using GetName = GetNameGCC<T>;
-#endif
+    // The concrete implementation of Reflect is responsible for selecting the source of reflection information
+    // for class T.  The non specializaed version seen here means that the provided type T has no source of reflection
+    // information.
 
     template <class T, class VISITED = VariadicTypedef<>, class ENABLE = void>
     struct Reflect
@@ -61,21 +29,6 @@ namespace ct
         using BaseTypes = VariadicTypedef<>;
         static constexpr StringView getName() { return ""; }
     };
-
-    inline void printTypes(const ct::VariadicTypedef<>, std::ostream&) {}
-
-    template <class T>
-    void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
-    {
-        os << ct::Reflect<T>::getName();
-    }
-
-    template <class T, class... T1>
-    void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
-    {
-        os << ct::Reflect<T>::getName() << ", ";
-        printTypes(ct::VariadicTypedef<T1...>{}, os);
-    }
 
     template <class T>
     struct ReflectImpl
@@ -96,6 +49,8 @@ namespace ct
         static void printHierarchy(std::ostream&, const std::string& = "") {}
     };
 
+    // These classes are used for reflecting about base classes of type T
+    // Implementation details not necessary for most users
     template <class T, class V>
     struct ReflectBasesImpl;
 
@@ -193,7 +148,16 @@ namespace ct
         using BaseTypes_t = typename IMPL::BaseTypes;
     };
 
-    // Include the implementation
+    // ImplementationFilter is used to filter out repeatedly visiting base classes while visiting an inheritance
+    // structure
+    // IE: in the diamond inheritance case of:
+    //    A
+    //   / \
+    //  B   C
+    //   \ /
+    //    D
+    // When we reflect about the fields of D, we have two paths to visit A, the implementation filter detects
+    // if we've already visited A and thus prevents a second pass through A
     template <class T, class IMPL, class VISITED>
     struct ImplementationFilter<T, IMPL, VISITED, EnableIf<!ContainsType<T, VISITED>::value>>
     {
@@ -261,7 +225,6 @@ namespace ct
         using VisitationList = VariadicTypedef<>;
     };
 
-    // Externally defined reflection
     template <class T, class VISITED>
     struct Reflect<T, VISITED, EnableIf<ReflectImpl<T>::SPECIALIZED>>
         : public ImplementationFilter<T, ReflectImpl<T>, VISITED>
@@ -480,6 +443,21 @@ namespace ct
         auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<I>());
         auto mdata = ptr.getMetadata();
         return mdata.template getMetadata<M>();
+    }
+
+    inline void printTypes(const ct::VariadicTypedef<>, std::ostream&) {}
+
+    template <class T>
+    void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
+    {
+        os << ct::Reflect<T>::getName();
+    }
+
+    template <class T, class... T1>
+    void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
+    {
+        os << ct::Reflect<T>::getName() << ", ";
+        printTypes(ct::VariadicTypedef<T1...>{}, os);
     }
 } // namespace ct
 
