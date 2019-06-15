@@ -50,6 +50,15 @@
 #define CT_CONSTEXPR_NAME
 #endif
 
+#if __cplusplus >= 201703L
+    #define CT_INLINE_VAR static inline constexpr const
+#endif
+
+// before c++17 this is as good as we have :/
+#ifndef CT_INLINE_VAR
+    #define CT_INLINE_VAR static constexpr const
+#endif
+
 // clang-format on
 
 #endif // CT_CONFIG_HPP
