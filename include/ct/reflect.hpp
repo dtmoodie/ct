@@ -18,7 +18,7 @@
 
 namespace ct
 {
-    // The concrete implementation of Reflect is responsible for selecting the source of reflection information
+    // Reflect is responsible for selecting the source of reflection information
     // for class T.  The non specializaed version seen here means that the provided type T has no source of reflection
     // information.
 
@@ -30,6 +30,7 @@ namespace ct
         static constexpr StringView getName() { return ""; }
     };
 
+    // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
     template <class T>
     struct ReflectImpl
     {
@@ -225,6 +226,7 @@ namespace ct
         using VisitationList = VariadicTypedef<>;
     };
 
+    // Specialization for when ReflectImpl is specialized, IE a type has external reflection information
     template <class T, class VISITED>
     struct Reflect<T, VISITED, EnableIf<ReflectImpl<T>::SPECIALIZED>>
         : public ImplementationFilter<T, ReflectImpl<T>, VISITED>
@@ -232,12 +234,16 @@ namespace ct
         using ImplementationFilter_t = ImplementationFilter<T, ReflectImpl<T>, VISITED>;
     };
 
-    // Internally defined reflection
+    // Specialization for when a type has the appropriate reflection information built into the type
     template <class T, class VISITED>
     struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS != -1>> : public ImplementationFilter<T, T, VISITED>
     {
         using ImplementationFilter_t = ImplementationFilter<T, T, VISITED>;
     };
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// These are helpers to get common traits of a reflected type
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <class T>
     struct IsReflected
