@@ -6,6 +6,11 @@
 #include "StringView.hpp"
 #include <type_traits>
 
+/* This file constains a c++ enum replacement with expanded reflection capabilities.
+ * A ct enum supports ostream<< operators and a fromString method.
+ * The only caveat to this for c++ < 2017 is that you cannot take a ct Enum by reference into a function, it must be
+ * taken by value.  Find example usage in tests/enum
+*/
 namespace ct
 {
 
@@ -291,7 +296,7 @@ namespace std
         REFLECT_STUB
 
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    static constexpr const ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {}; \
+    CT_INLINE_VAR ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {};          \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
         return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                    \
