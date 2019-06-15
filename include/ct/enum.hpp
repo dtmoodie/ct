@@ -1,9 +1,10 @@
 #ifndef CT_ENUM_HPP
 #define CT_ENUM_HPP
+#include "Result.hpp"
+#include "StringView.hpp"
 #include "reflect.hpp"
 #include "reflect_macros.hpp"
 
-#include "StringView.hpp"
 #include <type_traits>
 
 /* This file constains a c++ enum replacement with expanded reflection capabilities.
@@ -166,36 +167,22 @@ namespace ct
     }
 
     template <class T>
-    struct Success
-    {
-        constexpr Success(const StringView msg) : m_msg(msg) {}
-        constexpr Success(T val) : m_value(val) {}
-        constexpr operator T() const { return value(); }
-        constexpr bool success() const { return m_msg.empty(); }
-        constexpr T value() const { return success() ? m_value : throw std::runtime_error(m_msg.toString()); }
-        constexpr bool operator==(T v) const { return value() == v; }
-        constexpr bool operator!=(T v) const { return value() != v; }
-        T m_value;
-        StringView m_msg;
-    };
-
-    template <class T>
-    constexpr Success<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
+    constexpr Result<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
     {
         return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive)
-                   ? Success<T>(Reflect<T>::getPtr(idx).value())
-                   : Success<T>(StringView("Invaid string to enum conversion"));
+                   ? Result<T>(Reflect<T>::getPtr(idx).value())
+                   : Result<T>(StringView("Invaid string to enum conversion"));
     }
 
     template <class T, index_t I>
-    constexpr Success<T> fromString(StringView str, ct::Indexer<I> idx, bool case_sensitive)
+    constexpr Result<T> fromString(StringView str, ct::Indexer<I> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? Success<T>(Reflect<T>::getPtr(idx).value())
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? Result<T>(Reflect<T>::getPtr(idx).value())
                                                                        : fromString<T>(str, --idx, case_sensitive);
     }
 
     template <class T>
-    constexpr Success<T> fromString(StringView str, bool case_sensitive = false)
+    constexpr Result<T> fromString(StringView str, bool case_sensitive = false)
     {
         return fromString<T>(str, ct::Reflect<T>::end(), case_sensitive);
     }
