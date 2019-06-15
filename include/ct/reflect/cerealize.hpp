@@ -340,9 +340,9 @@ namespace ct
         {
         };
 
-        // Higher priority if IsTensor<T> is true, use the TensorCerealizer
+// Higher priority if IsTensor<T> is true, use the TensorCerealizer
 #ifndef _MSC_VER
-		// automatic tensor detection and serialization does not work with msvc since IsTensor fails to be constexpr
+        // automatic tensor detection and serialization does not work with msvc since IsTensor fails to be constexpr
         template <class T>
         struct CerealizerSelector<T, 1, EnableIf<IsTensor<T>::value>> : public TensorCerealizer<T>
         {

@@ -1,6 +1,7 @@
 #ifndef CT_REFLECT_COMPARE_HPP
 #define CT_REFLECT_COMPARE_HPP
 #include <ct/reflect.hpp>
+
 namespace ct
 {
     struct Equal
