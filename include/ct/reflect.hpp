@@ -5,6 +5,8 @@
 #include "config.hpp"
 #include "hash.hpp"
 #include "macros.hpp"
+#include "reflect/MemberFunctionPointer.hpp"
+#include "reflect/MemberPropertyPointer.hpp"
 #include "reflect/member_pointer.hpp"
 #include "static_asserts.hpp"
 #include "type_traits.hpp"

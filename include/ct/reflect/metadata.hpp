@@ -130,6 +130,12 @@ namespace ct
         {
             return Pack<Ts...>(args...);
         }
+
+        template <class T>
+        struct MetaDataType
+        {
+            using type = void;
+        };
     }
 }
 
