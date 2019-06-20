@@ -7,6 +7,13 @@ namespace ct
     template <typename... Args>
     struct VariadicTypedef
     {
+        template <class T>
+        using Append = VariadicTypedef<Args..., T>;
+
+        template <class T>
+        using Prepend = VariadicTypedef<T, Args...>;
+        constexpr static const auto len = sizeof...(Args);
+
         using tuple_type = std::tuple<Args...>;
     };
 
