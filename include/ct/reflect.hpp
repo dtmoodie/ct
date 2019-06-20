@@ -149,16 +149,17 @@ namespace ct
         using BaseTypes_t = typename IMPL::BaseTypes;
     };
 
-    // ImplementationFilter is used to filter out repeatedly visiting base classes while visiting an inheritance
-    // structure
-    // IE: in the diamond inheritance case of:
-    //    A
-    //   / \
-    //  B   C
-    //   \ /
-    //    D
-    // When we reflect about the fields of D, we have two paths to visit A, the implementation filter detects
-    // if we've already visited A and thus prevents a second pass through A
+    /* ImplementationFilter is used to filter out repeatedly visiting base classes while visiting an inheritance
+     structure
+     IE: in the diamond inheritance case of:
+        A
+       / \
+      B   C
+       \ /
+        D
+     When we reflect about the fields of D, we have two paths to visit A, the implementation filter detects
+     if we've already visited A and thus prevents a second pass through A
+    */
     template <class T, class IMPL, class VISITED>
     struct ImplementationFilter<T, IMPL, VISITED, EnableIf<!ContainsType<T, VISITED>::value>>
     {
