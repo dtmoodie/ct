@@ -7,6 +7,7 @@ namespace ct
     template <typename... Args>
     struct VariadicTypedef
     {
+        using tuple_type = std::tuple<Args...>;
     };
 
     template <typename... Args>
