@@ -4,12 +4,16 @@
 
 namespace ct
 {
-    struct ErrorToken{};
+    struct ErrorToken
+    {
+        StringView msg;
+    };
 
     template <class T>
     struct Result
     {
-        constexpr Result(const StringView msg, ErrorToken) : m_msg(msg) {}
+        constexpr Result() = default;
+        constexpr Result(ErrorToken err) : m_msg(err.msg) {}
         constexpr Result(T val) : m_value(std::move(val)) {}
         constexpr operator T() const { return value(); }
         constexpr bool success() const { return m_msg.empty(); }
@@ -20,22 +24,18 @@ namespace ct
         StringView m_msg;
     };
 
-    template<class T>
+    template <class T>
     constexpr Result<T> success(T val)
     {
         return Result<T>(std::move(val));
     }
 
-    template<class T>
+    template <class T>
     constexpr Result<T> success(Result<T> val)
     {
         return val;
     }
 
-    template<class T>
-    constexpr Result<T> error(StringView msg)
-    {
-        return Result<T>(msg, ErrorToken{});
-    }
+    constexpr ErrorToken error(StringView msg) { return {msg}; }
 }
 #endif // CT_RESULT_HPP

@@ -170,7 +170,7 @@ namespace ct
     constexpr Result<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
     {
         return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(Reflect<T>::getPtr(idx).value())
-                                                                       : error<T>("Invaid string to enum conversion");
+                                                                       : error("Invaid string to enum conversion");
     }
 
     template <class T, index_t I>
