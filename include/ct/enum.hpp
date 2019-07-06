@@ -15,6 +15,12 @@
 namespace ct
 {
 
+    template <class T>
+    T value(T val)
+    {
+        return val;
+    }
+
     template <class E, class T, T VALUE, uint16_t I>
     struct EnumValue
     {

@@ -4,6 +4,7 @@
 #include <ct/extensions/DataTable.hpp>
 
 using namespace ct;
+
 struct TimeIt
 {
     TimeIt() { start = std::chrono::high_resolution_clock::now(); }
@@ -20,11 +21,21 @@ struct TimeIt
     decltype(std::chrono::high_resolution_clock::now()) start;
 };
 
+struct DynStruct
+{
+    REFLECT_INTERNAL_START
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, w)
+        REFLECT_INTERNAL_MEMBER(float, h)
+        REFLECT_INTERNAL_MEMBER(TArrayView<float>, embeddings)
+    REFLECT_INTERNAL_END;
+};
+
 int main()
 {
     {
         ct::ext::DataTable<TestB> table;
-        // std::integral_constant<size_t, memberOffset(&TestA::x)>::value;
         std::cout << memberOffset(&TestA::x) << std::endl;
         std::cout << memberOffset(&TestA::y) << std::endl;
         std::cout << memberOffset(&TestA::z) << std::endl;
@@ -74,6 +85,7 @@ int main()
                 table.push_back(vec);
             }
             std::cout << "Filling table took          ";
+            assert(table.storage(&TestB::x).size() == vec_of_structs.size());
         }
 
         std::chrono::high_resolution_clock::duration d1;
@@ -125,5 +137,30 @@ int main()
             d3 = time.delta();
         }
         std::cout << "Iterator Speedup                   " << float(d1.count()) / float(d3.count()) << std::endl;
+    }
+
+    {
+        ext::DataTable<DynStruct> table;
+        table.resizeSubarray(&DynStruct::embeddings, 20);
+        table.reserve(10);
+        std::vector<float> embeddings;
+        embeddings.resize(20);
+        for (auto& x : embeddings)
+        {
+            x = float(std::rand()) / float(RAND_MAX);
+        }
+        DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
+        table.push_back(tmp);
+        auto val = table[0];
+        for (size_t i = 0; i < val.embeddings.size(); ++i)
+        {
+            if (val.embeddings[i] != embeddings[i])
+            {
+                std::cout << "Embeddings not copied correctly" << std::endl;
+                return -1;
+            }
+        }
+        assert(table.storage(&DynStruct::x).size() == 1);
+        assert(table.storage(&DynStruct::embeddings).size() == 20);
     }
 }

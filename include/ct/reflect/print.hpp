@@ -50,7 +50,7 @@ namespace ct
     {
         static const bool error_on_nonprintable = false;
         template <class T>
-        static std::ostream& onUnprintable(std::ostream& os, const char* name, const T& data)
+        static std::ostream& onUnprintable(std::ostream& os, const char* name, const T&)
         {
             os << "Unable to print '" << name << "' no << operator available for " << typeid(T).name();
             return os;
