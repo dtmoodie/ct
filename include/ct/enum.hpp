@@ -47,6 +47,12 @@ namespace ct
         return V1 & V2;
     }
 
+    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
+    constexpr bool operator==(EnumValue<E, T, V1, I>, EnumValue<E, T, V2, J>)
+    {
+        return V1 == V2;
+    }
+
     template <class TAG, class TYPE>
     struct EnumBase
     {
@@ -100,6 +106,18 @@ namespace ct
             return value >= V;
         }
     };
+
+    template <class E, class T, T V1, uint16_t I, class U>
+    constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(EnumValue<E, T, V1, I>, U val)
+    {
+        return val.value == V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I, class U>
+    constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(U val, EnumValue<E, T, V1, I>)
+    {
+        return val.value == V1;
+    }
 
     template <class E, class T, T V1, uint16_t I>
     constexpr bool operator&(EnumBase<E, T> val, EnumValue<E, T, V1, I>)
