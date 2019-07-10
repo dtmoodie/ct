@@ -28,6 +28,7 @@ namespace ct
         const T* begin() const;
         const T* end() const;
         size_t revIndex(ssize_t) const;
+        bool empty() const { return static_cast<const DERIVED*>(this)->size() == 0; }
 
         TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
         TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
