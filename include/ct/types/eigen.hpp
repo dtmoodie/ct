@@ -32,7 +32,6 @@ namespace ct
             PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rowStride)
             PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, cols)
             PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rows)
-
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
@@ -69,7 +68,6 @@ namespace ct
             PROPERTY(rowStride)
             PROPERTY(cols)
             PROPERTY(rows)
-
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
