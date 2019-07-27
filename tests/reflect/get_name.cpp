@@ -11,7 +11,6 @@ bool checkName(ct::StringView expected_name)
     {
         std::cout << "ct::Reflect::getName() not working for " << expected_name << ", got: '"
                   << ct::Reflect<T>::getName() << "'" << std::endl;
-        std::cout << "funcName(): " << ct::GetName<T>::funcName() << std::endl;
         return false;
     }
     return true;

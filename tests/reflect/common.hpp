@@ -227,10 +227,18 @@ void testTypes(Tester& tester)
         tester.test(data);
     }
     {
+        cv::Rect data(0, 1, 2, 3);
+        tester.test(data);
+    }
+    {
         cv::Point2f data(0, 1);
         tester.test(data);
     }
 
+    {
+        cv::Point data(0, 1);
+        tester.test(data);
+    }
     {
         cv::Point3f data(0, 1, 2);
         tester.test(data);
@@ -269,5 +277,13 @@ void testTypes(Tester& tester)
         tester.test(mat);
     }
 #endif
+#endif
+}
+
+namespace ct
+{
+#ifdef HAVE_OPENCV
+    DECL_NAME(cv::Rect, Rect);
+    DECL_NAME(cv::Rect2f, Rectf);
 #endif
 }
