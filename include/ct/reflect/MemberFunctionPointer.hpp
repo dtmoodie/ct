@@ -197,6 +197,12 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
+        constexpr StringView name() const { return m_name; }
+        template <index_t I>
+        constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
+        {
+            return std::get<I>(m_ptrs);
+        }
     };
 
     template <class T, Flag_t FLAGS, class... PTRS>
@@ -239,6 +245,13 @@ namespace ct
         auto bind(const T* obj) const -> decltype(std::get<I>(m_ptrs).bind(obj))
         {
             return std::get<I>(m_ptrs).bind(obj);
+        }
+
+        constexpr StringView name() const { return m_name; }
+        template <index_t I>
+        constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
+        {
+            return std::get<I>(m_ptrs);
         }
     };
 
@@ -309,6 +322,12 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
+        constexpr StringView name() const { return m_name; }
+        template <index_t I>
+        constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
+        {
+            return std::get<I>(m_ptrs);
+        }
     };
 
     template <class T, Flag_t FLAGS, class... PTRS>
@@ -338,6 +357,12 @@ namespace ct
         auto invoke(ARGS&&... args) -> typename std::decay<decltype(std::get<I>(m_ptrs))>::type::Ret_t
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
+        }
+        constexpr StringView name() const { return m_name; }
+        template <index_t I>
+        constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
+        {
+            return std::get<I>(m_ptrs);
         }
     };
 
