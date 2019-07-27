@@ -362,11 +362,11 @@ namespace ct
         constexpr static const index_t NUM_ARGS = FunctionPtr_t::NUM_ARGS;
     };
 
-    template <class T, index_t I, class U = void>
-    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1, U>;
+    template <class T, index_t I, index_t J = 0, class U = void>
+    using EnableIfArgs = EnableIf<CountArgs<T, I, J>::NUM_ARGS >= 1, U>;
 
-    template <class T, index_t I, class U = void>
-    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0, U>;
+    template <class T, index_t I, index_t J = 0, class U = void>
+    using EnableIfNoArgs = EnableIf<CountArgs<T, I, J>::NUM_ARGS == 0, U>;
 
     template <class T, index_t I, index_t J = 0>
     struct ConstFunction
@@ -387,6 +387,9 @@ namespace ct
     using EnableIfIsReadable = EnableIf<IsReadable<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
+    using DisableIfIsReadable = EnableIf<!IsReadable<T, I>::value, U>;
+
+    template <class T, index_t I, class U = void>
     using EnableIfIsWritable = EnableIf<IsWritable<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
@@ -402,13 +405,13 @@ namespace ct
     using EnableIfIsMemberObject = EnableIf<IsMemberObject<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
-    using EnableIfIsMemberProperty = EnableIf<IsMemberProperty<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
     using DisableIfIsMemberObject = EnableIf<!IsMemberObject<T, I>::value, U>;
 
     template <class T, index_t I, class U = void>
-    using DisableIfIsReadable = EnableIf<!IsReadable<T, I>::value, U>;
+    using EnableIfIsMemberProperty = EnableIf<IsMemberProperty<T, I>::value, U>;
+
+    template <class T, index_t I, class U = void>
+    using DisableIfIsMemberProperty = EnableIf<!IsMemberProperty<T, I>::value, U>;
 
     template <class T, index_t I, class ENABLE = EnableIfIsMemberObject<T, I>>
     struct GlobMemberObjectsHelper
@@ -441,6 +444,40 @@ namespace ct
     struct GlobMemberObjects
     {
         using types = typename GlobMemberObjectsHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
+        constexpr static const auto num = LenVariadicTypedef<types>::value;
+    };
+
+    template <class T, index_t I, class ENABLE = EnableIfIsWritable<T, I>>
+    struct GlobWritableHelper
+    {
+        using Ptr_t = PtrType<T, I>;
+        using type = typename std::decay<typename SetType<Ptr_t>::type>::type;
+        using types = typename Append<typename GlobWritableHelper<T, I - 1, void>::types, type>::type;
+    };
+
+    template <class T, index_t I>
+    struct GlobWritableHelper<T, I, DisableIfIsWritable<T, I>>
+    {
+        using types = typename GlobWritableHelper<T, I - 1, void>::types;
+    };
+
+    template <class T>
+    struct GlobWritableHelper<T, 0, EnableIfIsWritable<T, 0>>
+    {
+        using Ptr_t = PtrType<T, 0>;
+        using types = VariadicTypedef<typename std::decay<typename GetType<Ptr_t>::type>::type>;
+    };
+
+    template <class T>
+    struct GlobWritableHelper<T, 0, DisableIfIsWritable<T, 0>>
+    {
+        using types = VariadicTypedef<>;
+    };
+
+    template <class T>
+    struct GlobWritable
+    {
+        using types = typename GlobWritableHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
         constexpr static const auto num = LenVariadicTypedef<types>::value;
     };
 
