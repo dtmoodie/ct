@@ -4,11 +4,14 @@
 
 namespace ct
 {
+    template <typename T, class T2>
+    struct Append;
+
     template <typename... Args>
     struct VariadicTypedef
     {
         template <class T>
-        using Append = VariadicTypedef<Args..., T>;
+        using Append = ct::Append<VariadicTypedef<Args...>, T>;
 
         template <class T>
         using Prepend = VariadicTypedef<T, Args...>;
