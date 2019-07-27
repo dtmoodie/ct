@@ -89,6 +89,12 @@ namespace ct
         using type = DTYPE;
     };
 
+    template <class DTYPE, class CTYPE>
+    struct InferSetterType<void (*)(CTYPE, DTYPE)>
+    {
+        using type = DTYPE;
+    };
+
     // Explicit this override
     template <class DTYPE, class CTYPE>
     struct InferSetterType<DTYPE (*)(CTYPE&)>
