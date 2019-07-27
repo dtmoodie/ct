@@ -135,12 +135,34 @@ namespace ct
         printStructInfoHelper<T>(os, ct::Reflect<T>::end());
     }
 
+    template <class OPTS>
     struct PrintVisitorParams : public ct::DefaultVisitorParams
     {
         constexpr static const bool ACCUMULATE_PATH = false;
+
+        template <class T>
+        constexpr static bool visitMemberFunctions(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitMemberFunction(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitStaticFunctions(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitStaticFunction(T)
+        {
+            return OPTS::print_calculated_values;
+        }
     };
 
-    template <class PRINT_OPTIONS = PrintOptions, class PARAMS = PrintVisitorParams>
+    template <class PRINT_OPTIONS = PrintOptions, class PARAMS = PrintVisitorParams<PRINT_OPTIONS>>
     struct PrintVisitor : public ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>
     {
         using Super_t = ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>;
