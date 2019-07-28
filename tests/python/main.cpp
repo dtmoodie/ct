@@ -21,8 +21,11 @@ struct PythonTester
 
 BOOST_PYTHON_MODULE(test_ct_python)
 {
+#ifdef HAVE_EIGEN
     static_assert(ct::conceptCheck<Eigen::Matrix3f, ct::TensorConcept>(), "Expect matrix to match tensor concept");
+#endif
     static_assert(!ct::conceptCheck<TestA, ct::TensorConcept>(), "Expect matrix to not match tensor concept");
+
     PythonTester tester;
     testTypes(tester);
 }

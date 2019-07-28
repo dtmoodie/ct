@@ -8,6 +8,9 @@ namespace ct
     template <class T>
     boost::python::object convertToPython(const T& data);
 
+    template<class T>
+    void registerToPython();
+
     template <class T>
     bool convertFromPython(const boost::python::object& obj, T& data);
 
@@ -69,7 +72,7 @@ namespace ct
         return PythonConverter<T>::convertFromPython(obj, data);
     }
 
-    void eraseAll(std::string& str, char c)
+    inline void eraseAll(std::string& str, char c)
     {
         auto pos = str.find(c);
         while (pos != std::string::npos)
@@ -79,7 +82,7 @@ namespace ct
         }
     }
 
-    void replaceAll(std::string& str, char v0, char v1)
+    inline void replaceAll(std::string& str, char v0, char v1)
     {
         for (auto& c : str)
         {
