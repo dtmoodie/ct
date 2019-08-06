@@ -52,7 +52,7 @@ namespace ct
     template <class T>
     std::string TensorConverter<T>::repr(const T& obj)
     {
-
+        return {};
     }
 
     template <class T>
@@ -66,13 +66,13 @@ namespace ct
     template <class T>
     bool TensorConverter<T>::convertFromPython(const boost::python::object&, T&)
     {
-
+        return false;
     }
 
     template <class T>
     boost::python::object TensorConverter<T>::convertToPython(const T& result)
     {
-
+        return {};
     }
 }
 
