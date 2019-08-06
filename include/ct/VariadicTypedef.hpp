@@ -26,6 +26,12 @@ namespace ct
             return CountType<T, VariadicTypedef<Args...>>::count;
         }
 
+        template<class T>
+        static constexpr bool contains()
+        {
+            return count<T>() != 0;
+        }
+
         using tuple_type = std::tuple<Args...>;
     };
 
