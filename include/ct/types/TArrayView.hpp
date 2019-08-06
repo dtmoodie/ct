@@ -700,8 +700,14 @@ namespace ct
 
     // free functions
 
-    template <class T>
-    TArrayView<T> makeArrayView(TArrayView<T> view, size_t)
+    template <class T, ssize_t N>
+    TArrayView<T, N> makeArrayView(TArrayView<T, N> view)
+    {
+        return view;
+    }
+
+    template <class T, ssize_t N>
+    TArrayView<T, N> makeArrayView(TArrayView<T, N> view, size_t)
     {
         return view;
     }
