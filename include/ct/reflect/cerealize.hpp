@@ -1,5 +1,6 @@
 #ifndef CT_REFLECT_CEREALIZE_HPP
 #define CT_REFLECT_CEREALIZE_HPP
+
 namespace ct
 {
     template <class AR, class T>
@@ -17,6 +18,7 @@ namespace ct
 #include <cereal/cereal.hpp>
 // TODO make specialization for text archives that uses a size tag
 #include <ct/types/std_array.hpp>
+#include <ct/VariadicTypedef.hpp>
 
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
@@ -262,9 +264,9 @@ namespace ct
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);
                 }
-                // FieldCerealizer<T, decltype(shape_ptr)>::load(ar, obj, shape_ptr);
-                auto view = makeArrayView(data_ptr.set(obj), size);
-                ar(::cereal::make_nvp("data", view));
+                {
+                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.set(obj))));
+                }
                 loadItr(ar, obj, ct::Reflect<T>::end());
             }
 
@@ -371,7 +373,7 @@ namespace ct
     }
 
     template <class AR, class T>
-    void serialize(AR& ar, TArrayView<T>& view)
+    EnableIf<!VariadicTypedef<void, const void>::contains<T>()> save(AR& ar, const TArrayView<T>& view)
     {
         ::cereal::size_type size = view.size();
         ar(::cereal::make_size_tag(size));
@@ -380,6 +382,47 @@ namespace ct
             ar(view[i]);
         }
     }
+
+    template <class AR, class T>
+    EnableIf<!VariadicTypedef<void, const void>::contains<T>()> load(AR& ar, TArrayView<T>& view)
+    {
+        ::cereal::size_type size = 0;
+        ar(::cereal::make_size_tag(size));
+        if(size != view.size())
+        {
+            throw std::runtime_error("Deserializing an unexpected size");
+        }
+        for (size_t i = 0; i < view.size(); ++i)
+        {
+            ar(view[i]);
+        }
+    }
+
+    template <class AR>
+    void load(AR& ar, TArrayView<void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void save(AR& ar, const TArrayView<void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void save(AR& ar, const TArrayView<const void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void load(AR&, TArrayView<const void>&)
+    {
+        throw std::runtime_error("Attempting to load a const array view");
+    }
+
+
 }
 
 namespace cereal
