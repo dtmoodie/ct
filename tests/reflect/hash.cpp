@@ -16,7 +16,7 @@ struct StructHash
 
 int main()
 {
-    using HashOptions = ct::detail::HashOptions;
+    //using HashOptions = ct::detail::HashOptions;
     using HashMembers = ct::detail::HashMembers;
     ct::StaticEquality<uint32_t, TypeHash<float>::value, ct::crc32("float")>{};
     static_assert(ct::getName<0, ReflectedStruct>() == ct::StringView("x"), "asdf");

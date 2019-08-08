@@ -264,8 +264,9 @@ namespace ct
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);
                 }
+                if(size > 0)
                 {
-                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.set(obj))));
+                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.set(obj), size)));
                 }
                 loadItr(ar, obj, ct::Reflect<T>::end());
             }
@@ -278,8 +279,10 @@ namespace ct
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
                 const auto size = size_ptr.get(obj);
                 FieldCerealizer<T, decltype(shape_ptr)>::save(ar, obj, shape_ptr);
-                auto view = makeArrayView(data_ptr.get(obj), size);
-                ar(::cereal::make_nvp("data", view));
+                if(size > 0)
+                {
+                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.get(obj), size)));
+                }
                 saveItr(ar, obj, Reflect<T>::end());
             }
         };

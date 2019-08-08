@@ -112,7 +112,6 @@ namespace ct
     readField(T& obj, const Indexer<I> idx, po::variables_map& vm, std::string path)
     {
         auto ptr = Reflect<T>::getPtr(idx);
-        using type = typename FieldSetType<T, I>::type;
         if (!path.empty())
         {
             path += '.';
