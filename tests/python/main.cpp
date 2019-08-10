@@ -4,8 +4,9 @@
 
 #include <ct/concepts.hpp>
 #include <ct/concepts/tensor.hpp>
-
+#define BOOST_NO_AUTO_PTR
 #include <boost/python.hpp>
+#undef BOOST_NO_AUTO_PTR
 #include <ct/interop/boost_python/PythonConverter.hpp>
 #include <ct/interop/boost_python/ReflectedConverter.hpp>
 #include <ct/interop/boost_python/TensorConverter.hpp>
