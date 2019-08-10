@@ -12,6 +12,19 @@ if(EIGEN3_INCLUDE_DIRS)
 endif()
 
 add_library(test_ct_python SHARED main.cpp)
+
+# travis seems to not be propagating these properties correctly :/
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
+        target_compile_features(test_ct_python
+            INTERFACE cxx_return_type_deduction
+        )
+    else()
+        target_compile_options(test_ct_python INTERFACE "-std=c++1y")
+    endif()
+endif()
+
+
 target_link_libraries(test_ct_python
     optimized;${Boost_PYTHON_LIBRARY_RELEASE}
     debug;${Boost_PYTHON_LIBRARY_DEBUG}

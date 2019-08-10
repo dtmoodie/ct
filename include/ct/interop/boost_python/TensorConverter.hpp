@@ -5,10 +5,9 @@
 #include <ct/concepts.hpp>
 #include <ct/concepts/tensor.hpp>
 
-#include <boost/python/numpy.hpp>
 namespace ct
 {
-    template<class T>
+    template <class T>
     struct TensorConverter
     {
         static std::string repr(const T& obj);
@@ -20,7 +19,7 @@ namespace ct
         static boost::python::object convertToPython(const T& result);
     };
 
-    template<class T>
+    template <class T>
     struct TensorConverter<std::shared_ptr<T>>
     {
         static std::string repr(const T& obj);
@@ -33,15 +32,14 @@ namespace ct
     };
 
     template <class T>
-    struct ReflectedConverter<T, 3, EnableIf<conceptCheck<T, TensorConcept>()>>: TensorConverter<T>
+    struct ReflectedConverter<T, 3, EnableIf<conceptCheck<T, TensorConcept>()>> : TensorConverter<T>
     {
-
     };
 
     template <class T>
-    struct ReflectedConverter<std::shared_ptr<T>, 3, EnableIf<conceptCheck<T, TensorConcept>()>>: TensorConverter<std::shared_ptr<T>>
+    struct ReflectedConverter<std::shared_ptr<T>, 3, EnableIf<conceptCheck<T, TensorConcept>()>>
+        : TensorConverter<std::shared_ptr<T>>
     {
-
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////
