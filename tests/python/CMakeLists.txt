@@ -17,10 +17,10 @@ add_library(test_ct_python SHARED main.cpp)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
         target_compile_features(test_ct_python
-            INTERFACE cxx_return_type_deduction
+            PUBLIC cxx_return_type_deduction
         )
     else()
-        target_compile_options(test_ct_python INTERFACE "-std=c++1y")
+        target_compile_options(test_ct_python PUBLIC "-std=c++1y")
     endif()
 endif()
 
@@ -40,6 +40,8 @@ target_include_directories(test_ct_python
     PUBLIC
         $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
         $<BUILD_INTERFACE:${NUMPY_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
 )
 
 get_target_property(out_dir test_ct_python ARCHIVE_OUTPUT_DIRECTORY)
