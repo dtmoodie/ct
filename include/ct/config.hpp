@@ -59,6 +59,15 @@
     #define CT_INLINE_VAR static constexpr const
 #endif
 
+
+#ifdef __CUDA_ARCH__
+#include <cuda_runtime_api.h>
+#define CT_DEVICE_INLINE __host__ __device__ __inline__
+#else
+#define CT_DEVICE_INLINE __inline__
+#endif
+
+
 // clang-format on
 
 #endif // CT_CONFIG_HPP
