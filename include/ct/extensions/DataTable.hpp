@@ -11,6 +11,7 @@ namespace ct
 {
     namespace ext
     {
+
         template <class T>
         struct DataTableStorage
         {
@@ -144,14 +145,26 @@ namespace ct
             size_t m_size = 0;
         };
 
-        template <class U, class T>
+        template <class... Ts>
+        struct DefaultStoragePolicy
+        {
+            std::tuple<DataTableStorage<Ts>...> m_data;
+            template <index_t I>
+            auto get() -> decltype(std::get<I>(m_data))
+            {
+                return std::get<I>(m_data);
+            }
+        };
+
+        template <class DTYPE, template <class...> class STORAGE_POLICY, class T>
         struct DataTableBase
         {
         };
 
-        template <class U, class... Args>
-        struct DataTableBase<U, VariadicTypedef<Args...>>
+        template <class U, template <class...> class STORAGE_POLICY, class... Args>
+        struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>> : public STORAGE_POLICY<Args...>
         {
+            using Super = STORAGE_POLICY<Args...>;
             DataTableBase() { fillOffsets(Reflect<U>::end()); }
 
             void push_back(const U& data) { push(data, ct::Reflect<U>::end()); }
@@ -187,14 +200,14 @@ namespace ct
             template <class T>
             T* end(T U::*mem_ptr)
             {
-                void* p = ptr(memberOffset(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                void* p = ptr(memberOffset(mem_ptr), Super::template get<0>().size(), Reflect<U>::end());
                 return static_cast<T*>(p);
             }
 
             template <class T>
             const T* end(T U::*mem_ptr) const
             {
-                const void* p = ptr(memberOffset(mem_ptr), std::get<0>(m_data).size(), Reflect<U>::end());
+                const void* p = ptr(memberOffset(mem_ptr), Super::template get<0>().size(), Reflect<U>::end());
                 return static_cast<const T*>(p);
             }
 
@@ -235,40 +248,40 @@ namespace ct
             }
 
           private:
-            void reserveImpl(const size_t size, const ct::Indexer<0>) { std::get<0>(m_data).reserve(size); }
+            void reserveImpl(const size_t size, const ct::Indexer<0>) { Super::template get<0>().reserve(size); }
 
             template <index_t I>
             void reserveImpl(const size_t size, const ct::Indexer<I> idx)
             {
-                std::get<I>(m_data).reserve(size);
+                Super::template get<I>().reserve(size);
                 reserveImpl(size, --idx);
             }
 
             void populateData(U& data, const ct::Indexer<0> idx, const size_t row)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                accessor.set(data, std::get<0>(m_data)[row]);
+                accessor.set(data, Super::template get<0>()[row]);
             }
 
             template <index_t I>
             void populateData(U& data, const ct::Indexer<I> idx, const size_t row)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                accessor.set(data, std::get<I>(m_data)[row]);
+                accessor.set(data, Super::template get<I>()[row]);
                 populateData(data, --idx, row);
             }
 
             void push(const U& data, const ct::Indexer<0> idx)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                std::get<0>(m_data).push_back(accessor.get(data));
+                Super::template get<0>().push_back(accessor.get(data));
             }
 
             template <index_t I>
             void push(const U& data, const ct::Indexer<I> idx)
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
-                std::get<static_cast<size_t>(I)>(m_data).push_back(accessor.get(data));
+                Super::template get<I>().push_back(accessor.get(data));
                 push(data, --idx);
             }
 
@@ -276,7 +289,7 @@ namespace ct
             {
                 if (offset == m_field_offsets[0])
                 {
-                    return (std::get<0>(m_data).data(index));
+                    return (Super::template get<0>().data(index));
                 }
                 return nullptr;
             }
@@ -286,7 +299,7 @@ namespace ct
             {
                 if (offset == m_field_offsets[I])
                 {
-                    return (std::get<I>(m_data).data(index));
+                    return (Super::template get<I>().data(index));
                 }
                 return ptr(offset, index, --field_index);
             }
@@ -295,7 +308,7 @@ namespace ct
             {
                 if (offset == m_field_offsets[0])
                 {
-                    return (std::get<0>(m_data).data(index));
+                    return (Super::template get<0>().data(index));
                 }
                 return nullptr;
             }
@@ -305,7 +318,7 @@ namespace ct
             {
                 if (offset == m_field_offsets[I])
                 {
-                    return (std::get<I>(m_data).data(index));
+                    return (Super::template get<I>().data(index));
                 }
                 return ptr(offset, index, --field_index);
             }
@@ -313,10 +326,10 @@ namespace ct
             template <class T>
             const void* storageImpl(const size_t offset, ct::Indexer<0>) const
             {
-                if (std::is_same<typename std::decay<decltype(std::get<0>(m_data))>::type, T>::value &&
+                if (std::is_same<typename std::decay<decltype(Super::template get<0>())>::type, T>::value &&
                     offset == m_field_offsets[0])
                 {
-                    return &std::get<0>(m_data);
+                    return &Super::template get<0>();
                 }
                 return nullptr;
             }
@@ -324,10 +337,10 @@ namespace ct
             template <class T, index_t I>
             const void* storageImpl(const size_t offset, ct::Indexer<I> field_index) const
             {
-                if (std::is_same<typename std::decay<decltype(std::get<I>(m_data))>::type, T>::value &&
+                if (std::is_same<typename std::decay<decltype(Super::template get<I>())>::type, T>::value &&
                     offset == m_field_offsets[I])
                 {
-                    return &std::get<I>(m_data);
+                    return &Super::template get<I>();
                 }
                 return storageImpl<T>(offset, --field_index);
             }
@@ -335,10 +348,10 @@ namespace ct
             template <class T>
             void* storageImpl(const size_t offset, ct::Indexer<0>)
             {
-                if (std::is_same<typename std::decay<decltype(std::get<0>(m_data))>::type, T>::value &&
+                if (std::is_same<typename std::decay<decltype(Super::template get<0>())>::type, T>::value &&
                     offset == m_field_offsets[0])
                 {
-                    return &std::get<0>(m_data);
+                    return &Super::template get<0>();
                 }
                 return nullptr;
             }
@@ -346,10 +359,10 @@ namespace ct
             template <class T, index_t I>
             void* storageImpl(const size_t offset, ct::Indexer<I> field_index)
             {
-                if (std::is_same<typename std::decay<decltype(std::get<I>(m_data))>::type, T>::value &&
+                if (std::is_same<typename std::decay<decltype(Super::template get<I>())>::type, T>::value &&
                     offset == m_field_offsets[I])
                 {
-                    return &std::get<I>(m_data);
+                    return &Super::template get<I>();
                 }
                 return storageImpl<T>(offset, --field_index);
             }
@@ -374,7 +387,7 @@ namespace ct
             {
                 if (offset == m_field_offsets[0])
                 {
-                    std::get<0>(m_data).resizeSubarray(size);
+                    Super::template get<0>().resizeSubarray(size);
                     return;
                 }
             }
@@ -384,19 +397,19 @@ namespace ct
             {
                 if (offset == m_field_offsets[I])
                 {
-                    std::get<I>(m_data).resizeSubarray(size);
+                    Super::template get<I>().resizeSubarray(size);
                     return;
                 }
                 resizeSubarrayImpl(offset, size, --idx);
             }
 
             // storage
-            std::tuple<DataTableStorage<Args>...> m_data;
+            // std::tuple<DataTableStorage<Args>...> m_data;
             std::array<size_t, sizeof...(Args)> m_field_offsets;
         };
 
-        template <class T>
-        struct DataTable : public DataTableBase<T, typename ct::GlobMemberObjects<T>::types>
+        template <class T, template <class...> class STORAGE_POLICY = DefaultStoragePolicy>
+        struct DataTable : public DataTableBase<T, STORAGE_POLICY, typename ct::GlobMemberObjects<T>::types>
         {
         };
     }
