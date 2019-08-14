@@ -17,8 +17,8 @@ namespace ct
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 // TODO make specialization for text archives that uses a size tag
-#include <ct/types/std_array.hpp>
 #include <ct/VariadicTypedef.hpp>
+#include <ct/types/std_array.hpp>
 
 #include <ct/reflect.hpp>
 #include <ct/static_asserts.hpp>
@@ -257,14 +257,14 @@ namespace ct
                 auto data_ptr = Reflect<T>::getPtr(Indexer<DATA_INDEX>());
                 auto shape_ptr = Reflect<T>::getPtr(Indexer<SHAPE_INDEX>());
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
-                const auto size = size_ptr.get(obj);
                 auto shape = shape_ptr.get(obj);
                 if (!(getFlags<decltype(shape_ptr)>() & ct::value(Flags::COMPILE_TIME_CONSTANT)))
                 {
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);
                 }
-                if(size > 0)
+                const auto size = size_ptr.get(obj);
+                if (size > 0)
                 {
                     ar(::cereal::make_nvp("data", makeArrayView(data_ptr.set(obj), size)));
                 }
@@ -279,7 +279,7 @@ namespace ct
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
                 const auto size = size_ptr.get(obj);
                 FieldCerealizer<T, decltype(shape_ptr)>::save(ar, obj, shape_ptr);
-                if(size > 0)
+                if (size > 0)
                 {
                     ar(::cereal::make_nvp("data", makeArrayView(data_ptr.get(obj), size)));
                 }
@@ -391,7 +391,7 @@ namespace ct
     {
         ::cereal::size_type size = 0;
         ar(::cereal::make_size_tag(size));
-        if(size != view.size())
+        if (size != view.size())
         {
             throw std::runtime_error("Deserializing an unexpected size");
         }
@@ -424,8 +424,6 @@ namespace ct
     {
         throw std::runtime_error("Attempting to load a const array view");
     }
-
-
 }
 
 namespace cereal
