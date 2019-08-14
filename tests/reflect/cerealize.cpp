@@ -5,7 +5,6 @@
 #include <ct/reflect/compare.hpp>
 #include <ct/reflect/print.hpp>
 
-
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
@@ -59,7 +58,7 @@ int main()
     std::cout << "Binary serialization" << std::endl;
     std::cout << "====================" << std::endl;
     {
-        // CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
-        // testTypes(json_tester);
+        CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
+        testTypes(json_tester);
     }
 }
