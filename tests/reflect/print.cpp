@@ -1,5 +1,6 @@
-#include "Reflect.hpp"
 #include "common.hpp"
+#include "Reflect.hpp"
+
 #include <ct/reflect/print-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 #include <ct/reflect/visitor.hpp>

@@ -16,19 +16,19 @@ void checkFieldRange()
 template <class PTR>
 void checkWritable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::WRITABLE, "Field not writable");
+    static_assert(ct::getFlags<PTR>() & ct::Flags::WRITABLE, "Field not writable");
 }
 
 template <class PTR>
 void checkReadable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::READABLE, "Field not readable");
+    static_assert(ct::getFlags<PTR>() & ct::Flags::READABLE, "Field not readable");
 }
 
 template <class PTR>
 void checkInvokable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::INVOKABLE, "Field not invokable");
+    static_assert(ct::getFlags<PTR>() & ct::Flags::INVOKABLE, "Field not invokable");
 }
 
 int main()

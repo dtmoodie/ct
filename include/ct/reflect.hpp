@@ -1,5 +1,6 @@
 #ifndef CT_REFLECT_HPP
 #define CT_REFLECT_HPP
+#include "reflect_forward.hpp"
 #include "Indexer.hpp"
 #include "VariadicTypedef.hpp"
 #include "config.hpp"
@@ -22,7 +23,7 @@ namespace ct
     // for class T.  The non specializaed version seen here means that the provided type T has no source of reflection
     // information.
 
-    template <class T, class VISITED = VariadicTypedef<>, class ENABLE = void>
+    template <class T, class VISITED, class ENABLE>
     struct Reflect
     {
         static const bool SPECIALIZED = false;
@@ -52,8 +53,6 @@ namespace ct
 
     // These classes are used for reflecting about base classes of type T
     // Implementation details not necessary for most users
-    template <class T, class V>
-    struct ReflectBasesImpl;
 
     // Recurse over the list of base types
     template <class T, class... BASES, class V>
@@ -134,10 +133,8 @@ namespace ct
 
     // This disables an implementation if it already exists in the visitation list
     // This prevents multiply including a base class in diamond inheritance
-    template <class T, class IMPL, class VISITED, class ENABLE = void>
-    struct ImplementationFilter;
 
-    template <class IMPL, class ENABLE = void>
+    template <class IMPL, class ENABLE>
     struct BaseSelector
     {
         using BaseTypes_t = ct::VariadicTypedef<>;
@@ -252,10 +249,10 @@ namespace ct
         constexpr static const bool value = Reflect<T>::SPECIALIZED;
     };
 
-    template <class T, class U = void>
+    template <class T, class U>
     using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
 
-    template <class T, class U = void>
+    template <class T, class U>
     using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
 
     template <class T, index_t I>
@@ -323,21 +320,21 @@ namespace ct
     struct IsReadable
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & READABLE;
+        constexpr static const bool value = getFlags<type>() & Flags::READABLE;
     };
 
     template <class T, index_t I>
     struct IsWritable
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & WRITABLE;
+        constexpr static const bool value = getFlags<type>() & Flags::WRITABLE;
     };
 
     template <class T, index_t I>
     struct ShouldSerialize
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = !(getFlags<type>() & DO_NOT_SERIALIZE);
+        constexpr static const bool value = !(getFlags<type>() & Flags::DO_NOT_SERIALIZE);
     };
 
     template <class T, index_t I>

@@ -78,7 +78,7 @@ namespace ct
         return AccessToken<void (*)(BASE&, DTYPE)>(obj, set_ptr, get(get_ptr, obj));
     }
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = NONE, class METADATA = metadata::Empty>
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = Flags::NONE, class METADATA = metadata::Empty>
     struct MemberPropertyPointer
     {
         StringView m_name;
@@ -88,10 +88,7 @@ namespace ct
 
         using Class_t = typename InferPointerType<GET_PTR>::Class_t;
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE | WRITABLE
-        };
+        constexpr static const Flag_t DataFlags = FLAGS | Flags::READABLE | Flags::WRITABLE;
 
         constexpr MemberPropertyPointer(StringView name,
                                         GET_PTR getter,
@@ -130,10 +127,7 @@ namespace ct
 
         using Class_t = typename InferPointerType<GET_PTR>::Class_t;
         using Data_t = typename InferPointerType<GET_PTR>::Data_t;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE
-        };
+        constexpr static const Flag_t DataFlags = FLAGS | Flags::READABLE;
 
         constexpr MemberPropertyPointer(StringView name, GET_PTR getter, const METADATA metadata = METADATA())
             : m_name(name), m_getter(getter), m_metadata(metadata)
@@ -181,32 +175,32 @@ namespace ct
         constexpr static const bool has_setter = false;
     };
 
-    template <Flag_t FLAGS = NONE, class GET_PTR, class SET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE>
+    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class SET_PTR>
+    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE>(name, get, set);
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>(name, get, set);
     }
 
-    template <Flag_t FLAGS = NONE, class GET_PTR, class SET_PTR, class METADATA>
-    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE, METADATA>
+    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class SET_PTR, class METADATA>
+    constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set, const METADATA metadata)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | READABLE | WRITABLE, METADATA>(name, get, set, metadata);
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>(name, get, set, metadata);
     }
 
-    template <Flag_t FLAGS = NONE, class GET_PTR>
-    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE>
+    template <Flag_t FLAGS = Flags::NONE, class GET_PTR>
+    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t)
     {
-        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE>(name, get);
+        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE>(name, get);
     }
 
-    template <Flag_t FLAGS = NONE, class GET_PTR, class METADATA>
-    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE, METADATA>
+    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class METADATA>
+    constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t, const METADATA metadata)
     {
-        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | READABLE, METADATA>(name, get, metadata);
+        return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE, METADATA>(name, get, metadata);
     }
 }
 

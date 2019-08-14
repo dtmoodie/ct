@@ -26,12 +26,12 @@ namespace ct
 
         REFLECT_STUB
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, colStride)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rowStride)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, cols)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rows)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, colStride)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rowStride)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, cols)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rows)
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };

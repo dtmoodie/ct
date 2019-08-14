@@ -2,10 +2,13 @@
 #define CT_ENUM_HPP
 #include "Result.hpp"
 #include "StringView.hpp"
-#include "reflect.hpp"
+#include "type_traits.hpp"
+#include "reflect_forward.hpp"
 #include "reflect_macros.hpp"
+#include "config.hpp"
 
 #include <type_traits>
+
 
 /* This file constains a c++ enum replacement with expanded reflection capabilities.
  * A ct enum supports ostream<< operators and a fromString method.
@@ -25,6 +28,7 @@ namespace ct
     struct EnumValue
     {
         static constexpr uint16_t index = I;
+        constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
 #ifdef _MSC_VER
         static constexpr T value = VALUE;
@@ -161,7 +165,7 @@ namespace ct
     };
 
     template <class T>
-    struct EnumChecker<T, ct::EnableIfReflected<T>>
+    struct EnumChecker<T, EnableIfReflected<T>>
     {
         static constexpr const bool value = IsEnumField<PtrType<T, 0>>::value;
     };

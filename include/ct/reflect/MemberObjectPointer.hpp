@@ -1,6 +1,6 @@
 #ifndef CT_MEMBER_OBJECT_POINTER_HPP
 #define CT_MEMBER_OBJECT_POINTER_HPP
-
+#include "../flags.hpp"
 #include "../bind.hpp"
 #include "../types.hpp"
 #include "metadata.hpp"
@@ -28,7 +28,7 @@ namespace ct
 #endif
     }
 
-    template <class PTR, Flag_t FLAGS = NONE, class METADATA = metadata::Empty>
+    template <class PTR, Flag_t FLAGS = Flags::NONE, class METADATA = metadata::Empty>
     struct MemberObjectPointer;
 
     template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
@@ -36,10 +36,8 @@ namespace ct
     {
         using Class_t = CTYPE;
         using Data_t = DTYPE;
-        enum : int64_t
-        {
-            Flags = FLAGS | READABLE | WRITABLE
-        };
+        constexpr static const int64_t DataFlags = FLAGS | Flags::READABLE | Flags::WRITABLE;
+
 
         constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr, const METADATA metadata = METADATA())
             : m_name(name), m_ptr(ptr), m_metadata(metadata)
@@ -139,21 +137,21 @@ namespace ct
     constexpr Flag_t getFlags()
     {
         using type = typename std::decay<PTR_TYPE>::type;
-        return type::Flags;
+        return type::DataFlags;
     }
 
-    template <Flag_t FLAGS = NONE, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE> makeMemberObjectPointer(const char* name,
+    template <Flag_t FLAGS = Flags::NONE, class PTR>
+    constexpr MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE> makeMemberObjectPointer(const char* name,
                                                                                             const PTR ptr)
     {
-        return MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE>(name, ptr);
+        return MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>(name, ptr);
     }
 
-    template <Flag_t FLAGS = NONE, class METADATA, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE, METADATA>
+    template <Flag_t FLAGS = Flags::NONE, class METADATA, class PTR>
+    constexpr MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>
     makeMemberObjectPointer(const char* name, const PTR ptr, const METADATA metadata)
     {
-        return MemberObjectPointer<PTR, FLAGS | READABLE | WRITABLE, METADATA>(name, ptr, metadata);
+        return MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>(name, ptr, metadata);
     }
 
     namespace metadata

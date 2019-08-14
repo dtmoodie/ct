@@ -4,6 +4,7 @@
 
 namespace ct
 {
+    using index_t = int16_t;
     template <index_t N>
     struct Indexer
     {

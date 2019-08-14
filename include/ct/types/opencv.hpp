@@ -45,8 +45,8 @@ namespace ct
 
         REFLECT_STUB
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
             STATIC_FUNCTION(eye, &DataType::eye)
             STATIC_FUNCTION(zeros, &DataType::zeros)
             STATIC_FUNCTION(ones, &DataType::ones)

@@ -1,5 +1,6 @@
 #ifndef CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
 #define CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
+#include "../flags.hpp"
 #include "../Indexer.hpp"
 #include "../StringView.hpp"
 #include "../VariadicTypedef.hpp"
@@ -156,11 +157,7 @@ namespace ct
         StringView m_name;
         METADATA m_metadata;
         std::tuple<MemberFunction<T, PTRS>...> m_ptrs;
-
-        enum : int64_t
-        {
-            Flags = FLAGS
-        };
+        constexpr static const Flag_t DataFlags = FLAGS;
 
         using Constness = VariadicTypedef<std::integral_constant<bool, MemberFunction<T, PTRS>::IS_CONST...>>;
         using Class_t = T;
@@ -210,11 +207,7 @@ namespace ct
     {
         StringView m_name;
         std::tuple<MemberFunction<T, PTRS>...> m_ptrs;
-
-        enum : int64_t
-        {
-            Flags = FLAGS
-        };
+        constexpr static const Flag_t DataFlags = FLAGS;
         using Class_t = T;
 
         constexpr MemberFunctionPointers(StringView name, const PTRS... ptrs)
@@ -288,17 +281,13 @@ namespace ct
         R (*m_ptr)(ARGS...);
     };
 
-    template <class T, Flag_t FLAGS = NONE, class METADATA = void, class... PTRS>
+    template <class T, Flag_t FLAGS = Flags::NONE, class METADATA = void, class... PTRS>
     struct StaticFunctions
     {
         StringView m_name;
         METADATA m_metadata;
         std::tuple<StaticFunction<T, PTRS>...> m_ptrs;
-
-        enum : Flag_t
-        {
-            Flags = FLAGS
-        };
+        constexpr static const Flag_t DataFlags = FLAGS;
 
         using Class_t = T;
 
@@ -335,11 +324,7 @@ namespace ct
     {
         StringView m_name;
         std::tuple<StaticFunction<T, PTRS>...> m_ptrs;
-
-        enum : Flag_t
-        {
-            Flags = FLAGS
-        };
+        constexpr static const Flag_t DataFlags = FLAGS;
 
         using Class_t = T;
 
@@ -390,32 +375,32 @@ namespace ct
         using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
     };
 
-    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS | INVOKABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
+    template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>
+    constexpr MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
                                                                                                      const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS | INVOKABLE, void, ARGS...>(name, args...);
+        return MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, void, ARGS...>(name, args...);
     }
 
-    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class METADATA, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS | INVOKABLE, METADATA, ARGS...>
+    template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class METADATA, class... ARGS>
+    constexpr MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>
     makeMemberFunctionPointersWithMetadata(const char* name, const METADATA metadata, const ARGS... args)
     {
-        return MemberFunctionPointers<T, FLAGS | INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
+        return MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
-    template <class T, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS | INVOKABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
+    template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>
+    constexpr StaticFunctions<T, FLAGS | Flags::INVOKABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
                                                                                               const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS | INVOKABLE, void, ARGS...>(name, args...);
+        return StaticFunctions<T, FLAGS | Flags::INVOKABLE, void, ARGS...>(name, args...);
     }
 
-    template <class T, class METADATA, Flag_t FLAGS = DO_NOT_SERIALIZE, class... ARGS>
-    constexpr StaticFunctions<T, FLAGS | INVOKABLE, METADATA, ARGS...>
+    template <class T, class METADATA, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>
+    constexpr StaticFunctions<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>
     makeStaticFunctionPointersWithMetadata(StringView name, const METADATA metadata, const ARGS... args)
     {
-        return StaticFunctions<T, FLAGS | INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
+        return StaticFunctions<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 }
 

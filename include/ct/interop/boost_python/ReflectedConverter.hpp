@@ -374,14 +374,14 @@ namespace ct
 
         template <class T, class BP, class PROPERTY, index_t I>
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
-            -> EnableIf<!(getFlags<PROPERTY>() & WRITABLE) && (getFlags<PROPERTY>() & READABLE)>
+            -> EnableIf<!(getFlags<PROPERTY>() & Flags::WRITABLE) && (getFlags<PROPERTY>() & Flags::READABLE)>
         {
             bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>);
         }
 
         template <class T, class BP, class PROPERTY, index_t I>
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
-            -> EnableIf<(getFlags<PROPERTY>() & WRITABLE) && (getFlags<PROPERTY>() & READABLE)>
+            -> EnableIf<(getFlags<PROPERTY>() & Flags::WRITABLE) && (getFlags<PROPERTY>() & Flags::READABLE)>
         {
             bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>, &pythonSet<I, T>);
         }
@@ -444,12 +444,12 @@ namespace ct
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<!(getFlags<PTR>() & READABLE)>
+        auto registerPropertyReturn(PTR) -> EnableIf<!(getFlags<PTR>() & Flags::READABLE)>
         {
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<getFlags<PTR>() & READABLE>
+        auto registerPropertyReturn(PTR) -> EnableIf<getFlags<PTR>() & Flags::READABLE>
         {
             using type = typename GetType<PTR>::type;
             ct::registerToPython<decay_t<type>>();

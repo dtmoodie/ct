@@ -94,7 +94,7 @@ namespace ct
 
           private:
             template <Flag_t FG, class AR>
-            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::WRITABLE>
+            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::Flags::WRITABLE>
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
@@ -102,20 +102,20 @@ namespace ct
             }
 
             template <Flag_t FG, class AR>
-            static auto loadImpl(AR&, T&, const Ptr_t) -> EnableIf<!(FG & ct::WRITABLE)>
+            static auto loadImpl(AR&, T&, const Ptr_t) -> EnableIf<!(FG & ct::Flags::WRITABLE)>
             {
             }
 
             template <Flag_t FG, class AR>
             static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<(FG & ct::READABLE) && !(FG & ct::COMPILE_TIME_CONSTANT)>
+                -> EnableIf<(FG & ct::Flags::READABLE) && !(FG & ct::Flags::COMPILE_TIME_CONSTANT)>
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
             template <Flag_t FG, class AR>
             static auto saveImpl(AR&, const T&, const Ptr_t)
-                -> EnableIf<!(FG & ct::READABLE) || (FG & ct::COMPILE_TIME_CONSTANT)>
+                -> EnableIf<!(FG & ct::Flags::READABLE) || (FG & ct::Flags::COMPILE_TIME_CONSTANT)>
             {
             }
         };
@@ -238,14 +238,14 @@ namespace ct
             template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
             static auto reshape(const SHAPE& shape,
                                 MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-                                T& obj) -> EnableIf<FLAGS & WRITABLE>
+                                T& obj) -> EnableIf<FLAGS & Flags::WRITABLE>
             {
                 ptr.set(obj, shape);
             }
 
             template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
             static auto reshape(const SHAPE&, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, T&)
-                -> EnableIf<!(FLAGS & WRITABLE)>
+                -> EnableIf<!(FLAGS & Flags::WRITABLE)>
             {
                 // means shape is set at compile time, can't do anything
             }
@@ -259,7 +259,7 @@ namespace ct
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
                 const auto size = size_ptr.get(obj);
                 auto shape = shape_ptr.get(obj);
-                if (!(getFlags<decltype(shape_ptr)>() & COMPILE_TIME_CONSTANT))
+                if (!(getFlags<decltype(shape_ptr)>() & ct::value(Flags::COMPILE_TIME_CONSTANT)))
                 {
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);

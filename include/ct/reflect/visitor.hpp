@@ -374,7 +374,7 @@ namespace ct
                         Indexer<I> idx,
                         ARGS&&... args) -> EnableIf<OPTS::visitMemberObject(static_cast<decltype(ptrs)*>(nullptr))>
         {
-            static_cast<DERIVED*>(this)->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & DO_NOT_SERIALIZE)>(
+            static_cast<DERIVED*>(this)->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & Flags::DO_NOT_SERIALIZE)>(
                 obj, path, ptrs, idx, std::forward<ARGS>(args)...);
         }
 
