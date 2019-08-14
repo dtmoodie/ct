@@ -6,6 +6,7 @@
 
 #include <tuple>
 #include <vector>
+#include <cassert>
 
 namespace ct
 {
