@@ -2,13 +2,12 @@
 #define CT_ENUM_HPP
 #include "Result.hpp"
 #include "StringView.hpp"
-#include "type_traits.hpp"
+#include "config.hpp"
 #include "reflect_forward.hpp"
 #include "reflect_macros.hpp"
-#include "config.hpp"
+#include "type_traits.hpp"
 
 #include <type_traits>
-
 
 /* This file constains a c++ enum replacement with expanded reflection capabilities.
  * A ct enum supports ostream<< operators and a fromString method.
@@ -105,11 +104,32 @@ namespace ct
         }
 
         template <TYPE V, uint16_t I>
+        constexpr bool operator<=(EnumValue<TAG, TYPE, V, I>) const
+        {
+            return value <= V;
+        }
+
+        template <TYPE V, uint16_t I>
         constexpr bool operator>=(EnumValue<TAG, TYPE, V, I>) const
         {
             return value >= V;
         }
     };
+
+    // For now these increment the value by 1, but in the future it should increment to the next enumeration
+    // These are defined outside of the class such that we can use some introspection tools to find the next enum. later
+    template <class E, class T>
+    EnumBase<E, T>& operator++(EnumBase<E, T>& v)
+    {
+        ++v.value;
+        return v;
+    }
+
+    template <class E, class T>
+    constexpr EnumBase<E, T> operator++(EnumBase<E, T>& v, int)
+    {
+        return (v.value++);
+    }
 
     template <class E, class T, T V1, uint16_t I, class U>
     constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(EnumValue<E, T, V1, I>, U val)
