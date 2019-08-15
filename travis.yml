@@ -10,9 +10,9 @@ cache:
   apt: true
 
 before_install:
- - sudo apt-get install -y libboost-test-dev
+ - sudo apt-get install -y libboost-test-dev libboost-python-dev
  - sudo apt-get install -y libopencv-core-dev
- - sudo apt-get install -y libpython-dev
+ - sudo apt-get install -y libpython-dev python-numpy
  - git clone https://github.com/eigenteam/eigen-git-mirror
  - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
  - cd eigen-git-mirror && git checkout 3.3.7 && cd ..
