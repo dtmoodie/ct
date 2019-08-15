@@ -241,7 +241,7 @@ namespace ct
     template <class T>
     constexpr BasicStringView<T> BasicStringView<T>::substr(ssize_t pos, size_t count) const
     {
-        return count == 0 ? slice(revIndex(pos), m_size - pos) : slice(revIndex(pos), revIndex(pos) + count);
+        return count == 0 ? slice(revIndex(pos), m_size) : slice(revIndex(pos), revIndex(pos) + count);
     }
 
     template <class T>
