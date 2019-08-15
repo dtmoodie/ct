@@ -1,6 +1,7 @@
 #include "enum.hpp"
-
+#include "ct/EnumBitset.hpp"
 #include <iostream>
+#include <sstream>
 
 // foo has to use value semantics in < c++17, if it uses const & semantics we try to take a reference to a constexpr
 // static variable that is not inlined :/
@@ -15,6 +16,22 @@ void foo(const T&)
 {
 }
 #endif
+
+ENUM_START(Bitset, int)
+    ENUM_VALUE(v0, 0)
+    ENUM_VALUE(v1, 1)
+    ENUM_VALUE(v2, 2)
+    ENUM_VALUE(v3, 3)
+    ENUM_VALUE(v4, 4)
+    ENUM_VALUE(v5, 5)
+ENUM_END;
+
+#define REQUIRE(test)                                                                                                  \
+    if (!(test))                                                                                                       \
+    {                                                                                                                  \
+        std::cout << #test << " not working as expected";                                                              \
+        std::abort();                                                                                                  \
+    }
 
 int main()
 {
@@ -103,4 +120,36 @@ int main()
     std::cout << bitwise_enum << std::endl;
 
     foo(MyClass::MyEnum::kVALUE0);
+
+    // Enum bitset stuffs
+    ct::EnumBitset<Bitset> bitset;
+    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    {
+        ct::EnumBitset<Bitset> bitset;
+        REQUIRE(!bitset.test(i));
+        bitset.set(i);
+        REQUIRE(bitset.test(i));
+        for (Bitset j = Bitset::v1; j <= Bitset::v5; ++j)
+        {
+            if (i != j)
+            {
+                REQUIRE(!bitset.test(j));
+                bitset.set(j);
+                REQUIRE(bitset.test(j));
+
+                std::stringstream ss;
+                ss << bitset;
+                std::cout << ss.str() << std::endl;
+
+                auto from_str = ct::bitsetFromString<Bitset>(ss.str());
+                REQUIRE(from_str.test(i));
+                REQUIRE(from_str.test(j));
+
+                bitset.flip(j);
+                REQUIRE(!bitset.test(j));
+            }
+        }
+        bitset.flip(i);
+        REQUIRE(!bitset.test(i));
+    }
 }
