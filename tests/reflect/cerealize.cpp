@@ -21,7 +21,13 @@ struct CerealizationTester
     void test(const T& data)
     {
         {
-            std::ofstream ofs(m_path);
+            std::ofstream ofs;
+            ofs.open(m_path);
+            if(!ofs.is_open())
+            {
+                std::cout << "unable to open file to serialize out to" << std::endl;
+                std::abort();
+            }
             Write archive(ofs);
             archive(cereal::make_nvp("data", data));
         }
@@ -31,7 +37,13 @@ struct CerealizationTester
             archive(cereal::make_nvp("data", data));
         }
         {
-            std::ifstream ifs(m_path);
+            std::ifstream ifs;
+            ifs.open(m_path);
+            if(!ifs.is_open())
+            {
+                std::cout << "unable to open file for reading" << std::endl;
+                std::abort();
+            }
             Read archive(ifs);
             T loaded_data;
             archive(cereal::make_nvp("data", loaded_data));
