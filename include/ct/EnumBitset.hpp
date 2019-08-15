@@ -142,6 +142,7 @@ namespace std
     {
         bool empty = true;
         ct::bitsetRecurse(os, v, ct::Reflect<T>::end(), empty);
+        return os;
     }
 }
 
