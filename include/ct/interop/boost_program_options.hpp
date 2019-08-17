@@ -2,6 +2,7 @@
 #define CT_INTEROP_BOOST_PROGRAM_OPTIONS_HPP
 #include <ct/reflect.hpp>
 #include <ct/reflect/metadata.hpp>
+#include <ct/reflect_traits.hpp>
 
 #include <boost/program_options.hpp>
 

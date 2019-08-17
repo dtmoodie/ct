@@ -1,12 +1,13 @@
 #ifndef CT_EXTENSIONS_DATA_TABLE_HPP
 #define CT_EXTENSIONS_DATA_TABLE_HPP
 #include "../reflect.hpp"
+#include "../reflect_traits.hpp"
 #include "../type_traits.hpp"
 #include "../types/TArrayView.hpp"
 
+#include <cassert>
 #include <tuple>
 #include <vector>
-#include <cassert>
 
 namespace ct
 {

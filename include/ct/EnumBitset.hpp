@@ -1,6 +1,8 @@
 #ifndef CT_ENUM_BITSET_HPP
 #define CT_ENUM_BITSET_HPP
 #include "enum.hpp"
+#include "reflect_traits.hpp"
+
 #include <bitset>
 
 namespace ct

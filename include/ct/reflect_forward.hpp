@@ -1,7 +1,7 @@
 #ifndef CT_REFLECT_FORWARD_HPP
 #define CT_REFLECT_FORWARD_HPP
-#include "VariadicTypedef.hpp"
 #include "Indexer.hpp"
+#include "VariadicTypedef.hpp"
 #include "type_traits.hpp"
 
 namespace ct
@@ -28,15 +28,6 @@ namespace ct
 
     template <class T>
     struct IsReflected;
-
-    template <class T, class U = void>
-    using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
-
-    template <class T, class U = void>
-    using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
-
-    template <class T, index_t I>
-    using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));
 
     template <class T, index_t I>
     struct IsMemberFunction;

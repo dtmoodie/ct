@@ -1,6 +1,7 @@
 #ifndef CT_REFLECT_COMPARE_HPP
 #define CT_REFLECT_COMPARE_HPP
 #include <ct/reflect.hpp>
+#include <ct/reflect_traits.hpp>
 
 namespace ct
 {
@@ -15,6 +16,7 @@ namespace ct
 
     template <class T, class Comparator = Equal>
     auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::EnableIfReflected<T, bool>;
+
     template <class T, class Comparator = Equal>
     auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::DisableIfReflected<T, bool>;
 

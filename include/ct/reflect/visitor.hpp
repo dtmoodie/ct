@@ -1,7 +1,7 @@
 #ifndef CT_REFLECT_VISITOR_HPP
 #define CT_REFLECT_VISITOR_HPP
 #include "../reflect.hpp"
-
+#include "../reflect_traits.hpp"
 namespace ct
 {
     struct DefaultVisitorParams
@@ -374,8 +374,9 @@ namespace ct
                         Indexer<I> idx,
                         ARGS&&... args) -> EnableIf<OPTS::visitMemberObject(static_cast<decltype(ptrs)*>(nullptr))>
         {
-            static_cast<DERIVED*>(this)->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & Flags::DO_NOT_SERIALIZE)>(
-                obj, path, ptrs, idx, std::forward<ARGS>(args)...);
+            static_cast<DERIVED*>(this)
+                ->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & Flags::DO_NOT_SERIALIZE)>(
+                    obj, path, ptrs, idx, std::forward<ARGS>(args)...);
         }
 
         template <class T, index_t I, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA, class... ARGS>

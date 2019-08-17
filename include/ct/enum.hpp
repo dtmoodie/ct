@@ -35,6 +35,7 @@ namespace ct
         static constexpr E value = E(VALUE);
 #endif
         constexpr T operator()() const { return VALUE; }
+        constexpr E operator|(E e) { return E(VALUE | e.value); }
     };
 
     template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
@@ -56,8 +57,12 @@ namespace ct
         return V1 == V2;
     }
 
+    struct EnumTag
+    {
+    };
+
     template <class TAG, class TYPE>
-    struct EnumBase
+    struct EnumBase : EnumTag
     {
         TYPE value;
 
@@ -114,6 +119,11 @@ namespace ct
         {
             return value >= V;
         }
+        template <TYPE V, uint16_t I>
+        constexpr TAG operator|(EnumValue<TAG, TYPE, V, I>) const
+        {
+            return TAG(value | V);
+        }
     };
 
     // For now these increment the value by 1, but in the future it should increment to the next enumeration
@@ -131,6 +141,18 @@ namespace ct
         return (v.value++);
     }
 
+    template <class E, class T, T V1, uint16_t I>
+    constexpr E operator|(E e, EnumValue<E, T, V1, I>)
+    {
+        return E(e.value | V1);
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr E operator|(EnumValue<E, T, V1, I>, E e)
+    {
+        return E(V1 | e.value);
+    }
+
     template <class E, class T, T V1, uint16_t I, class U>
     constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(EnumValue<E, T, V1, I>, U val)
     {
@@ -144,13 +166,13 @@ namespace ct
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(EnumBase<E, T> val, EnumValue<E, T, V1, I>)
+    constexpr bool operator&(E val, EnumValue<E, T, V1, I>)
     {
         return val.value & V1;
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(EnumValue<E, T, V1, I>, EnumBase<E, T> val)
+    constexpr bool operator&(EnumValue<E, T, V1, I>, E val)
     {
         return V1 & val.value;
     }
@@ -166,52 +188,6 @@ namespace ct
     constexpr EnumField<T> makeEnumField(StringView name)
     {
         return EnumField<T>{name};
-    }
-
-    template <class T>
-    struct IsEnumField : std::false_type
-    {
-    };
-
-    template <class T>
-    struct IsEnumField<EnumField<T>> : std::true_type
-    {
-    };
-
-    template <class T, class E = void>
-    struct EnumChecker
-    {
-        static constexpr const bool value = false;
-    };
-
-    template <class T>
-    struct EnumChecker<T, EnableIfReflected<T>>
-    {
-        static constexpr const bool value = IsEnumField<PtrType<T, 0>>::value;
-    };
-
-    template <class T, class U = void>
-    using EnableIfIsEnum = EnableIf<EnumChecker<T>::value, U>;
-
-    template <class T>
-    void printEnums(std::ostream& os, ct::Indexer<0> idx)
-    {
-        auto mdata = ct::Reflect<T>::getPtr(idx);
-        os << mdata << '\n';
-    }
-
-    template <class T, ct::index_t I>
-    void printEnums(std::ostream& os, ct::Indexer<I> idx)
-    {
-        printEnums<T>(os, --idx);
-        auto mdata = ct::Reflect<T>::getPtr(idx);
-        os << mdata << '\n';
-    }
-
-    template <class T>
-    void printEnums(std::ostream& ios)
-    {
-        printEnums<T>(ios, ct::Reflect<T>::end());
     }
 
     template <class T>
@@ -232,86 +208,6 @@ namespace ct
     constexpr Result<T> fromString(StringView str, bool case_sensitive = false)
     {
         return fromString<T>(str, ct::Reflect<T>::end(), case_sensitive);
-    }
-}
-
-namespace std
-{
-    template <class E, class T, T V, uint16_t I>
-    ostream& operator<<(ostream& os, ct::EnumValue<E, T, V, I>)
-    {
-        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
-        os << V;
-        return os;
-    }
-
-    template <class T>
-    ostream& operator<<(ostream& os, ct::EnumField<T> v)
-    {
-        if (std::is_same<decltype(v.value()), uint8_t>::value)
-        {
-            os << v.name << " " << static_cast<int32_t>(v.value());
-        }
-        else
-        {
-            // os << v.name << " " << v.value();
-            auto value = v.value();
-            os << value;
-        }
-
-        return os;
-    }
-
-    template <class T>
-    bool printEnumHelper(ostream& os, T v, ct::Indexer<0> idx, bool check_bitwise, bool multi_value = false)
-    {
-        const auto value = ct::Reflect<T>::getPtr(idx).value();
-        if (value == v || (check_bitwise && (value & v)))
-        {
-            if (multi_value)
-            {
-                os << "|";
-            }
-            os << ct::Reflect<T>::getPtr(idx).name;
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    template <class T, ct::index_t I>
-    bool printEnumHelper(ostream& os, T v, ct::Indexer<I> idx, bool check_bitwise, bool multi_value = false)
-    {
-        const auto value = ct::Reflect<T>::getPtr(idx).value();
-        if (value == v || (check_bitwise && (value & v)))
-        {
-            if (multi_value)
-            {
-                os << "|";
-            }
-            os << ct::Reflect<T>::getPtr(idx).name;
-            if (!check_bitwise)
-            {
-                return true;
-            }
-            multi_value = true;
-        }
-        return printEnumHelper(os, v, --idx, check_bitwise, multi_value);
-    }
-
-    template <class T>
-    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
-    {
-        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), false))
-        {
-            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
-            {
-                os << "Invalid value";
-            }
-        }
-        return os;
     }
 }
 

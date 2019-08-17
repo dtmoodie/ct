@@ -312,6 +312,27 @@ namespace ct
         uint32_t m_indent = 0;
     };
 
+    template <class T>
+    void printEnums(std::ostream& os, ct::Indexer<0> idx)
+    {
+        auto mdata = ct::Reflect<T>::getPtr(idx);
+        os << mdata << '\n';
+    }
+
+    template <class T, ct::index_t I>
+    void printEnums(std::ostream& os, ct::Indexer<I> idx)
+    {
+        printEnums<T>(os, --idx);
+        auto mdata = ct::Reflect<T>::getPtr(idx);
+        os << mdata << '\n';
+    }
+
+    template <class T>
+    void printEnums(std::ostream& ios)
+    {
+        printEnums<T>(ios, ct::Reflect<T>::end());
+    }
+
 } // namespace ct
 
 #include <cstdint>
@@ -367,6 +388,83 @@ namespace std
             os << arr[i];
         }
         os << ']';
+        return os;
+    }
+
+    template <class E, class T, T V, uint16_t I>
+    ostream& operator<<(ostream& os, ct::EnumValue<E, T, V, I>)
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << V;
+        return os;
+    }
+
+    template <class T>
+    ostream& operator<<(ostream& os, ct::EnumField<T> v)
+    {
+        if (std::is_same<decltype(v.value()), uint8_t>::value)
+        {
+            os << v.name << " " << static_cast<int32_t>(v.value());
+        }
+        else
+        {
+            // os << v.name << " " << v.value();
+            auto value = v.value();
+            os << value;
+        }
+
+        return os;
+    }
+
+    template <class T>
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<0> idx, bool check_bitwise, bool multi_value = false)
+    {
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        if (value == v || (check_bitwise && (value & v)))
+        {
+            if (multi_value)
+            {
+                os << "|";
+            }
+            os << ct::Reflect<T>::getPtr(idx).name;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    template <class T, ct::index_t I>
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<I> idx, bool check_bitwise, bool multi_value = false)
+    {
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        if (value == v || (check_bitwise && (value & v)))
+        {
+            if (multi_value)
+            {
+                os << "|";
+            }
+            os << ct::Reflect<T>::getPtr(idx).name;
+            if (!check_bitwise)
+            {
+                return true;
+            }
+            multi_value = true;
+        }
+        return printEnumHelper(os, v, --idx, check_bitwise, multi_value);
+    }
+
+    template <class T>
+    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
+    {
+        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), false))
+        {
+            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
+            {
+                os << "Invalid value";
+            }
+        }
         return os;
     }
 }
