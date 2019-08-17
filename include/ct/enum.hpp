@@ -35,7 +35,6 @@ namespace ct
         static constexpr E value = E(VALUE);
 #endif
         constexpr T operator()() const { return VALUE; }
-        constexpr E operator|(E e) { return E(VALUE | e.value); }
     };
 
     template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
