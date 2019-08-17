@@ -84,18 +84,6 @@ namespace ct
         }
 
         template <TYPE V, uint16_t I>
-        constexpr bool operator!=(EnumValue<TAG, TYPE, V, I>) const
-        {
-            return value != V;
-        }
-
-        template <TYPE V, uint16_t I>
-        constexpr bool operator==(ct::EnumValue<TAG, TYPE, V, I>) const
-        {
-            return value == V;
-        }
-
-        template <TYPE V, uint16_t I>
         constexpr bool operator>(EnumValue<TAG, TYPE, V, I>) const
         {
             return value > V;
@@ -118,11 +106,6 @@ namespace ct
         {
             return value >= V;
         }
-        template <TYPE V, uint16_t I>
-        constexpr TAG operator|(EnumValue<TAG, TYPE, V, I>) const
-        {
-            return TAG(value | V);
-        }
     };
 
     // For now these increment the value by 1, but in the future it should increment to the next enumeration
@@ -140,6 +123,20 @@ namespace ct
         return (v.value++);
     }
 
+    //////////////////////////////////////////
+    /// bitwiser operators
+    template <class E, class T, T V1, uint16_t I>
+    constexpr E operator|(T e, EnumValue<E, T, V1, I>)
+    {
+        return E(e | V1);
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr E operator|(EnumValue<E, T, V1, I>, T e)
+    {
+        return E(V1 | e);
+    }
+
     template <class E, class T, T V1, uint16_t I>
     constexpr E operator|(E e, EnumValue<E, T, V1, I>)
     {
@@ -152,18 +149,6 @@ namespace ct
         return E(V1 | e.value);
     }
 
-    template <class E, class T, T V1, uint16_t I, class U>
-    constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(EnumValue<E, T, V1, I>, U val)
-    {
-        return val.value == V1;
-    }
-
-    template <class E, class T, T V1, uint16_t I, class U>
-    constexpr EnableIf<std::is_base_of<EnumBase<E, T>, U>::value, bool> operator==(U val, EnumValue<E, T, V1, I>)
-    {
-        return val.value == V1;
-    }
-
     template <class E, class T, T V1, uint16_t I>
     constexpr bool operator&(E val, EnumValue<E, T, V1, I>)
     {
@@ -174,6 +159,78 @@ namespace ct
     constexpr bool operator&(EnumValue<E, T, V1, I>, E val)
     {
         return V1 & val.value;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator&(T val, EnumValue<E, T, V1, I>)
+    {
+        return val & V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator&(EnumValue<E, T, V1, I>, T val)
+    {
+        return V1 & val;
+    }
+
+    //////////////////////////////////////////
+    /// ~
+    template <class E>
+    constexpr EnableIf<std::is_base_of<EnumTag, E>::value, E> operator~(E e)
+    {
+        return E(~e.value);
+    }
+
+    //////////////////////////////////////////
+    /// ==
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator==(EnumValue<E, T, V1, I>, E val)
+    {
+        return val.value == V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator==(EnumValue<E, T, V1, I>, T val)
+    {
+        return val == V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator==(E val, EnumValue<E, T, V1, I>)
+    {
+        return val.value == V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator==(T val, EnumValue<E, T, V1, I>)
+    {
+        return val == V1;
+    }
+
+    //////////////////////////////////////////
+    /// !=
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator!=(EnumValue<E, T, V1, I>, E val)
+    {
+        return val.value != V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator!=(EnumValue<E, T, V1, I>, T val)
+    {
+        return val != V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator!=(E val, EnumValue<E, T, V1, I>)
+    {
+        return val.value != V1;
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr bool operator!=(T val, EnumValue<E, T, V1, I>)
+    {
+        return val != V1;
     }
 
     template <class T>

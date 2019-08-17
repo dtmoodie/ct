@@ -156,6 +156,7 @@ int main()
     // just checking some operators are correctly overloaded
     MyClass::SecondEnum e;
     auto b0 = e | MyClass::SecondEnum::kBGR;
+    REQUIRE(b0.value == MyClass::SecondEnum::kBGR);
     auto b1 = MyClass::SecondEnum::kBGR | e;
     b0 = e & MyClass::SecondEnum::kBGR;
     b1 = MyClass::SecondEnum::kBGR & e;
