@@ -76,23 +76,11 @@ namespace ct
             return EnumBitset(T(V));
         }
 
-        constexpr EnumBitset& reset(T pos)
-        {
-            c.reset(get_value(pos));
-            return *this;
-        }
+        void reset(T pos) { c.reset(get_value(pos)); }
 
-        constexpr EnumBitset& set(T pos)
-        {
-            c.set(get_value(pos));
-            return *this;
-        }
+        void set(T pos) { c.set(get_value(pos)); }
 
-        constexpr EnumBitset& flip(T pos)
-        {
-            c.flip(get_value(pos));
-            return *this;
-        }
+        void flip(T pos) { c.flip(get_value(pos)); }
 
         constexpr operator unsigned long long() const { return c.to_ullong(); }
 
