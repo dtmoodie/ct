@@ -62,12 +62,6 @@ namespace ct
 
         constexpr bool test(T pos) const { return c.test(get_value(pos)); }
 
-        template <class... ARGS>
-        constexpr EnumBitset(ARGS... args) : c{}
-        {
-            multiSet(args...);
-        }
-
         template <UnderlyingType V, index_t I>
         constexpr EnumBitset(EnumValue<T, UnderlyingType, V, I, true>) : c(V)
         {
