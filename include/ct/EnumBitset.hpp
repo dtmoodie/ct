@@ -28,6 +28,12 @@ namespace ct
     };
 
     template <class T>
+    constexpr T max(T v0, T v1)
+    {
+        return v0 > v1 ? v0 : v1;
+    }
+
+    template <class T>
     constexpr typename T::EnumValueType enumMax(Indexer<0> idx)
     {
         return Reflect<T>::getPtr(idx).value();
@@ -36,7 +42,7 @@ namespace ct
     template <class T, index_t I>
     constexpr typename T::EnumValueType enumMax(Indexer<I> idx)
     {
-        return std::max(static_cast<typename T::EnumValueType>(Reflect<T>::getPtr(idx).value()), enumMax<T>(--idx));
+        return max(static_cast<typename T::EnumValueType>(Reflect<T>::getPtr(idx).value()), enumMax<T>(--idx));
     }
 
     template <class T>
