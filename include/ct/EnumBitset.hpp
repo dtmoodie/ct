@@ -149,8 +149,8 @@ namespace ct
     template <class T, ct::index_t I>
     void bitsetRecurse(std::ostream& out, EnumBitset<T> type, ct::Indexer<I> idx, bool& empty)
     {
-        bitsetPrint(out, type, idx, empty);
         bitsetRecurse(out, type, --idx, empty);
+        bitsetPrint(out, type, idx, empty);
     }
 
     template <class T>
