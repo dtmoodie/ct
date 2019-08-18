@@ -124,3 +124,49 @@ Furthermore the reflection metadata does not need to be embedded into a type, in
     }
 
 Lastly properties with get and set methods are supported seamlessly the same as publically accessible data, and member functions can be reflected about.
+
+Enums are supported as well as standard enums and bitset enums.
+
+    ENUM_START(MyEnum, uint32_t)
+        ENUM_VALUE(kVALUE0, 0)
+        ENUM_VALUE(kVALUE1, 1)
+        ENUM_VALUE(kVALUE2, 2)
+        ENUM_VALUE(kVALUE3, 3)
+    ENUM_END;
+
+    MyEnum val = MyEnum::kVALUE0;
+    std::cout << val << std::endl;
+    val = ct::fromString("kVALUE3");
+    std::cout << val << std::endl;
+
+Will produce the following:
+
+    kVALUE0
+    kVALUE3
+
+Bitset enums are supported as follows:
+
+
+    BITSET_START(Bitset, int)
+        ENUM_VALUE(v0, 0)
+        ENUM_VALUE(v1, 1)
+        ENUM_VALUE(v2, 2)
+        ENUM_VALUE(v3, 3)
+        ENUM_VALUE(v4, 4)
+        ENUM_VALUE(v5, 5)
+    ENUM_END;
+
+    ct::EnumBitset<Bitset> val = ct::bitsetFromString<Bitset>("v0|v2|v4");
+    std::cout << val << std::endl;
+    // Can be used in code as:
+    if(val.test(Bitset::v0)){
+    ...
+    }
+    if(val.test(Bitset::v2)){
+    ...
+    }
+    ...
+
+Will produce the following:
+
+    v0|v2|v4
