@@ -173,4 +173,26 @@ int main()
     REQUIRE(bits.test(Bitset::v0));
     REQUIRE(bits.test(Bitset::v1));
     bitsetFoo<Bitset::v0 | Bitset::v1>();
+
+    ct::EnumBitset<Bitset> bset;
+    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    {
+        REQUIRE(!bset.test(i));
+    }
+    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    {
+        bset.set(i);
+        std::cout << bset << std::endl;
+        auto j = i;
+        ++j;
+        for (; j <= Bitset::v5; ++j)
+        {
+            REQUIRE(!bset.test(j))
+        }
+
+        for (Bitset j = Bitset::v0; j <= i; ++j)
+        {
+            REQUIRE(bset.test(j));
+        }
+    }
 }
