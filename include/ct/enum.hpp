@@ -23,35 +23,38 @@ namespace ct
         return val;
     }
 
-    template <class E, class T, T VALUE, uint16_t I>
+    template <class E, class T, T VALUE, uint16_t I, bool BITSET = false>
     struct EnumValue
     {
         static constexpr uint16_t index = I;
         constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
+// constexpr operator E() const { return E(VALUE); }
+
 #ifdef _MSC_VER
         static constexpr T value = VALUE;
 #else
         static constexpr E value = E(VALUE);
 #endif
+
         constexpr T operator()() const { return VALUE; }
     };
 
     template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
-    constexpr EnumValue<E, T, V1 | V2, static_cast<uint16_t>(-1)> operator|(EnumValue<E, T, V1, I>,
-                                                                            EnumValue<E, T, V2, J>)
+    constexpr EnumValue<E, T, V1 | V2, static_cast<uint16_t>(-1), false> operator|(EnumValue<E, T, V1, I, false>,
+                                                                                   EnumValue<E, T, V2, J, false>)
     {
         return {};
     }
 
-    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
-    constexpr bool operator&(EnumValue<E, T, V1, I>, EnumValue<E, T, V2, J>)
+    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J, bool BITSET>
+    constexpr bool operator&(EnumValue<E, T, V1, I, BITSET>, EnumValue<E, T, V2, J, BITSET>)
     {
         return V1 & V2;
     }
 
-    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
-    constexpr bool operator==(EnumValue<E, T, V1, I>, EnumValue<E, T, V2, J>)
+    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J, bool BITSET>
+    constexpr bool operator==(EnumValue<E, T, V1, I, BITSET>, EnumValue<E, T, V2, J, BITSET>)
     {
         return V1 == V2;
     }
@@ -68,8 +71,8 @@ namespace ct
         constexpr EnumBase(TYPE v) : value(v) {}
         constexpr EnumBase() : value{} {}
 
-        template <TYPE V, uint16_t I>
-        EnumBase& operator=(EnumValue<TAG, TYPE, V, I>)
+        template <TYPE V, uint16_t I, bool BITSET>
+        EnumBase& operator=(EnumValue<TAG, TYPE, V, I, BITSET>)
         {
             value = V;
             return *this;
@@ -83,26 +86,26 @@ namespace ct
             return *this;
         }
 
-        template <TYPE V, uint16_t I>
-        constexpr bool operator>(EnumValue<TAG, TYPE, V, I>) const
+        template <TYPE V, uint16_t I, bool BITSET>
+        constexpr bool operator>(EnumValue<TAG, TYPE, V, I, BITSET>) const
         {
             return value > V;
         }
 
-        template <TYPE V, uint16_t I>
-        constexpr bool operator<(EnumValue<TAG, TYPE, V, I>) const
+        template <TYPE V, uint16_t I, bool BITSET>
+        constexpr bool operator<(EnumValue<TAG, TYPE, V, I, BITSET>) const
         {
             return value < V;
         }
 
-        template <TYPE V, uint16_t I>
-        constexpr bool operator<=(EnumValue<TAG, TYPE, V, I>) const
+        template <TYPE V, uint16_t I, bool BITSET>
+        constexpr bool operator<=(EnumValue<TAG, TYPE, V, I, BITSET>) const
         {
             return value <= V;
         }
 
-        template <TYPE V, uint16_t I>
-        constexpr bool operator>=(EnumValue<TAG, TYPE, V, I>) const
+        template <TYPE V, uint16_t I, bool BITSET>
+        constexpr bool operator>=(EnumValue<TAG, TYPE, V, I, BITSET>) const
         {
             return value >= V;
         }
@@ -126,49 +129,49 @@ namespace ct
     //////////////////////////////////////////
     /// bitwiser operators
     template <class E, class T, T V1, uint16_t I>
-    constexpr E operator|(T e, EnumValue<E, T, V1, I>)
+    constexpr E operator|(T e, EnumValue<E, T, V1, I, false>)
     {
         return E(e | V1);
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr E operator|(EnumValue<E, T, V1, I>, T e)
+    constexpr E operator|(EnumValue<E, T, V1, I, false>, T e)
     {
         return E(V1 | e);
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr E operator|(E e, EnumValue<E, T, V1, I>)
+    constexpr E operator|(E e, EnumValue<E, T, V1, I, false>)
     {
         return E(e.value | V1);
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr E operator|(EnumValue<E, T, V1, I>, E e)
+    constexpr E operator|(EnumValue<E, T, V1, I, false>, E e)
     {
         return E(V1 | e.value);
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(E val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator&(E val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val.value & V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(EnumValue<E, T, V1, I>, E val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator&(EnumValue<E, T, V1, I, BITSET>, E val)
     {
         return V1 & val.value;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(T val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator&(T val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val & V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(EnumValue<E, T, V1, I>, T val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator&(EnumValue<E, T, V1, I, BITSET>, T val)
     {
         return V1 & val;
     }
@@ -183,52 +186,52 @@ namespace ct
 
     //////////////////////////////////////////
     /// ==
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator==(EnumValue<E, T, V1, I>, E val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator==(EnumValue<E, T, V1, I, BITSET>, E val)
     {
         return val.value == V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator==(EnumValue<E, T, V1, I>, T val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator==(EnumValue<E, T, V1, I, BITSET>, T val)
     {
         return val == V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator==(E val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator==(E val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val.value == V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator==(T val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator==(T val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val == V1;
     }
 
     //////////////////////////////////////////
     /// !=
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator!=(EnumValue<E, T, V1, I>, E val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator!=(EnumValue<E, T, V1, I, BITSET>, E val)
     {
         return val.value != V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator!=(EnumValue<E, T, V1, I>, T val)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator!=(EnumValue<E, T, V1, I, BITSET>, T val)
     {
         return val != V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator!=(E val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator!=(E val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val.value != V1;
     }
 
-    template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator!=(T val, EnumValue<E, T, V1, I>)
+    template <class E, class T, T V1, uint16_t I, bool BITSET>
+    constexpr bool operator!=(T val, EnumValue<E, T, V1, I, BITSET>)
     {
         return val != V1;
     }
@@ -268,21 +271,27 @@ namespace ct
 }
 
 #ifndef __NVCC__
-#define ENUM_START(NAME, TYPE)                                                                                         \
+
+#define ENUM_START_(NAME, TYPE, BITSET_)                                                                               \
     struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
     {                                                                                                                  \
         using EnumValueType = TYPE;                                                                                    \
         using EnumType = NAME;                                                                                         \
+        constexpr static const bool BITSET = BITSET_;                                                                  \
         constexpr NAME() {}                                                                                            \
         constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
         template <TYPE V, uint16_t I>                                                                                  \
-        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
+        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I, BITSET>) : EnumBase<NAME, TYPE>(V)                              \
         {                                                                                                              \
         }                                                                                                              \
         REFLECT_STUB
 
+#define BITSET_START(NAME, TYPE) ENUM_START_(NAME, TYPE, true)
+
+#define ENUM_START(NAME, TYPE) ENUM_START_(NAME, TYPE, false)
+
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    CT_INLINE_VAR ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {};          \
+    CT_INLINE_VAR ct::EnumValue<EnumType, EnumValueType, VALUE, __COUNTER__ - REFLECT_COUNT_START, BITSET> NAME = {};  \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
         return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                    \

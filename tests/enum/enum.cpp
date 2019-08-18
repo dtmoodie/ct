@@ -17,7 +17,7 @@ void foo(const T&)
 }
 #endif
 
-ENUM_START(Bitset, int)
+BITSET_START(Bitset, int)
     ENUM_VALUE(v0, 0)
     ENUM_VALUE(v1, 1)
     ENUM_VALUE(v2, 2)
@@ -32,6 +32,14 @@ ENUM_END;
         std::cout << #test << " not working as expected";                                                              \
         std::abort();                                                                                                  \
     }
+
+template <size_t V>
+void bitsetFoo()
+{
+    auto bitset = ct::EnumBitset<Bitset>::fromBitValue<V>();
+    std::cout << "From template parameter" << std::endl;
+    std::cout << bitset << std::endl;
+}
 
 int main()
 {
@@ -160,4 +168,9 @@ int main()
     auto b1 = MyClass::SecondEnum::kBGR | e;
     b0 = e & MyClass::SecondEnum::kBGR;
     b1 = MyClass::SecondEnum::kBGR & e;
+
+    auto bits = ct::EnumBitset<Bitset>(Bitset::v0 | Bitset::v1);
+    REQUIRE(bits.test(Bitset::v0));
+    REQUIRE(bits.test(Bitset::v1));
+    bitsetFoo<Bitset::v0 | Bitset::v1>();
 }

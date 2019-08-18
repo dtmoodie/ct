@@ -12,6 +12,7 @@ namespace ct
     {
         using type = typename std::underlying_type<T>::type;
     };
+
     template <class T>
     struct EnumTraits;
 
@@ -50,35 +51,76 @@ namespace ct
       public:
         using UnderlyingType = typename UnderlyingType<T>::type;
 
-        EnumBitset() : c() {}
-        EnumBitset(UnderlyingType v) : c(v) {}
+        constexpr EnumBitset() : c() {}
+        constexpr EnumBitset(UnderlyingType v) : c(v) {}
 
-        EnumBitset(T v) : c() { c.set(get_value(v)); }
+        constexpr bool test(T pos) const { return c.test(get_value(pos)); }
 
-        bool test(T pos) const { return c.test(get_value(pos)); }
+        template <class... ARGS>
+        constexpr EnumBitset(ARGS... args) : c{}
+        {
+            multiSet(args...);
+        }
 
-        EnumBitset& reset(T pos)
+        template <UnderlyingType V, index_t I>
+        constexpr EnumBitset(EnumValue<T, UnderlyingType, V, I, true>) : c(V)
+        {
+        }
+
+        constexpr EnumBitset(EnumBase<T, UnderlyingType> v) : c(v.value) {}
+        constexpr EnumBitset(T v) : c(v.value) {}
+
+        template <UnderlyingType V>
+        static constexpr EnumBitset fromBitValue()
+        {
+            return EnumBitset(T(V));
+        }
+
+        constexpr EnumBitset& reset(T pos)
         {
             c.reset(get_value(pos));
             return *this;
         }
 
-        EnumBitset& set(T pos)
+        constexpr EnumBitset& set(T pos)
         {
             c.set(get_value(pos));
             return *this;
         }
 
-        EnumBitset& flip(T pos)
+        constexpr EnumBitset& flip(T pos)
         {
             c.flip(get_value(pos));
             return *this;
         }
 
+        constexpr operator unsigned long long() const { return c.to_ullong(); }
+
       private:
+        constexpr void multiSet(T v) { c.set(v); }
+        template <class... ARGS>
+        constexpr void multiSet(T v, ARGS... args)
+        {
+            c.set(v);
+            multiSet(args...);
+        }
         std::bitset<static_cast<UnderlyingType>(EnumMax<T>::value)> c;
         UnderlyingType get_value(T v) const { return static_cast<UnderlyingType>(v); }
     };
+
+    // Bitset overloads return a bitset
+
+    template <class E, class T, T V1, T V2, uint16_t I, uint16_t J>
+    constexpr EnumBase<E, T> operator|(EnumValue<E, T, V1, I, true>, EnumValue<E, T, V2, J, true>)
+    {
+        return EnumBase<E, T>((T{} | (1 << V1)) | (1 << V2));
+    }
+
+    template <class E, class T, T V1, uint16_t I>
+    constexpr EnumBitset<E> operator|(EnumValue<E, T, V1, I, true>, E e)
+    {
+        return EnumBitset<E>(V1, e.value);
+    }
 
     template <class T, ct::index_t I>
     void bitsetPrint(std::ostream& out, EnumBitset<T> type, ct::Indexer<I> idx, bool& empty)
