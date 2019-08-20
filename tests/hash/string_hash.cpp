@@ -5,6 +5,7 @@ static constexpr const char* getString()
 {
     return "asdf";
 }
+
 int main()
 {
     STATIC_NE(ct::crc32("asdf"), 0);
