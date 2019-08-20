@@ -142,38 +142,9 @@ namespace ct
         METADATA getMetadata() const { return m_metadata; }
     };
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-    struct GetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
-    {
-        using type = typename MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>::Data_t;
-    };
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-    struct SetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
-    {
-        using type = typename InferSetterType<SET_PTR>::type;
-    };
 
-    template <class T>
-    struct IsMemberPropertyPointer
-    {
-        constexpr static const bool value = false;
-        constexpr static const bool has_setter = false;
-    };
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS>
-    struct IsMemberPropertyPointer<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS>>
-    {
-        constexpr static const bool value = true;
-        constexpr static const bool has_setter = true;
-    };
-
-    template <class GET_PTR, Flag_t FLAGS>
-    struct IsMemberPropertyPointer<MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS>>
-    {
-        constexpr static const bool value = true;
-        constexpr static const bool has_setter = false;
-    };
 
     template <Flag_t FLAGS = 0, class GET_PTR, class SET_PTR>
     constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>
