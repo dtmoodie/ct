@@ -279,7 +279,7 @@ namespace ct
     {                                                                                                                  \
         using EnumValueType = TYPE;                                                                                    \
         using EnumType = NAME;                                                                                         \
-        template <EnumValueType V, ct::index_t I>                                                                      \
+        template <EnumValueType V, uint16_t I>                                                                         \
         using EnumValue = ct::EnumValue<NAME, EnumValueType, V, I>;                                                    \
         constexpr NAME() {}                                                                                            \
         constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
@@ -290,7 +290,7 @@ namespace ct
         REFLECT_STUB
 
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    CT_INLINE_VAR EnumValue<VALUE, static_cast<ct::index_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME = {};             \
+    CT_INLINE_VAR EnumValue<VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME = {};                \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
         return ct::makeEnumField<EnumValue<VALUE, NAME.index>>(#NAME);                                                 \

@@ -80,6 +80,12 @@ namespace ct
         void reset(STORAGE bitset) { m_data = m_data & (~bitset); }
 
         template <class U, uint8_t V, uint16_t I>
+        void reset(BitsetIndex<U, V, I> idx)
+        {
+            reset(idx.toBitset());
+        }
+
+        template <class U, uint8_t V, uint16_t I>
         void set(BitsetIndex<U, V, I> idx)
         {
             m_data = m_data | indexToBit(idx);
@@ -176,6 +182,12 @@ namespace ct
         return E(b0 | b1.toBitset());
     }
 
+    template <class E, class T, T V1, uint8_t V2, uint16_t I1, uint16_t I2>
+    constexpr E operator|(BitsetIndex<E, V2, I2> b1, EnumValue<E, T, V1, I1> b0)
+    {
+        return E(b1.toBitset() | b0);
+    }
+
     template <class E, uint8_t V1, uint16_t I>
     constexpr E operator|(BitsetIndex<E, V1, I> idx, E e)
     {
@@ -256,7 +268,7 @@ namespace ct
     {                                                                                                                  \
         using EnumValueType = uint64_t;                                                                                \
         using EnumType = NAME;                                                                                         \
-        template <uint8_t V, ct::index_t I>                                                                            \
+        template <uint8_t V, uint16_t I>                                                                               \
         using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
         constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
         template <uint8_t V, uint16_t I>                                                                               \
@@ -266,7 +278,8 @@ namespace ct
         REFLECT_STUB
 
 #define ENUM_BITVALUE(NAME, VALUE)                                                                                     \
-    CT_INLINE_VAR ct::BitsetIndex<EnumType, VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {};                       \
+    CT_INLINE_VAR ct::BitsetIndex<EnumType, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME =    \
+        {};                                                                                                            \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
         return ct::makeEnumField<ct::BitsetIndex<EnumType, VALUE, NAME.index>>(#NAME);                                 \
