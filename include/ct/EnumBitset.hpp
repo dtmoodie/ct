@@ -1,32 +1,11 @@
 #ifndef CT_ENUM_BITSET_HPP
 #define CT_ENUM_BITSET_HPP
 #include "enum.hpp"
-#include "reflect_traits.hpp"
 
 #include <bitset>
 
 namespace ct
 {
-    template <class T, class E = void>
-    struct UnderlyingType
-    {
-        using type = typename std::underlying_type<T>::type;
-    };
-
-    template <class T>
-    struct EnumTraits;
-
-    template <class T, class E = void>
-    struct EnumMax
-    {
-        constexpr static const uint32_t value = EnumTraits<T>::max;
-    };
-    template <class T>
-    struct UnderlyingType<T, EnableIfIsEnum<T>>
-    {
-        using type = typename T::EnumValueType;
-    };
-
     template <class T>
     constexpr T max(T v0, T v1)
     {
@@ -45,26 +24,32 @@ namespace ct
         return max(static_cast<typename T::EnumValueType>(Reflect<T>::getPtr(idx).value()), enumMax<T>(--idx));
     }
 
-    template <class T>
-    struct EnumMax<T, EnableIfIsEnum<T>>
-    {
-        constexpr static typename T::EnumValueType value = enumMax<T>(Reflect<T>::end()) + 1;
-    };
-
     template <class E, uint8_t VALUE, uint16_t I>
     struct BitsetIndex : public BitsetTag
     {
         static constexpr uint16_t index = I;
         constexpr BitsetIndex() = default;
         constexpr uint64_t toBitset() const { return uint64_t(1) << VALUE; }
+        constexpr operator uint64_t() const { return uint64_t(1) << VALUE; }
 
 #ifdef _MSC_VER
         static constexpr T value = 1 << VALUE;
 #else
         static constexpr E value = E(1 << VALUE);
 #endif
-        constexpr operator uint64_t() const { return uint64_t(1) << VALUE; }
     };
+
+    template <class T, class E, uint8_t V, uint16_t I>
+    constexpr bool operator==(T v, BitsetIndex<E, V, I>)
+    {
+        return v == V;
+    }
+
+    template <class T, class E, uint8_t V, uint16_t I>
+    constexpr bool operator!=(T v, BitsetIndex<E, V, I>)
+    {
+        return v != V;
+    }
 
     template <typename T, typename STORAGE = uint64_t>
     struct EnumBitset : BitsetTag
@@ -73,8 +58,8 @@ namespace ct
 
         constexpr EnumBitset(STORAGE v = 0) : m_data{v} {}
 
-        template <uint8_t V, uint16_t I>
-        constexpr bool test(BitsetIndex<T, V, I> idx) const
+        template <class U, uint8_t V, uint16_t I>
+        constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
             return m_data & indexToBit(idx);
         }
@@ -92,16 +77,10 @@ namespace ct
             return true;
         }
 
-        template <STORAGE V, uint16_t I>
-        void reset(BitsetIndex<T, V, I> idx)
-        {
-            m_data = m_data & ~indexToBit(idx);
-        }
-
         void reset(STORAGE bitset) { m_data = m_data & (~bitset); }
 
-        template <STORAGE V, uint16_t I>
-        void set(BitsetIndex<T, V, I> idx)
+        template <class U, uint8_t V, uint16_t I>
+        void set(BitsetIndex<U, V, I> idx)
         {
             m_data = m_data | indexToBit(idx);
         }
@@ -109,8 +88,8 @@ namespace ct
         void set(STORAGE bitset) { m_data = m_data | bitset; }
 
         // TODO implement flip
-        template <STORAGE V, uint16_t I>
-        void flip(BitsetIndex<T, V, I>)
+        template <class U, uint8_t V, uint16_t I>
+        void flip(BitsetIndex<U, V, I>)
         {
         }
 
@@ -151,8 +130,8 @@ namespace ct
         }
 
       private:
-        template <uint8_t V, uint16_t I>
-        constexpr STORAGE indexToBit(BitsetIndex<T, V, I>) const
+        template <class U, uint8_t V, uint16_t I>
+        constexpr STORAGE indexToBit(BitsetIndex<U, V, I>) const
         {
             static_assert(V < MAX_BIT, "Can only do bitsets up to 64 bits for now :/");
             return static_cast<STORAGE>(1) << V;
@@ -182,7 +161,7 @@ namespace ct
     template <class E, uint8_t V1, uint16_t I>
     constexpr E operator|(E e, BitsetIndex<E, V1, I>)
     {
-        return E(uint64_t(e) | V1);
+        return E(uint64_t(e) | (1 << V1));
     }
 
     template <class E, uint8_t V1, uint8_t V2, uint16_t I1, uint16_t I2>

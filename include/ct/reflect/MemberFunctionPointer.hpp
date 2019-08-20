@@ -1,10 +1,10 @@
 #ifndef CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
 #define CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
-#include "../flags.hpp"
 #include "../Indexer.hpp"
 #include "../StringView.hpp"
 #include "../VariadicTypedef.hpp"
 #include "../bind.hpp"
+#include "../flags.hpp"
 #include "../types.hpp"
 #include "pointer_traits.hpp"
 
@@ -281,7 +281,7 @@ namespace ct
         R (*m_ptr)(ARGS...);
     };
 
-    template <class T, Flag_t FLAGS = Flags::NONE, class METADATA = void, class... PTRS>
+    template <class T, Flag_t FLAGS = 0, class METADATA = void, class... PTRS>
     struct StaticFunctions
     {
         StringView m_name;
@@ -376,8 +376,8 @@ namespace ct
     };
 
     template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>
-    constexpr MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, void, ARGS...> makeMemberFunctionPointers(const char* name,
-                                                                                                     const ARGS... args)
+    constexpr MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, void, ARGS...>
+    makeMemberFunctionPointers(const char* name, const ARGS... args)
     {
         return MemberFunctionPointers<T, FLAGS | Flags::INVOKABLE, void, ARGS...>(name, args...);
     }
@@ -391,7 +391,7 @@ namespace ct
 
     template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>
     constexpr StaticFunctions<T, FLAGS | Flags::INVOKABLE, void, ARGS...> makeStaticFunctionPointers(StringView name,
-                                                                                              const ARGS... args)
+                                                                                                     const ARGS... args)
     {
         return StaticFunctions<T, FLAGS | Flags::INVOKABLE, void, ARGS...>(name, args...);
     }

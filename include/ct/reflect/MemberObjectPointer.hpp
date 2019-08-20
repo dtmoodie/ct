@@ -1,7 +1,7 @@
 #ifndef CT_MEMBER_OBJECT_POINTER_HPP
 #define CT_MEMBER_OBJECT_POINTER_HPP
-#include "../flags.hpp"
 #include "../bind.hpp"
+#include "../flags.hpp"
 #include "../types.hpp"
 #include "metadata.hpp"
 #include "pointer_traits.hpp"
@@ -28,7 +28,7 @@ namespace ct
 #endif
     }
 
-    template <class PTR, Flag_t FLAGS = Flags::NONE, class METADATA = metadata::Empty>
+    template <class PTR, Flag_t FLAGS = 0, class METADATA = metadata::Empty>
     struct MemberObjectPointer;
 
     template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
@@ -37,7 +37,6 @@ namespace ct
         using Class_t = CTYPE;
         using Data_t = DTYPE;
         constexpr static const int64_t DataFlags = FLAGS | Flags::READABLE | Flags::WRITABLE;
-
 
         constexpr MemberObjectPointer(StringView name, Data_t Class_t::*ptr, const METADATA metadata = METADATA())
             : m_name(name), m_ptr(ptr), m_metadata(metadata)
@@ -140,14 +139,14 @@ namespace ct
         return type::DataFlags;
     }
 
-    template <Flag_t FLAGS = Flags::NONE, class PTR>
-    constexpr MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE> makeMemberObjectPointer(const char* name,
-                                                                                            const PTR ptr)
+    template <Flag_t FLAGS = 0, class PTR>
+    constexpr MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>
+    makeMemberObjectPointer(const char* name, const PTR ptr)
     {
         return MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>(name, ptr);
     }
 
-    template <Flag_t FLAGS = Flags::NONE, class METADATA, class PTR>
+    template <Flag_t FLAGS = 0, class METADATA, class PTR>
     constexpr MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>
     makeMemberObjectPointer(const char* name, const PTR ptr, const METADATA metadata)
     {

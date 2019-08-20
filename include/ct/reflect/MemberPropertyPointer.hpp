@@ -78,7 +78,7 @@ namespace ct
         return AccessToken<void (*)(BASE&, DTYPE)>(obj, set_ptr, get(get_ptr, obj));
     }
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = Flags::NONE, class METADATA = metadata::Empty>
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = 0, class METADATA = metadata::Empty>
     struct MemberPropertyPointer
     {
         StringView m_name;
@@ -175,28 +175,29 @@ namespace ct
         constexpr static const bool has_setter = false;
     };
 
-    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class SET_PTR>
+    template <Flag_t FLAGS = 0, class GET_PTR, class SET_PTR>
     constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set)
     {
         return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>(name, get, set);
     }
 
-    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class SET_PTR, class METADATA>
+    template <Flag_t FLAGS = 0, class GET_PTR, class SET_PTR, class METADATA>
     constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set, const METADATA metadata)
     {
-        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>(name, get, set, metadata);
+        return MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>(
+            name, get, set, metadata);
     }
 
-    template <Flag_t FLAGS = Flags::NONE, class GET_PTR>
+    template <Flag_t FLAGS = 0, class GET_PTR>
     constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t)
     {
         return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE>(name, get);
     }
 
-    template <Flag_t FLAGS = Flags::NONE, class GET_PTR, class METADATA>
+    template <Flag_t FLAGS = 0, class GET_PTR, class METADATA>
     constexpr MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE, METADATA>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const std::nullptr_t, const METADATA metadata)
     {

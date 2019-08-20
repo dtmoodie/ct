@@ -29,7 +29,6 @@ namespace ct
         static constexpr uint16_t index = I;
         constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
-// constexpr operator E() const { return E(VALUE); }
 
 #ifdef _MSC_VER
         static constexpr T value = VALUE;
@@ -255,14 +254,14 @@ namespace ct
     template <class T>
     constexpr Result<T> fromString(StringView str, ct::Indexer<0> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(Reflect<T>::getPtr(idx).value())
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(T(Reflect<T>::getPtr(idx).value()))
                                                                        : error("Invaid string to enum conversion");
     }
 
     template <class T, index_t I>
     constexpr Result<T> fromString(StringView str, ct::Indexer<I> idx, bool case_sensitive)
     {
-        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(Reflect<T>::getPtr(idx).value())
+        return Reflect<T>::getPtr(idx).name.equal(str, case_sensitive) ? success<T>(T(Reflect<T>::getPtr(idx).value()))
                                                                        : fromString<T>(str, --idx, case_sensitive);
     }
 
@@ -291,7 +290,7 @@ namespace ct
         REFLECT_STUB
 
 #define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    CT_INLINE_VAR EnumValue<VALUE, __COUNTER__ - REFLECT_COUNT_START> NAME = {};                                       \
+    CT_INLINE_VAR EnumValue<VALUE, static_cast<ct::index_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME = {};             \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
         return ct::makeEnumField<EnumValue<VALUE, NAME.index>>(#NAME);                                                 \
