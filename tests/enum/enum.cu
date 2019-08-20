@@ -13,7 +13,7 @@ int main()
 {
     // we're pretty limited on what we can do with nvcc since it just kinda dies when handling real c++,
     // so we just test if value semantics work as expected
-    static_assert(MyClass::MyEnum::kVALUE0 == 0, "asdf");
-    static_assert(MyClass::MyEnum::kVALUE1 == 1, "asdf");
-    static_assert(MyClass::MyEnum::kVALUE2 == 2, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE0 == 1, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE1 == 2, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE2 == 3, "asdf");
 }
