@@ -1,4 +1,5 @@
 #pragma once
+#include <ct/EnumBitset.hpp>
 #include <ct/Indexer.hpp>
 #include <ct/enum.hpp>
 #include <ct/reflect.hpp>
@@ -7,10 +8,10 @@
 struct MyClass
 {
     ENUM_START(MyEnum, uint32_t)
-        ENUM_VALUE(kVALUE0, 0)
-        ENUM_VALUE(kVALUE1, 1)
-        ENUM_VALUE(kVALUE2, 2)
-        ENUM_VALUE(kVALUE3, 3)
+        ENUM_VALUE(kVALUE0, 1)
+        ENUM_VALUE(kVALUE1, 2)
+        ENUM_VALUE(kVALUE2, 3)
+        ENUM_VALUE(kVALUE3, 4)
     ENUM_END;
 
     ENUM_START(SecondEnum, uint8_t)
@@ -21,10 +22,24 @@ struct MyClass
         ENUM_VALUE(kHSL, kYUV + 1)
     ENUM_END;
 
-    ENUM_START(BitwiseEnum, uint8_t)
+    BITSET_START(BitwiseEnum)
+        ENUM_VALUE(kVALUE0, 0)
+        ENUM_VALUE(kVALUE1, 1)
+        ENUM_VALUE(kVALUE2, 2)
+    ENUM_END;
+
+    ENUM_START(MixedBitwise, uint64_t)
         ENUM_VALUE(kVALUE0, 1)
-        ENUM_VALUE(kVALUE1, 8)
-        ENUM_VALUE(kVALUE2, 16)
+        ENUM_VALUE(kVALUE1, 2)
+        ENUM_VALUE(kVALUE2, 3)
+        ENUM_VALUE(kVALUE3, 4)
+        ENUM_VALUE(kVALUE4, 5)
+        ENUM_VALUE(kVALUE5, 6)
+        ENUM_VALUE(kVALUE6, 7)
+
+        ENUM_BITVALUE(kFLAG0, 4)
+        ENUM_BITVALUE(kFLAG1, 5)
+        ENUM_BITVALUE(kFLAG2, 6)
     ENUM_END;
 
     enum StandardEnum : uint32_t

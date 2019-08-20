@@ -17,7 +17,7 @@ void foo(const T&)
 }
 #endif
 
-BITSET_START(Bitset, int)
+BITSET_START(Bitset)
     ENUM_VALUE(v0, 0)
     ENUM_VALUE(v1, 1)
     ENUM_VALUE(v2, 2)
@@ -29,40 +29,73 @@ ENUM_END;
 #define REQUIRE(test)                                                                                                  \
     if (!(test))                                                                                                       \
     {                                                                                                                  \
-        std::cout << #test << " not working as expected";                                                              \
+        std::cout << __FILE__ << ":" << __LINE__ << " " << #test << " not working as expected" << std::endl;           \
         std::abort();                                                                                                  \
     }
 
-template <size_t V>
-void bitsetFoo()
+template <uint64_t V>
+void bitsetFoo(const std::string& expected)
 {
-    auto bitset = ct::EnumBitset<Bitset>::fromBitValue<V>();
-    std::cout << "From template parameter" << std::endl;
-    std::cout << bitset << std::endl;
+    auto bitset = Bitset(V);
+    std::stringstream ss;
+    ss << bitset;
+    if (ss.str() != expected)
+    {
+        std::cout << "Incorrect stringification from template argument, expected: '" << expected << "' but got: '"
+                  << ss.str() << "'" << std::endl;
+        std::abort();
+    }
+}
+
+template <class T>
+void checkPrint(T v, const std::string& expected)
+{
+    std::stringstream ss;
+    ss << v;
+    if (expected != ss.str())
+    {
+        std::cout << "Incorrect stringification of an enum, expected: '" << expected << "' but got '" << ss.str() << "'"
+                  << std::endl;
+        std::abort();
+    }
+}
+
+template <class T>
+void checkPrintEnums(const std::string& expected)
+{
+    std::stringstream ss;
+    ct::printEnums<T>(ss);
+    auto result = ss.str();
+    if (expected != result)
+    {
+        std::cout << "Incorrect enumeration of enum values, expected: \n'" << expected << "' but got \n'" << result
+                  << "'" << std::endl;
+        std::abort();
+    }
 }
 
 int main()
 {
     static_assert(ct::IsEnumField<ct::PtrType<MyClass::MyEnum, 0>>::value, "asdf");
     std::cout << "Print all enum values with name\n";
-    ct::printEnums<MyClass::MyEnum>(std::cout);
+    checkPrintEnums<MyClass::MyEnum>("kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\n");
 
-    static_assert(MyClass::MyEnum::kVALUE0 == 0, "asdf");
-    static_assert(MyClass::MyEnum::kVALUE1 == 1, "asdf");
-    static_assert(MyClass::MyEnum::kVALUE2 == 2, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE0 == 1, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE1 == 2, "asdf");
+    static_assert(MyClass::MyEnum::kVALUE2 == 3, "asdf");
 
     std::cout << "Print each individual enum value manually\n";
-    std::cout << MyClass::MyEnum::kVALUE0 << std::endl;
-    std::cout << MyClass::MyEnum::kVALUE1 << std::endl;
-    std::cout << MyClass::MyEnum::kVALUE2 << std::endl;
-    std::cout << MyClass::MyEnum::kVALUE3 << std::endl;
+    checkPrint(MyClass::MyEnum::kVALUE0, "kVALUE0 1");
+    checkPrint(MyClass::MyEnum::kVALUE1, "kVALUE1 2");
+    checkPrint(MyClass::MyEnum::kVALUE2, "kVALUE2 3");
+    checkPrint(MyClass::MyEnum::kVALUE3, "kVALUE3 4");
 
     std::cout << "Print a runtime value\n";
     MyClass::MyEnum val = MyClass::MyEnum::kVALUE0;
-    std::cout << val << std::endl;
+    checkPrint(val, "kVALUE0");
 
     val = MyClass::MyEnum::kVALUE1;
-    std::cout << val << std::endl;
+    checkPrint(val, "kVALUE1");
 
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE0") == MyClass::MyEnum::kVALUE0, "asdf");
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE1") == MyClass::MyEnum::kVALUE1, "asdf");
@@ -113,24 +146,22 @@ int main()
     }
 
     std::cout << "Enum working as expected" << std::endl;
-
     std::cout << "==========================" << std::endl;
 
-    ct::printEnums<MyClass::SecondEnum>(std::cout);
-
-    ct::printEnums<MyClass::StandardEnum>(std::cout);
-    ct::printEnums<MyClass::StandardEnum2>(std::cout);
+    checkPrintEnums<MyClass::SecondEnum>("kBGR 0\nkRGB 1\nkHSV 2\nkYUV 3\nkHSL 4\n");
+    checkPrintEnums<MyClass::StandardEnum>("k0 0\nk1 1\nk2 2\nk3 3\n");
+    checkPrintEnums<MyClass::StandardEnum2>("kASDF 0\nk1234 1\n");
 
     MyClass::BitwiseEnum bitwise_enum;
     bitwise_enum = MyClass::BitwiseEnum::kVALUE0 | MyClass::BitwiseEnum::kVALUE2;
-    ct::printEnums<MyClass::BitwiseEnum>(std::cout);
+    checkPrintEnums<MyClass::BitwiseEnum>("kVALUE0 0\nkVALUE1 1\nkVALUE2 2\n");
 
-    std::cout << bitwise_enum << std::endl;
+    checkPrint(bitwise_enum, "kVALUE2|kVALUE0");
 
     foo(MyClass::MyEnum::kVALUE0);
 
     // Enum bitset stuffs
-    ct::EnumBitset<Bitset> bitset;
+    Bitset bitset(Bitset::v0);
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
     {
         ct::EnumBitset<Bitset> bitset;
@@ -155,6 +186,7 @@ int main()
 
                 bitset.flip(j);
                 REQUIRE(!bitset.test(j));
+                REQUIRE(bitset.test(i));
             }
         }
         bitset.flip(i);
@@ -172,7 +204,11 @@ int main()
     auto bits = ct::EnumBitset<Bitset>(Bitset::v0 | Bitset::v1);
     REQUIRE(bits.test(Bitset::v0));
     REQUIRE(bits.test(Bitset::v1));
-    bitsetFoo<Bitset::v0 | Bitset::v1>();
+    bitsetFoo<Bitset::v0 | Bitset::v1>("v1|v0");
+    bitsetFoo<Bitset::v0>("v0");
+    bitsetFoo<Bitset::v1>("v1");
+    bitsetFoo<Bitset::v2>("v2");
+    bitsetFoo<Bitset::v3>("v3");
 
     ct::EnumBitset<Bitset> bset;
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
@@ -195,4 +231,8 @@ int main()
             REQUIRE(bset.test(j));
         }
     }
+
+    std::cout << "Mixed enum + bit flags" << std::endl;
+    MyClass::MixedBitwise mixed = MyClass::MixedBitwise::kVALUE4 | MyClass::MixedBitwise::kFLAG0;
+    checkPrint(mixed, "kFLAG0|kVALUE4");
 }

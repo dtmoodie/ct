@@ -102,7 +102,8 @@ namespace ct
     template <class T>
     struct EnumChecker
     {
-        static constexpr const bool value = std::is_base_of<EnumTag, T>::value;
+        static constexpr const bool value =
+            std::is_base_of<EnumTag, T>::value || std::is_base_of<BitsetTag, T>::value || std::is_enum<T>::value;
     };
 
     template <class T, class U = void>

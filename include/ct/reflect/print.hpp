@@ -1,5 +1,6 @@
 #ifndef CT_REFLECT_PRINT_HPP
 #define CT_REFLECT_PRINT_HPP
+#include "../EnumBitset.hpp"
 #include "../StringView.hpp"
 #include "../enum.hpp"
 #include "../reflect.hpp"
@@ -392,10 +393,34 @@ namespace std
     }
 
     template <class E, class T, T V, uint16_t I>
-    ostream& operator<<(ostream& os, ct::EnumValue<E, T, V, I>)
+    auto operator<<(ostream& os, ct::EnumValue<E, T, V, I>) -> ct::EnableIf<!std::is_enum<T>::value, ostream&>
     {
         os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
         os << V;
+        return os;
+    }
+
+    template <class E, class T, T V, uint16_t I>
+    auto operator<<(ostream& os, ct::EnumValue<E, T, V, I>) -> ct::EnableIf<std::is_enum<T>::value, ostream&>
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
+        return os;
+    }
+
+    template <class E, uint8_t V, uint16_t I>
+    ostream& operator<<(ostream& os, ct::BitsetIndex<E, V, I>)
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
+        return os;
+    }
+
+    template <class E, unsigned char V, uint16_t I>
+    ostream& operator<<(ostream& os, ct::EnumValue<E, unsigned char, V, I>)
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
         return os;
     }
 
@@ -408,7 +433,6 @@ namespace std
         }
         else
         {
-            // os << v.name << " " << v.value();
             auto value = v.value();
             os << value;
         }
@@ -439,26 +463,32 @@ namespace std
     bool printEnumHelper(ostream& os, T v, ct::Indexer<I> idx, bool check_bitwise, bool multi_value = false)
     {
         const auto value = ct::Reflect<T>::getPtr(idx).value();
-        if (value == v || (check_bitwise && (value & v)))
+        bool success = false;
+        const bool check_bitwise_ =
+            check_bitwise || std::is_base_of<ct::BitsetTag, typename std::decay<decltype(value)>::type>::value;
+        if (value == v || (check_bitwise_ && (value & v)))
         {
             if (multi_value)
             {
                 os << "|";
             }
             os << ct::Reflect<T>::getPtr(idx).name;
-            if (!check_bitwise)
+            if (!check_bitwise_)
             {
                 return true;
             }
             multi_value = true;
+            const auto mask = ~value;
+            v = T(v & mask);
+            success = true;
         }
-        return printEnumHelper(os, v, --idx, check_bitwise, multi_value);
+        return printEnumHelper(os, v, --idx, check_bitwise, multi_value) || success;
     }
 
     template <class T>
     ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
     {
-        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), false))
+        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), std::is_base_of<ct::BitsetTag, T>::value))
         {
             if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
             {
