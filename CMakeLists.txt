@@ -64,7 +64,6 @@ if(NOT TARGET ct)
         enable_testing()
         include_directories(googletest/googletest/include)
 
-        find_package(Boost QUIET COMPONENTS unit_test_framework)
         find_package(OpenCV QUIET COMPONENTS core)
         find_package(CUDA QUIET)
         INCLUDE_DIRECTORIES(wip)
