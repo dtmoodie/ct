@@ -33,9 +33,9 @@ namespace ct
         constexpr operator uint64_t() const { return uint64_t(1) << VALUE; }
 
 #ifdef _MSC_VER
-        static constexpr T value = 1 << VALUE;
+        static constexpr uint64_t value = 1 << VALUE;
 #else
-        static constexpr E value = E(1 << VALUE);
+        static constexpr E value = E(uint64_t(1) << VALUE);
 #endif
     };
 
@@ -61,7 +61,7 @@ namespace ct
         template <class U, uint8_t V, uint16_t I>
         constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
-            return m_data & indexToBit(idx);
+            return (m_data & indexToBit(idx)) != 0;
         }
 
         bool test(STORAGE bitset) const
@@ -201,7 +201,7 @@ namespace ct
     }
 
     template <class E, uint8_t V1, uint16_t I>
-    constexpr bool operator&(BitsetIndex<E, V1, I>, E val)
+    constexpr uint64_t operator&(BitsetIndex<E, V1, I>, E val)
     {
         return (1 << V1) & val;
     }
@@ -238,10 +238,10 @@ namespace ct
     }
 
     template <class T>
-    EnumBitset<T> bitsetFromString(StringView str, char deliminator = '|')
+    T bitsetFromString(StringView str, char deliminator = '|')
     {
         StringView rest = str;
-        EnumBitset<T> output;
+        T output;
         auto pos = rest.find(deliminator);
         while (pos != std::string::npos)
         {
@@ -280,11 +280,11 @@ namespace ct
         REFLECT_STUB
 
 #define ENUM_BITVALUE(NAME, VALUE)                                                                                     \
-    CT_INLINE_VAR ct::BitsetIndex<EnumType, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME =    \
+    CT_INLINE_VAR ct::BitsetIndex<EnumType, static_cast<uint8_t>(VALUE), static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME =    \
         {};                                                                                                            \
     static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
     {                                                                                                                  \
-        return ct::makeEnumField<ct::BitsetIndex<EnumType, VALUE, NAME.index>>(#NAME);                                 \
+        return ct::makeEnumField<ct::BitsetIndex<EnumType, static_cast<uint8_t>(VALUE), NAME.index>>(#NAME);                                 \
     }
 
 #else // ifndef __NVCC__

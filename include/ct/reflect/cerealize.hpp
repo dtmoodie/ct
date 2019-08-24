@@ -79,43 +79,43 @@ namespace ct
         struct FieldCerealizer<T, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, void>
         {
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
+            static constexpr const auto WRITABLE = FLAGS & ct::Flags::WRITABLE;
+            static constexpr const auto CONST = FLAGS & ct::Flags::COMPILE_TIME_CONSTANT;
 
             template <class AR>
             static void load(AR& ar, T& obj, const Ptr_t ptr)
             {
-                loadImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+                loadImpl(ar, obj, ptr, std::integral_constant<bool, WRITABLE != 0>{});
             }
 
             template <class AR>
             static void save(AR& ar, const T& obj, const Ptr_t ptr)
             {
-                saveImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+                saveImpl(ar, obj, ptr, std::integral_constant<bool, CONST == 0>{});
             }
 
           private:
-            template <Flag_t FG, class AR>
-            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::Flags::WRITABLE>
+            template <class AR>
+            static void loadImpl(AR& ar, T& obj, const Ptr_t ptr, std::integral_constant<bool, true>)
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
                 ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
             }
 
-            template <Flag_t FG, class AR>
-            static auto loadImpl(AR&, T&, const Ptr_t) -> EnableIf<!(FG & ct::Flags::WRITABLE)>
+            template <class AR>
+            static void loadImpl(AR&, T&, const Ptr_t, std::integral_constant<bool, false>)
             {
             }
 
-            template <Flag_t FG, class AR>
-            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<(FG & ct::Flags::READABLE) && !(FG & ct::Flags::COMPILE_TIME_CONSTANT)>
+            template <class AR>
+            static void saveImpl(AR& ar, const T& obj, const Ptr_t ptr, std::integral_constant<bool, true>)
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
-            template <Flag_t FG, class AR>
-            static auto saveImpl(AR&, const T&, const Ptr_t)
-                -> EnableIf<!(FG & ct::Flags::READABLE) || (FG & ct::Flags::COMPILE_TIME_CONSTANT)>
+            template <class AR>
+            static void saveImpl(AR&, const T&, const Ptr_t, std::integral_constant<bool, false>)
             {
             }
         };
@@ -235,19 +235,23 @@ namespace ct
                 save(ar, obj, idx);
             }
 
-            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-            static auto reshape(const SHAPE& shape,
-                                MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-                                T& obj) -> EnableIf<FLAGS & Flags::WRITABLE>
+            template <class SHAPE, class PTR>
+            static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, true>)
             {
                 ptr.set(obj, shape);
             }
 
-            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-            static auto reshape(const SHAPE&, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, T&)
-                -> EnableIf<!(FLAGS & Flags::WRITABLE)>
+            template <class SHAPE, class PTR>
+            static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, false>)
             {
-                // means shape is set at compile time, can't do anything
+            }
+
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static void
+            reshape(const SHAPE& shape, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr, T& obj)
+            {
+                constexpr const bool MODIFYABLE_SHAPE = FLAGS & Flags::WRITABLE;
+                reshapeImpl(shape, ptr, obj, std::integral_constant<bool, MODIFYABLE_SHAPE>{});
             }
 
           public:

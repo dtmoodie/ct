@@ -3,13 +3,13 @@
 #include "../bind.hpp"
 #include "../flags.hpp"
 #include "../types.hpp"
+#include "../Indexer.hpp"
+#include "../StringView.hpp"
+#include "../VariadicTypedef.hpp"
+#include "../type_traits.hpp"
+
 #include "metadata.hpp"
 #include "pointer_traits.hpp"
-
-#include <ct/Indexer.hpp>
-#include <ct/StringView.hpp>
-#include <ct/VariadicTypedef.hpp>
-#include <ct/type_traits.hpp>
 
 #include <cstring>
 #include <tuple>
@@ -107,30 +107,6 @@ namespace ct
     {
         return nullptr;
     }
-
-    template <class DTYPE, class CTYPE, class METADATA, Flag_t FLAGS>
-    struct GetType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
-    {
-        using type = const typename MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>::Data_t&;
-    };
-
-    template <class DTYPE, class CTYPE, class METADATA, Flag_t FLAGS>
-    struct SetType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
-    {
-        using type = typename MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>::Data_t&;
-    };
-
-    template <class T>
-    struct IsMemberObjectPointer
-    {
-        constexpr static const bool value = false;
-    };
-
-    template <class DTYPE, class CTYPE, class METADATA, Flag_t FLAGS>
-    struct IsMemberObjectPointer<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
-    {
-        constexpr static const bool value = true;
-    };
 
     template <class PTR_TYPE>
     constexpr Flag_t getFlags()

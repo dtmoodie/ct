@@ -23,9 +23,9 @@ struct MyClass
     ENUM_END;
 
     BITSET_START(BitwiseEnum)
-        ENUM_VALUE(kVALUE0, 0)
-        ENUM_VALUE(kVALUE1, 1)
-        ENUM_VALUE(kVALUE2, 2)
+        ENUM_BITVALUE(kVALUE0, 0)
+        ENUM_BITVALUE(kVALUE1, 1)
+        ENUM_BITVALUE(kVALUE2, 2)
     ENUM_END;
 
     ENUM_START(MixedBitwise, uint64_t)
