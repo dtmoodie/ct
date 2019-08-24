@@ -1,7 +1,7 @@
 #ifndef CT_ARRAY_VIEW_HPP
 #define CT_ARRAY_VIEW_HPP
-#include <ct/type_traits.hpp>
-#include <ct/config.hpp>
+#include "../type_traits.hpp"
+#include "../config.hpp"
 
 #include <cstdint>
 #include <iostream>

@@ -64,7 +64,11 @@
 #include <cuda_runtime_api.h>
 #define CT_DEVICE_INLINE __host__ __device__ __inline__
 #else
+#ifdef _MSC_VER
+#define CT_DEVICE_INLINE inline
+#else
 #define CT_DEVICE_INLINE __inline__
+#endif
 #endif
 
 
