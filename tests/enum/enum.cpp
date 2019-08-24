@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "enum.hpp"
 #include "ct/EnumBitset.hpp"
+#include "enum.hpp"
 #include <ct/static_asserts.hpp>
 #include <iostream>
 #include <sstream>
@@ -19,7 +19,6 @@ void foo(const T&)
 {
 }
 #endif
-
 
 int main(int argc, char** argv)
 {
@@ -62,7 +61,6 @@ void checkPrintEnums(const std::string& expected)
     ASSERT_EQ(expected, result);
 }
 
-
 TEST(enumerate, MyEnum)
 {
     checkPrintEnums<MyClass::MyEnum>("kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\n");
@@ -90,9 +88,9 @@ TEST(enumerate, BitwiseEnum)
 
 TEST(enumerate, MixedBitwise)
 {
-    checkPrintEnums<MyClass::MixedBitwise>("kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\nkVALUE4 5\nkVALUE5 6\nkVALUE6 7\nkFLAG0 4\nkFLAG1 5\nkFLAG2 6\n");
+    checkPrintEnums<MyClass::MixedBitwise>(
+        "kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\nkVALUE4 5\nkVALUE5 6\nkVALUE6 7\nkFLAG0 4\nkFLAG1 5\nkFLAG2 6\n");
 }
-
 
 TEST(enum_to_string, MyEnum)
 {
@@ -110,7 +108,6 @@ TEST(enum_to_string, SecondEnum)
     checkPrint(MyClass::SecondEnum::kYUV, "kYUV 3");
     checkPrint(MyClass::SecondEnum::kHSL, "kHSL 4");
 }
-
 
 TEST(enum_to_string, BitwiseEnum)
 {
@@ -147,7 +144,6 @@ TEST(enum_to_string, StandardEnum2)
     checkPrint(MyClass::StandardEnum2::kASDF, "kASDF");
     checkPrint(MyClass::StandardEnum2::k1234, "k1234");
 }
-
 
 TEST(enum_value_to_string, MyEnum)
 {
@@ -212,7 +208,6 @@ TEST(enum_value_to_string, MixedBitwise)
     ct::StaticEquality<uint64_t, MyClass::MixedBitwise::kFLAG1, 32>{};
     ct::StaticEquality<uint64_t, MyClass::MixedBitwise::kFLAG2, 64>{};
 
-
     MyClass::MixedBitwise val = MyClass::MixedBitwise::kVALUE0;
     checkPrint(val, "kVALUE0");
     val = MyClass::MixedBitwise::kVALUE1;
@@ -262,7 +257,6 @@ TEST(enum_value_to_string, StandardEnum2)
     val = MyClass::StandardEnum2::k1234;
     checkPrint(val, "k1234");
 }
-
 
 TEST(enum_value_from_string, MyEnum)
 {
@@ -355,11 +349,12 @@ TEST(enum_bitwise, from_template)
     auto bits = ct::EnumBitset<Bitset>(Bitset::v0 | Bitset::v1);
     ASSERT_EQ(bits.test(Bitset::v0), true);
     ASSERT_EQ(bits.test(Bitset::v1), true);
-    bitsetFoo<Bitset::v0 | Bitset::v1>("v1|v0");
-    bitsetFoo<Bitset::v0>("v0");
-    bitsetFoo<Bitset::v1>("v1");
-    bitsetFoo<Bitset::v2>("v2");
-    bitsetFoo<Bitset::v3>("v3");
+    constexpr uint64_t v = Bitset::v0 | Bitset::v1;
+    bitsetFoo<v>("v1|v0");
+    bitsetFoo<uint64_t(Bitset::v0)>("v0");
+    bitsetFoo<uint64_t(Bitset::v1)>("v1");
+    bitsetFoo<uint64_t(Bitset::v2)>("v2");
+    bitsetFoo<uint64_t(Bitset::v3)>("v3");
 }
 
 // This is mostly to ensure certain operators are overloaded such that there are no undefined references in < c++17

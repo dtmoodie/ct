@@ -33,7 +33,7 @@ namespace ct
         constexpr operator uint64_t() const { return uint64_t(1) << VALUE; }
 
 #ifdef _MSC_VER
-        static constexpr T value = 1 << VALUE;
+        static constexpr uint64_t value = 1 << VALUE;
 #else
         static constexpr E value = E(uint64_t(1) << VALUE);
 #endif
@@ -61,7 +61,7 @@ namespace ct
         template <class U, uint8_t V, uint16_t I>
         constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
-            return m_data & indexToBit(idx);
+            return (m_data & indexToBit(idx)) != 0;
         }
 
         bool test(STORAGE bitset) const
@@ -201,7 +201,7 @@ namespace ct
     }
 
     template <class E, uint8_t V1, uint16_t I>
-    constexpr bool operator&(BitsetIndex<E, V1, I>, E val)
+    constexpr uint64_t operator&(BitsetIndex<E, V1, I>, E val)
     {
         return (1 << V1) & val;
     }

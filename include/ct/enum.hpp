@@ -18,7 +18,7 @@ namespace ct
 {
 
     template <class T>
-    T value(T val)
+    T makeValue(T val)
     {
         return val;
     }
@@ -154,19 +154,19 @@ namespace ct
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(E val, EnumValue<E, T, V1, I>)
+    constexpr T operator&(E val, EnumValue<E, T, V1, I>)
     {
         return val.value & V1;
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(EnumValue<E, T, V1, I>, E val)
+    constexpr T operator&(EnumValue<E, T, V1, I>, E val)
     {
-        return V1 & val;
+        return T(V1 & val);
     }
 
     template <class E, class T, T V1, uint16_t I>
-    constexpr bool operator&(T val, EnumValue<E, T, V1, I>)
+    constexpr T operator&(T val, EnumValue<E, T, V1, I>)
     {
         return val & V1;
     }
