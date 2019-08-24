@@ -18,7 +18,7 @@ namespace ct
 {
 
     template <class T>
-    T makeValue(T val)
+    T value(T val)
     {
         return val;
     }
