@@ -122,24 +122,24 @@
 #define PROPERTY_WITH_FLAG_1(FLAG, NAME)                                                                               \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberPropertyPointer<uint64_t(FLAG)>(#NAME, &DataType::NAME, nullptr);                                   \
+        return ct::makeMemberPropertyPointer<FLAG>(#NAME, &DataType::NAME, nullptr);                                   \
     }
 
 #define PROPERTY_WITH_FLAG_2(FLAG, NAME, GETTER)                                                                       \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberPropertyPointer<uint64_t(FLAG)>(#NAME, GETTER, nullptr);                                            \
+        return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, nullptr);                                            \
     }
 
 #define PROPERTY_WITH_FLAG_3(FLAG, NAME, GETTER, SETTER)                                                               \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
-        return ct::makeMemberPropertyPointer<uint64_t(FLAG)>(#NAME, GETTER, SETTER);                                             \
+        return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
 
 #ifdef _MSC_VER
 #define PROPERTY_WITH_FLAG(FLAG, ...)                                                                                  \
-    CT_PP_CAT(CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(FLAG, __VA_ARGS__), CT_PP_EMPTY())
+    CT_PP_CAT(CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(uint64_t(FLAG), __VA_ARGS__), CT_PP_EMPTY())
 #else
 #define PROPERTY_WITH_FLAG(FLAG, ...) CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(FLAG, __VA_ARGS__)
 
