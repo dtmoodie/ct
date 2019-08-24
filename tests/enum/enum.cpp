@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
-#include "enum.hpp"
 #include "ct/EnumBitset.hpp"
+#include "enum.hpp"
 #include <ct/static_asserts.hpp>
 #include <iostream>
 #include <sstream>
@@ -19,7 +19,6 @@ void foo(const T&)
 {
 }
 #endif
-
 
 int main(int argc, char** argv)
 {
@@ -42,7 +41,7 @@ void bitsetFoo(const std::string& expected)
     auto bitset = Bitset(V);
     std::stringstream ss;
     ss << bitset;
-    EXPECT_EQ(expected, ss.str());
+    ASSERT_EQ(expected, ss.str());
 }
 
 template <class T>
@@ -50,7 +49,7 @@ void checkPrint(T v, const std::string& expected)
 {
     std::stringstream ss;
     ss << v;
-    EXPECT_EQ(expected, ss.str());
+    ASSERT_EQ(expected, ss.str());
 }
 
 template <class T>
@@ -59,9 +58,8 @@ void checkPrintEnums(const std::string& expected)
     std::stringstream ss;
     ct::printEnums<T>(ss);
     auto result = ss.str();
-    EXPECT_EQ(expected, result);
+    ASSERT_EQ(expected, result);
 }
-
 
 TEST(enumerate, MyEnum)
 {
@@ -90,9 +88,9 @@ TEST(enumerate, BitwiseEnum)
 
 TEST(enumerate, MixedBitwise)
 {
-    checkPrintEnums<MyClass::MixedBitwise>("kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\nkVALUE4 5\nkVALUE5 6\nkVALUE6 7\nkFLAG0 4\nkFLAG1 5\nkFLAG2 6\n");
+    checkPrintEnums<MyClass::MixedBitwise>(
+        "kVALUE0 1\nkVALUE1 2\nkVALUE2 3\nkVALUE3 4\nkVALUE4 5\nkVALUE5 6\nkVALUE6 7\nkFLAG0 4\nkFLAG1 5\nkFLAG2 6\n");
 }
-
 
 TEST(enum_to_string, MyEnum)
 {
@@ -110,7 +108,6 @@ TEST(enum_to_string, SecondEnum)
     checkPrint(MyClass::SecondEnum::kYUV, "kYUV 3");
     checkPrint(MyClass::SecondEnum::kHSL, "kHSL 4");
 }
-
 
 TEST(enum_to_string, BitwiseEnum)
 {
@@ -147,7 +144,6 @@ TEST(enum_to_string, StandardEnum2)
     checkPrint(MyClass::StandardEnum2::kASDF, "kASDF");
     checkPrint(MyClass::StandardEnum2::k1234, "k1234");
 }
-
 
 TEST(enum_value_to_string, MyEnum)
 {
@@ -212,7 +208,6 @@ TEST(enum_value_to_string, MixedBitwise)
     ct::StaticEquality<uint64_t, MyClass::MixedBitwise::kFLAG1, 32>{};
     ct::StaticEquality<uint64_t, MyClass::MixedBitwise::kFLAG2, 64>{};
 
-
     MyClass::MixedBitwise val = MyClass::MixedBitwise::kVALUE0;
     checkPrint(val, "kVALUE0");
     val = MyClass::MixedBitwise::kVALUE1;
@@ -263,7 +258,6 @@ TEST(enum_value_to_string, StandardEnum2)
     checkPrint(val, "k1234");
 }
 
-
 TEST(enum_value_from_string, MyEnum)
 {
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE0") == MyClass::MyEnum::kVALUE0, "asdf");
@@ -271,28 +265,28 @@ TEST(enum_value_from_string, MyEnum)
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE2") == MyClass::MyEnum::kVALUE2, "asdf");
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE3") == MyClass::MyEnum::kVALUE3, "asdf");
     auto from_string = ct::fromString<MyClass::MyEnum>("kVALUE0");
-    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE0));
+    ASSERT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE0));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE1");
-    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE1));
+    ASSERT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE1));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE2");
-    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE2));
+    ASSERT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE2));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE3");
-    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE3));
+    ASSERT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE3));
 }
 
 TEST(enum_value_from_string, BitwiseEnum)
 {
     auto from_string = ct::bitsetFromString<MyClass::BitwiseEnum>("kVALUE0|kVALUE1");
-    EXPECT_EQ(from_string.test(MyClass::BitwiseEnum::kVALUE0), true);
-    EXPECT_EQ(from_string.test(MyClass::BitwiseEnum::kVALUE1), true);
+    ASSERT_EQ(from_string.test(MyClass::BitwiseEnum::kVALUE0), true);
+    ASSERT_EQ(from_string.test(MyClass::BitwiseEnum::kVALUE1), true);
 }
 
 // TODO, figure out this case
 /*TEST(enum_value_from_string, MixedBitwise)
 {
     auto from_string = ct::bitsetFromString<MyClass::MixedBitwise>("kVALUE0|kFLAG0");
-    EXPECT_EQ(from_string & MyClass::MixedBitwise::kFLAG0, true);
-    EXPECT_EQ(from_string & MyClass::MixedBitwise::kVALUE0, true);
+    ASSERT_EQ(from_string & MyClass::MixedBitwise::kFLAG0, true);
+    ASSERT_EQ(from_string & MyClass::MixedBitwise::kVALUE0, true);
 }*/
 
 TEST(enum_bitwise, bitwise)
@@ -301,37 +295,37 @@ TEST(enum_bitwise, bitwise)
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
     {
         ct::EnumBitset<Bitset> bitset;
-        EXPECT_EQ(bitset.test(i), false);
+        ASSERT_EQ(bitset.test(i), false);
         bitset.set(i);
-        EXPECT_EQ(bitset.test(i), true);
+        ASSERT_EQ(bitset.test(i), true);
         for (Bitset j = Bitset::v1; j <= Bitset::v5; ++j)
         {
             if (i != j)
             {
-                EXPECT_EQ(bitset.test(j), false);
+                ASSERT_EQ(bitset.test(j), false);
                 bitset.set(j);
-                EXPECT_EQ(bitset.test(j), true);
+                ASSERT_EQ(bitset.test(j), true);
 
                 std::stringstream ss;
                 ss << bitset;
 
                 auto from_str = ct::bitsetFromString<Bitset>(ss.str());
-                EXPECT_EQ(from_str.test(i), true);
-                EXPECT_EQ(from_str.test(j), true);
+                ASSERT_EQ(from_str.test(i), true);
+                ASSERT_EQ(from_str.test(j), true);
 
                 bitset.flip(j);
-                EXPECT_EQ(bitset.test(j), false);
-                EXPECT_EQ(bitset.test(i), true);
+                ASSERT_EQ(bitset.test(j), false);
+                ASSERT_EQ(bitset.test(i), true);
             }
         }
         bitset.flip(i);
-        EXPECT_EQ(bitset.test(i), false);
+        ASSERT_EQ(bitset.test(i), false);
     }
 
     ct::EnumBitset<Bitset> bset;
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
     {
-        EXPECT_EQ(bset.test(i), false);
+        ASSERT_EQ(bset.test(i), false);
     }
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
     {
@@ -340,12 +334,12 @@ TEST(enum_bitwise, bitwise)
         ++j;
         for (; j <= Bitset::v5; ++j)
         {
-            EXPECT_EQ(bset.test(j), false);
+            ASSERT_EQ(bset.test(j), false);
         }
 
         for (Bitset j = Bitset::v0; j <= i; ++j)
         {
-            EXPECT_EQ(bset.test(j), true);
+            ASSERT_EQ(bset.test(j), true);
         }
     }
 }
@@ -353,8 +347,8 @@ TEST(enum_bitwise, bitwise)
 TEST(enum_bitwise, from_template)
 {
     auto bits = ct::EnumBitset<Bitset>(Bitset::v0 | Bitset::v1);
-    EXPECT_EQ(bits.test(Bitset::v0), true);
-    EXPECT_EQ(bits.test(Bitset::v1), true);
+    ASSERT_EQ(bits.test(Bitset::v0), true);
+    ASSERT_EQ(bits.test(Bitset::v1), true);
     constexpr uint64_t v = Bitset::v0 | Bitset::v1;
     bitsetFoo<v>("v1|v0");
     bitsetFoo<uint64_t(Bitset::v0)>("v0");
@@ -367,15 +361,15 @@ TEST(enum_bitwise, from_template)
 TEST(enum_bitwise, operators)
 {
     MyClass::SecondEnum e;
-    EXPECT_EQ(e, 0);
+    ASSERT_EQ(e, 0);
     auto b0 = e | MyClass::SecondEnum::kBGR;
-    EXPECT_EQ(b0.value, ct::value(MyClass::SecondEnum::kBGR));
+    ASSERT_EQ(b0.value, ct::value(MyClass::SecondEnum::kBGR));
     auto b1 = MyClass::SecondEnum::kBGR | e;
-    EXPECT_EQ(b1, ct::value(MyClass::SecondEnum::kBGR));
+    ASSERT_EQ(b1, ct::value(MyClass::SecondEnum::kBGR));
     b1 = MyClass::SecondEnum::kRGB | e;
-    EXPECT_EQ(b1, ct::value(MyClass::SecondEnum::kRGB));
+    ASSERT_EQ(b1, ct::value(MyClass::SecondEnum::kRGB));
     b0 = e & MyClass::SecondEnum::kBGR;
-    EXPECT_EQ(b0, 0);
+    ASSERT_EQ(b0, 0);
     b1 = MyClass::SecondEnum::kBGR & e;
-    EXPECT_EQ(b1, 0);
+    ASSERT_EQ(b1, 0);
 }

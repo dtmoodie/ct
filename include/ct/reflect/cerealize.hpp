@@ -91,7 +91,7 @@ namespace ct
             template <class AR>
             static void save(AR& ar, const T& obj, const Ptr_t ptr)
             {
-                saveImpl(ar, obj, ptr, std::integral_constant<bool, !CONST>{});
+                saveImpl(ar, obj, ptr, std::integral_constant<bool, CONST == 0>{});
             }
 
           private:
@@ -114,7 +114,7 @@ namespace ct
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
-            template <Flag_t FG, class AR>
+            template <class AR>
             static void saveImpl(AR&, const T&, const Ptr_t, std::integral_constant<bool, false>)
             {
             }
@@ -235,25 +235,23 @@ namespace ct
                 save(ar, obj, idx);
             }
 
-			template<class SHAPE, class PTR>
-			static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, true>)
-			{
+            template <class SHAPE, class PTR>
+            static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, true>)
+            {
                 ptr.set(obj, shape);
-			}
-			
-			template <class SHAPE, class PTR>
+            }
+
+            template <class SHAPE, class PTR>
             static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, false>)
             {
             }
 
             template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-            static void reshape(const SHAPE& shape,
-                                MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-                                T& obj)
+            static void
+            reshape(const SHAPE& shape, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr, T& obj)
             {
                 constexpr const bool MODIFYABLE_SHAPE = FLAGS & Flags::WRITABLE;
                 reshapeImpl(shape, ptr, obj, std::integral_constant<bool, MODIFYABLE_SHAPE>{});
-                
             }
 
           public:
