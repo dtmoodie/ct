@@ -271,13 +271,13 @@ TEST(enum_value_from_string, MyEnum)
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE2") == MyClass::MyEnum::kVALUE2, "asdf");
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE3") == MyClass::MyEnum::kVALUE3, "asdf");
     auto from_string = ct::fromString<MyClass::MyEnum>("kVALUE0");
-    EXPECT_EQ(from_string, ct::makeValue(MyClass::MyEnum::kVALUE0));
+    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE0));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE1");
-    EXPECT_EQ(from_string, ct::makeValue(MyClass::MyEnum::kVALUE1));
+    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE1));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE2");
-    EXPECT_EQ(from_string, ct::makeValue(MyClass::MyEnum::kVALUE2));
+    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE2));
     from_string = ct::fromString<MyClass::MyEnum>("kVALUE3");
-    EXPECT_EQ(from_string, ct::makeValue(MyClass::MyEnum::kVALUE3));
+    EXPECT_EQ(from_string, ct::value(MyClass::MyEnum::kVALUE3));
 }
 
 TEST(enum_value_from_string, BitwiseEnum)
@@ -369,11 +369,11 @@ TEST(enum_bitwise, operators)
     MyClass::SecondEnum e;
     EXPECT_EQ(e, 0);
     auto b0 = e | MyClass::SecondEnum::kBGR;
-    EXPECT_EQ(b0.value, ct::makeValue(MyClass::SecondEnum::kBGR));
+    EXPECT_EQ(b0.value, ct::value(MyClass::SecondEnum::kBGR));
     auto b1 = MyClass::SecondEnum::kBGR | e;
-    EXPECT_EQ(b1, ct::makeValue(MyClass::SecondEnum::kBGR));
+    EXPECT_EQ(b1, ct::value(MyClass::SecondEnum::kBGR));
     b1 = MyClass::SecondEnum::kRGB | e;
-    EXPECT_EQ(b1, ct::makeValue(MyClass::SecondEnum::kRGB));
+    EXPECT_EQ(b1, ct::value(MyClass::SecondEnum::kRGB));
     b0 = e & MyClass::SecondEnum::kBGR;
     EXPECT_EQ(b0, 0);
     b1 = MyClass::SecondEnum::kBGR & e;
