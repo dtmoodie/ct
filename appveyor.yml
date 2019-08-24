@@ -30,7 +30,7 @@ before_build:
    
    cd build
    
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/ -Dgtest_force_shared_crt=ON
 
 - sh: >-
     mkdir -p build
