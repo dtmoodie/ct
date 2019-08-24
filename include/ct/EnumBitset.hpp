@@ -59,9 +59,9 @@ namespace ct
         constexpr EnumBitset(STORAGE v = 0) : m_data{v} {}
 
         template <class U, uint8_t V, uint16_t I>
-        constexpr uint64_t test(BitsetIndex<U, V, I> idx) const
+        constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
-            return m_data & indexToBit(idx);
+            return (m_data & indexToBit(idx)) != 0;
         }
 
         bool test(STORAGE bitset) const
