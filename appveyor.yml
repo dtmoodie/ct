@@ -23,6 +23,7 @@ before_build:
 - cd eigen-git-mirror
 - git checkout 3.3.7
 - cd ..
+- git submodule update --init --recursive
 
 - cmd: >-
    if not exist "build" mkdir build
