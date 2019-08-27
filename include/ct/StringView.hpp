@@ -162,16 +162,16 @@ namespace ct
         return str != end
                    ? isDigit(*str) ? stoiImplRange(str + 1, end, (*str - '0') + value * 10, negative)
                                    : *str == '-' ? stoiImplRange(str + 1, end, value, true)
-                                          : throw std::runtime_error("compile-time-error: not a digit")
+                                                 : throw std::runtime_error("compile-time-error: not a digit")
                    : negative ? -value : value;
     }
 
     constexpr int stoiImpl(const char* str, int value = 0, bool negative = false)
     {
         return *str
-                   ? isDigit(*str)
-                         ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
-                         : *str == '-' ? stoiImpl(str + 1, value, true) : throw std::runtime_error("compile-time-error: not a digit")
+                   ? isDigit(*str) ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
+                                   : *str == '-' ? stoiImpl(str + 1, value, true)
+                                                 : throw std::runtime_error("compile-time-error: not a digit")
                    : value;
     }
 
@@ -237,13 +237,12 @@ namespace ct
     constexpr BasicStringView<T> BasicStringView<T>::slice(ssize_t begin, ssize_t end) const
     {
         return sliceHelper(revIndex(begin), (end == 0 && begin < 0) ? m_size : revIndex(end));
-        //return BasicStringView(m_data + revIndex(begin), (end == 0 && begin < 0) ? (m_size - revIndex(begin)) : (revIndex(end) - revIndex(begin)));
     }
 
-    template<class T>
+    template <class T>
     constexpr BasicStringView<T> BasicStringView<T>::sliceHelper(size_t begin, size_t end) const
     {
-        return begin < end ? BasicStringView(m_data + begin, end - begin): throw std::runtime_error("invalid range");
+        return begin < end ? BasicStringView(m_data + begin, end - begin) : throw std::runtime_error("invalid range");
     }
 
     template <class T>
@@ -276,7 +275,8 @@ namespace ct
     template <class T>
     constexpr size_t BasicStringView<T>::count(T character, size_t pos, size_t cnt) const
     {
-        return pos == m_size ? cnt : (m_data[pos] == character ? count(character, pos+1, cnt + 1) : count(character, pos + 1, cnt));
+        return pos == m_size ? cnt : (m_data[pos] == character ? count(character, pos + 1, cnt + 1)
+                                                               : count(character, pos + 1, cnt));
     }
 
     template <class T>

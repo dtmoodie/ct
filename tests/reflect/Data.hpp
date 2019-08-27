@@ -101,7 +101,7 @@ struct MultipleInheritance : public PrivateMutableAccess, public ReflectedStruct
 struct PrivateGetAndSet
 {
   public:
-    PrivateGetAndSet(float v) : x(v) {}
+    PrivateGetAndSet(float v = 0.0) : x(v) {}
     const float& getX() const { return x; }
     void setX(const float val) { x = val; }
   private:
