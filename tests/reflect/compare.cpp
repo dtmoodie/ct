@@ -26,7 +26,7 @@ struct TestFalse
     }
 };
 
-int main()
+int main(int argc, char** argv)
 {
     TestTrue true_tester;
     testTypes(true_tester);

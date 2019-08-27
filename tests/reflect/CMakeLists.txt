@@ -22,7 +22,7 @@ target_link_libraries(test_ct_reflect_access ct)
 set_target_properties(test_ct_reflect_access PROPERTIES FOLDER Tests/ct)
 
 add_executable(test_ct_reflect_print ${hdr} print.cpp)
-target_link_libraries(test_ct_reflect_print ct)
+target_link_libraries(test_ct_reflect_print ct gtest gtest_main)
 set_target_properties(test_ct_reflect_print PROPERTIES FOLDER Tests/ct)
 if(OpenCV_FOUND)
     target_link_libraries(test_ct_reflect_print ${OpenCV_LIBS})

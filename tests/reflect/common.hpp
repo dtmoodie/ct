@@ -14,6 +14,8 @@
 #include <ct/reflect/compare-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 
+#include <gtest/gtest.h>
+
 #include <iostream>
 #include <map>
 #include <memory>
@@ -93,99 +95,71 @@ struct DebugEqual
     }
 };
 
-template <class Tester>
-void testTypes(Tester& tester)
-{
-    {
-        ReflectedStruct data{0, 1, 2, 3};
-        tester.test(data);
-    }
-    {
-        Inherited data;
-        data.id = 3;
-        data.w = 4;
-        data.x = 0;
-        data.y = 1;
-        data.z = 2;
-        tester.test(data);
-    }
-    {
-        Composite data{{0, 1, 2, 3}, {4, 5, 6, 7}};
-        tester.test(data);
-    }
-    {
-        TestA data{0, 1, 2};
-        tester.test(data);
-    }
-    {
-        TestB data{0, 1, 2};
-        tester.test(data);
-    }
-    {
-        TestC data{0, 1, 2};
-        tester.test(data);
-    }
-    {
-        TestVec data;
-        data.vec = {0, 1, 2, 3, 4};
-        tester.test(data);
-    }
-    {
-        PrivateMutableAccess pma;
-        pma.mutateX() = 4;
-        tester.test(pma);
-    }
-    {
-        InternallyReflected data;
-        data.x = 5;
-        data.y = 10;
-        data.z = 15;
-        tester.test(data);
-    }
-    {
-        PrivateGetAndSet pgs;
-        pgs.setX(5.2f);
-        tester.test(pgs);
-    }
-    {
-        std::vector<ReflectedStruct> vec{{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}};
-        tester.test(vec);
-    }
-    {
-        std::map<std::string, Inherited> map;
-        Inherited obj;
-        obj.id = 0;
-        obj.w = 0;
-        obj.x = 1;
-        obj.y = 2;
-        obj.z = 3;
+template <class T>
+struct TestData;
 
-        map["asdf"] = obj;
-        obj.z = 4;
-        map["asdfg"] = obj;
-        tester.test(map);
+#define TEST_DATA(TYPE, ...)                                                                                           \
+    template <>                                                                                                        \
+    struct TestData<TYPE>                                                                                              \
+    {                                                                                                                  \
+        static TYPE init() { return __VA_ARGS__; }                                                                     \
     }
+
+TEST_DATA(ReflectedStruct, {0, 1, 2, 3});
+TEST_DATA(Composite, {{0, 1, 2, 3}, {4, 5, 6, 7}});
+TEST_DATA(TestA, {0, 1, 2});
+TEST_DATA(TestB, {0, 1, 2});
+TEST_DATA(TestC, {0, 1, 2});
+TEST_DATA(TestVec, {{0, 1, 2, 3, 4}});
+TEST_DATA(PrivateMutableAccess, {4});
+TEST_DATA(InternallyReflected, {5, 10, 15});
+TEST_DATA(PrivateGetAndSet, {5.2f});
+TEST_DATA(std::vector<ReflectedStruct>, {{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}});
+using MapVec = std::map<int, TestVec>;
+TEST_DATA(MapVec, {{0, {{0, 1, 2, 3, 4, 5}}}, {10, {{0, 3, 4, 5}}}});
+TEST_DATA(Wrapper, {5});
+
+template <>
+struct TestData<Inherited>
+{
+    static Inherited init()
     {
-        std::map<int, TestVec> mapvec;
-        TestVec obj;
-        obj.vec = {0, 1, 2, 3, 4, 5};
-        mapvec[0] = obj;
-        obj.vec = {0, 3, 4, 5};
-        mapvec[10] = obj;
-        tester.test(mapvec);
+        Inherited ret;
+        ret.x = 0.0f;
+        ret.y = 1.0f;
+        ret.z = 2.0f;
+        ret.id = 3;
+        ret.w = 4.0;
+        return ret;
     }
+};
+
+using StringMap = std::map<std::string, Inherited>;
+template <>
+struct TestData<StringMap>
+{
+    static StringMap init()
     {
-        std::shared_ptr<ReflectedStruct> data = std::make_shared<ReflectedStruct>();
-        tester.test(data);
+        StringMap ret;
+        Inherited val;
+        val.x = 0;
+        val.y = 1;
+        val.z = 2;
+        val.id = -1;
+        val.w = 15;
+        ret["asdf"] = val;
+        val.z = 4;
+        ret["asdfg"] = val;
+
+        return ret;
     }
+};
+
+template <>
+struct TestData<MultipleInheritance>
+{
+    static MultipleInheritance init()
     {
-        Wrapper data{5};
-        tester.test(data);
-    }
-    {
-        // WeirdWeakOwnerShip data;
-        // tester.test(data);
-    } {
         MultipleInheritance asdf;
         asdf.ReflectedStruct::x = 0;
         asdf.ReflectedStruct::y = 1;
@@ -193,12 +167,15 @@ void testTypes(Tester& tester)
         asdf.id = 3;
         asdf.mutateX() = 4;
         asdf.asdf = 5;
-        tester.test(asdf);
+        return asdf;
     }
-    {
-        ExplicitThisProperty data;
-        tester.test(data);
-    }
+};
+
+TEST_DATA(ExplicitThisProperty, {});
+template <>
+struct TestData<DerivedC>
+{
+    static DerivedC init()
     {
         DerivedC derived;
         derived.base_x = 0;
@@ -207,22 +184,30 @@ void testTypes(Tester& tester)
         derived.derived_a = 3;
         derived.derived_b = 4;
         derived.derived_c = 5;
-
-        tester.test(derived);
     }
-    {
-        Virtual virt;
-        tester.test(virt);
-    }
-    {
-        Templated<double> data;
-        tester.test(data);
-    }
+};
+TEST_DATA(Virtual, {});
+TEST_DATA(Templated<double>, {});
 #ifdef HAVE_OPENCV
-    {
-        cv::Vec2f data(2, 3);
-        tester.test(data);
-    }
+TEST_DATA(cv::Vec2f, {2, 3});
+#endif
+using TestTypes = ::testing::Types<ReflectedStruct,
+                                   Inherited,
+                                   Composite,
+                                   TestA,
+                                   TestB,
+                                   TestC,
+                                   TestVec,
+                                   PrivateMutableAccess,
+                                   InternallyReflected,
+                                   PrivateGetAndSet,
+                                   std::vector<ReflectedStruct>,
+                                   std::map<std::string, Inherited>>;
+
+template <class Tester>
+void testTypes(Tester& tester)
+{
+#ifdef HAVE_OPENCV
     {
         cv::Rect2f data(0, 1, 2, 3);
         tester.test(data);

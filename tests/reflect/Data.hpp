@@ -86,6 +86,7 @@ struct TestVec
 struct PrivateMutableAccess
 {
   public:
+    PrivateMutableAccess(float v = 0) : m_private_property(v) {}
     const float& getX() const { return m_private_property; }
     float& mutateX() { return m_private_property; }
   private:
@@ -100,6 +101,7 @@ struct MultipleInheritance : public PrivateMutableAccess, public ReflectedStruct
 struct PrivateGetAndSet
 {
   public:
+    PrivateGetAndSet(float v) : x(v) {}
     const float& getX() const { return x; }
     void setX(const float val) { x = val; }
   private:
