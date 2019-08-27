@@ -12,73 +12,70 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
-template <class Read, class Write>
-struct CerealizationTester
+template <class T, class Read, class Write>
+struct CerealizationTester : ::testing::Test
 {
-    CerealizationTester(std::string path) : m_path(std::move(path)) {}
+    CerealizationTester() : m_path(std::is_same<Read, cereal::JSONInputArchive>::value ? "test.json" : "test.bin") {}
 
-    template <class T>
-    void test(const T& data)
+    void test()
     {
+        const T data = TestData<T>::init();
         {
             std::ofstream ofs;
             ofs.open(m_path);
-            if (!ofs.is_open())
-            {
-                std::cout << "unable to open file to serialize out to" << std::endl;
-                std::abort();
-            }
+            ASSERT_TRUE(ofs.is_open());
+
             Write archive(ofs);
-            archive(cereal::make_nvp("data", data));
-        }
-        {
-            std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
-            Write archive(std::cout);
             archive(cereal::make_nvp("data", data));
         }
         {
             std::ifstream ifs;
             ifs.open(m_path);
-            if (!ifs.is_open())
-            {
-                std::cout << "unable to open file for reading" << std::endl;
-                std::abort();
-            }
+            ASSERT_TRUE(ifs.is_open());
             Read archive(ifs);
             T loaded_data;
             archive(cereal::make_nvp("data", loaded_data));
-            if (!ct::compare(data, loaded_data, DebugEqual()))
+            const auto cerealization_success = ct::compare(data, loaded_data, DebugEqual());
+            if (!cerealization_success)
             {
-                std::cout << "Failed cerealization" << std::endl;
-                std::abort();
+                std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
+                Write archive(std::cout);
+                archive(cereal::make_nvp("data", data));
             }
+            EXPECT_TRUE(cerealization_success);
         }
         std::cout << std::endl;
     }
 
     std::string m_path;
 };
+template <class T>
+using JsonCerealizationTester = CerealizationTester<T, cereal::JSONInputArchive, cereal::JSONOutputArchive>;
+
+template <class T>
+using BinaryCerealizationTester = CerealizationTester<T, cereal::BinaryInputArchive, cereal::BinaryOutputArchive>;
+
+TYPED_TEST_SUITE_P(JsonCerealizationTester);
+TYPED_TEST_SUITE_P(BinaryCerealizationTester);
+
+TYPED_TEST_P(JsonCerealizationTester, cerealize)
+{
+    this->test();
+}
+
+TYPED_TEST_P(BinaryCerealizationTester, cerealize)
+{
+    this->test();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(BinaryCerealizationTester, cerealize);
+REGISTER_TYPED_TEST_SUITE_P(JsonCerealizationTester, cerealize);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectBinaryCerealizationTest, BinaryCerealizationTester, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectJsonCerealizationTest, JsonCerealizationTester, TestTypes);
 
 int main(int argc, char** argv)
 {
-    {
-        CerealizationTester<cereal::JSONInputArchive, cereal::JSONOutputArchive> json_tester("test.json");
-        testTypes(json_tester);
-    }
-
-    if (argc == 1)
-    {
-        std::cout << "====================" << std::endl;
-        std::cout << "Binary serialization" << std::endl;
-        std::cout << "====================" << std::endl;
-        {
-            CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
-            testTypes(json_tester);
-        }
-    }
-    else
-    {
-        std::cout << "Passed in an arg to disable binary serialization tests since currently they fail on appveyor...."
-                  << std::endl;
-    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

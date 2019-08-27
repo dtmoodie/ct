@@ -37,7 +37,7 @@ endif()
 
 if(cereal_FOUND)
     add_executable(test_ct_reflect_cerealize ${hdr} cerealize.cpp)
-    target_link_libraries(test_ct_reflect_cerealize ct)
+    target_link_libraries(test_ct_reflect_cerealize ct gtest gtest_main)
     set_target_properties(test_ct_reflect_cerealize PROPERTIES FOLDER Tests/ct)
     if(TARGET cereal)
         target_link_libraries(test_ct_reflect_cerealize cereal)
