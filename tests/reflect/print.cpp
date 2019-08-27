@@ -45,8 +45,9 @@ EXPECTED_OBJECT_PRINT(TestVec, "(vec: [0 1 2 3 4] )");
 EXPECTED_OBJECT_PRINT(PrivateMutableAccess, "(private_mutable_property: 4 )");
 EXPECTED_OBJECT_PRINT(InternallyReflected, "(x: 5 y: 10 z: 15 )");
 EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
-EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
-EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
+// TODO fix
+EXPECTED_OBJECT_PRINT(std::vector<ReflectedStruct>, "[( )]");
+EXPECTED_OBJECT_PRINT(StringMap, "{ asdf:(x: 0 y: 1 z: 2 id: -1 w: 15 ) asdfg:(x: 0 y: 1 z:4 id: -1 w: 15 ) }");
 EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
 EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
 EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 )");
