@@ -242,7 +242,10 @@ namespace ct
     template <class T>
     constexpr BasicStringView<T> BasicStringView<T>::sliceHelper(size_t begin, size_t end) const
     {
-        return begin < end ? BasicStringView(m_data + begin, end - begin) : throw std::runtime_error("invalid range");
+        return begin < end ? BasicStringView(m_data + begin, end - begin)
+                           : throw std::runtime_error(std::string("invalid range begin=") + std::to_string(begin) +
+                                                      std::string(" end=") + std::to_string(end) +
+                                                      std::string(" when slicing string '") + toString() + "'");
     }
 
     template <class T>
