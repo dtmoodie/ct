@@ -65,7 +65,7 @@ test_script:
    
    reflect\debug\test_ct_reflect_cerealize.exe
 
-   reflect\debug\test_ct_enum.exe
+   enum\debug\test_ct_enum.exe
    
 
 - sh: >-
