@@ -7,8 +7,24 @@ namespace ct
     template <typename T, class T2>
     struct Append;
 
-    template<class T, class U>
+    template <class T, class U>
     struct CountType;
+
+    template <class... ARGS>
+    struct VariadicTypedefIterator;
+
+    template <class T, class... ARGS>
+    struct VariadicTypedefIterator<T, ARGS...>
+    {
+        using type = T;
+        constexpr VariadicTypedefIterator<ARGS...> operator++() const { return {}; }
+    };
+
+    template <class T>
+    struct VariadicTypedefIterator<T>
+    {
+        using type = T;
+    };
 
     template <typename... Args>
     struct VariadicTypedef
@@ -20,17 +36,19 @@ namespace ct
         using Prepend = VariadicTypedef<T, Args...>;
         constexpr static const auto len = sizeof...(Args);
 
-        template<class T>
+        template <class T>
         static constexpr int count()
         {
             return CountType<T, VariadicTypedef<Args...>>::count;
         }
 
-        template<class T>
+        template <class T>
         static constexpr bool contains()
         {
             return count<T>() != 0;
         }
+
+        static constexpr VariadicTypedefIterator<Args...> begin();
 
         using tuple_type = std::tuple<Args...>;
     };
@@ -156,24 +174,24 @@ namespace ct
     template <class T>
     using fromTuple = typename ConvertFromTuple<T>::type;
 
-    template<class T>
+    template <class T>
     struct CountType<T, ct::VariadicTypedef<>>
     {
         static constexpr int count = 0;
     };
 
-    template<class T, class U>
+    template <class T, class U>
     struct CountType<T, VariadicTypedef<U>>
     {
         static constexpr int count = (std::is_same<T, U>::value ? 1 : 0);
     };
 
-    template<class T, class U, class ... ARGS>
+    template <class T, class U, class... ARGS>
     struct CountType<T, VariadicTypedef<U, ARGS...>>
     {
-        static constexpr int count = (std::is_same<T, U>::value ? 1 : 0) + CountType<T, VariadicTypedef<ARGS...>>::count;
+        static constexpr int count =
+            (std::is_same<T, U>::value ? 1 : 0) + CountType<T, VariadicTypedef<ARGS...>>::count;
     };
-
 
     template <class T, class U>
     struct ContainsTypeImpl;
