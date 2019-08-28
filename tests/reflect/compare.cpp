@@ -26,11 +26,42 @@ struct TestFalse
     }
 };
 
+template <class T>
+struct Comparator : ::testing::Test
+{
+    void testTrue()
+    {
+        T data = TestData<T>::init();
+        T test_data = data;
+        ct::compare(data, test_data, DebugEqual());
+    }
+
+    void testFalse()
+    {
+        T data = TestData<T>::init();
+        T test_data;
+        ct::compare(data, test_data, DebugEqual());
+    }
+};
+
+TYPED_TEST_SUITE_P(Comparator);
+
+TYPED_TEST_P(Comparator, test_true)
+{
+    this->testTrue();
+}
+
+TYPED_TEST_P(Comparator, test_false)
+{
+    this->testTrue();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(Comparator, test_true, test_false);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(comparison, Comparator, ToTestTypes<TestTypes>::type);
+
 int main(int argc, char** argv)
 {
-    TestTrue true_tester;
-    testTypes(true_tester);
-    std::cout << "\n\n The following are are intentionally != values\n";
-    TestFalse false_tester;
-    testTypes(false_tester);
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

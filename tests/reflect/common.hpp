@@ -191,20 +191,29 @@ TEST_DATA(Templated<double>, {});
 #ifdef HAVE_OPENCV
 TEST_DATA(cv::Vec2f, {2, 3});
 #endif
-using TestTypes = ::testing::Types<ReflectedStruct,
-                                   Inherited,
-                                   Composite,
-                                   TestA,
-                                   TestB,
-                                   TestC,
-                                   TestVec,
-                                   PrivateMutableAccess,
-                                   InternallyReflected,
-                                   PrivateGetAndSet,
-                                   std::vector<ReflectedStruct>,
-                                   std::map<std::string, Inherited>>;
+using TestTypes = ct::VariadicTypedef<ReflectedStruct,
+                                      Inherited,
+                                      Composite,
+                                      TestA,
+                                      TestB,
+                                      TestC,
+                                      TestVec,
+                                      PrivateMutableAccess,
+                                      InternallyReflected,
+                                      PrivateGetAndSet,
+                                      std::vector<ReflectedStruct>,
+                                      std::map<std::string, Inherited>>;
 
-template <class Tester>
+template <class T>
+struct ToTestTypes;
+
+template <class... Ts>
+struct ToTestTypes<ct::VariadicTypedef<Ts...>>
+{
+    using type = ::testing::Types<Ts...>;
+};
+
+/*template <class Tester>
 void testTypes(Tester& tester)
 {
 #ifdef HAVE_OPENCV
@@ -265,7 +274,7 @@ void testTypes(Tester& tester)
 #endif
 #endif
 }
-
+*/
 namespace ct
 {
 #ifdef HAVE_OPENCV

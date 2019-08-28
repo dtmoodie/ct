@@ -85,7 +85,7 @@ TYPED_TEST_P(ReflectPrinter, struct_test)
 
 REGISTER_TYPED_TEST_SUITE_P(ReflectPrinter, object_test, struct_test);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(print, ReflectPrinter, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(print, ReflectPrinter, ToTestTypes<TestTypes>::type);
 
 int main(int argc, char** argv)
 {

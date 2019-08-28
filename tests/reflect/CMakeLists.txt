@@ -1,7 +1,7 @@
 file(GLOB hdr "*.hpp")
 
 add_executable(test_ct_static_checks ${hdr} static_checks.cpp)
-target_link_libraries(test_ct_static_checks ct)
+target_link_libraries(test_ct_static_checks ct gtest gtest_main)
 set_target_properties(test_ct_static_checks PROPERTIES FOLDER Tests/ct)
 
 find_package(Eigen3 QUIET)
@@ -18,7 +18,7 @@ if(EIGEN3_INCLUDE_DIRS)
 endif()
 
 add_executable(test_ct_reflect_access ${hdr} access.cpp)
-target_link_libraries(test_ct_reflect_access ct)
+target_link_libraries(test_ct_reflect_access ct gtest gtest_main)
 set_target_properties(test_ct_reflect_access PROPERTIES FOLDER Tests/ct)
 
 add_executable(test_ct_reflect_print ${hdr} print.cpp)
@@ -29,7 +29,7 @@ if(OpenCV_FOUND)
 endif()
 
 add_executable(test_ct_reflect_compare ${hdr} compare.cpp)
-target_link_libraries(test_ct_reflect_compare ct)
+target_link_libraries(test_ct_reflect_compare ct gtest gtest_main)
 set_target_properties(test_ct_reflect_compare PROPERTIES FOLDER Tests/ct)
 if(OpenCV_FOUND)
     target_link_libraries(test_ct_reflect_compare ${OpenCV_LIBS})
@@ -47,11 +47,11 @@ if(cereal_FOUND)
     endif()
 endif()
 add_executable(test_ct_reflect_hash ${hdr} hash.cpp)
-target_link_libraries(test_ct_reflect_hash ct)
+target_link_libraries(test_ct_reflect_hash ct gtest gtest_main)
 set_target_properties(test_ct_reflect_hash PROPERTIES FOLDER Tests/ct)
 
 add_executable(test_ct_data_table ${hdr} datatable.cpp)
-target_link_libraries(test_ct_data_table ct)
+target_link_libraries(test_ct_data_table ct gtest gtest_main)
 set_target_properties(test_ct_data_table PROPERTIES FOLDER Tests/ct)
 
 add_executable(test_ct_get_name ${hdr} get_name.cpp)

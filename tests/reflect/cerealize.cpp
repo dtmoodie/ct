@@ -12,11 +12,10 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
-template <class T, class Read, class Write>
-struct CerealizationTester : ::testing::Test
+template <class T>
+struct Cerealization : ::testing::Test
 {
-    CerealizationTester() : m_path(std::is_same<Read, cereal::JSONInputArchive>::value ? "test.json" : "test.bin") {}
-
+    template <class READ, class WRITE>
     void test()
     {
         const T data = TestData<T>::init();
@@ -25,21 +24,21 @@ struct CerealizationTester : ::testing::Test
             ofs.open(m_path);
             ASSERT_TRUE(ofs.is_open());
 
-            Write archive(ofs);
+            WRITE archive(ofs);
             archive(cereal::make_nvp("data", data));
         }
         {
             std::ifstream ifs;
             ifs.open(m_path);
             ASSERT_TRUE(ifs.is_open());
-            Read archive(ifs);
+            READ archive(ifs);
             T loaded_data;
             archive(cereal::make_nvp("data", loaded_data));
             const auto cerealization_success = ct::compare(data, loaded_data, DebugEqual());
             if (!cerealization_success)
             {
                 std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
-                Write archive(std::cout);
+                WRITE archive(std::cout);
                 archive(cereal::make_nvp("data", data));
             }
             EXPECT_TRUE(cerealization_success);
@@ -47,32 +46,37 @@ struct CerealizationTester : ::testing::Test
         std::cout << std::endl;
     }
 
+    void testBinary()
+    {
+        m_path = "test.bin";
+        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
+    }
+
+    void testJson()
+    {
+        m_path = "test.json";
+        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
+    }
+
     std::string m_path;
 };
-template <class T>
-using JsonCerealizationTester = CerealizationTester<T, cereal::JSONInputArchive, cereal::JSONOutputArchive>;
 
-template <class T>
-using BinaryCerealizationTester = CerealizationTester<T, cereal::BinaryInputArchive, cereal::BinaryOutputArchive>;
-
-TYPED_TEST_SUITE_P(JsonCerealizationTester);
+TYPED_TEST_SUITE_P(Cerealization);
 TYPED_TEST_SUITE_P(BinaryCerealizationTester);
 
-TYPED_TEST_P(JsonCerealizationTester, cerealize)
+TYPED_TEST_P(Cerealization, binary)
 {
-    this->test();
+    this->testBinary();
 }
 
-TYPED_TEST_P(BinaryCerealizationTester, cerealize)
+TYPED_TEST_P(Cerealization, json)
 {
-    this->test();
+    this->testJson();
 }
 
-REGISTER_TYPED_TEST_SUITE_P(BinaryCerealizationTester, cerealize);
-REGISTER_TYPED_TEST_SUITE_P(JsonCerealizationTester, cerealize);
+REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(ReflectBinaryCerealizationTest, BinaryCerealizationTester, TestTypes);
-INSTANTIATE_TYPED_TEST_SUITE_P(ReflectJsonCerealizationTest, JsonCerealizationTester, TestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<TestTypes>::type);
 
 int main(int argc, char** argv)
 {
