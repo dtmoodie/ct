@@ -22,7 +22,14 @@ struct StaticPrintStruct
 };
 
 template <class T>
-struct CheckPrint;
+struct CheckPrint
+{
+    static void check(std::string val)
+    {
+        std::string unimplemented;
+        EXPECT_EQ(unimplemented, val);
+    }
+};
 
 #define EXPECTED_OBJECT_PRINT(TYPE, ...)                                                                               \
     template <>                                                                                                        \
@@ -48,6 +55,32 @@ EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 ) ");
 EXPECTED_OBJECT_PRINT(std::vector<ReflectedStruct>,
                       "[(x: 0 y: 1 z: 2 id: 3 )  (x: 4 y: 5 z: 6 id: 7 )  (x: 8 y: 9 z: 10 id: 11 ) ]");
 EXPECTED_OBJECT_PRINT(StringMap, "{asdf:(x: 0 y: 1 z: 2 id: -1 w: 15 )  asdfg:(x: 0 y: 1 z: 4 id: -1 w: 15 ) }");
+
+#ifdef HAVE_OPENCV
+EXPECTED_OBJECT_PRINT(cv::Point2f, "(x: 0 y: 1 ) ");
+EXPECTED_OBJECT_PRINT(cv::Point, "(x: 0 y: 1 ) ");
+EXPECTED_OBJECT_PRINT(cv::Point3f, "(x: 0 y: 1 z: 2 ) ");
+EXPECTED_OBJECT_PRINT(cv::Vec2f, "(data: [2 3] shape: [2 1] size: 2 ) ");
+EXPECTED_OBJECT_PRINT(cv::Scalar, "(data: [0 1 2 3] shape: [4 1] size: 4 ) ");
+EXPECTED_OBJECT_PRINT(cv::Mat_<float>,
+                      "(data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] shape: [4 4] size: 16 elemSize: 4 "
+                      "elemSize1: 4 type: 5 depth: 5 channels: 1 ) ");
+EXPECTED_OBJECT_PRINT(cv::Mat_<cv::Vec3f>,
+                      "(data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
+                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, "
+                      "0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
+                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] shape: [4 4] size: 16 "
+                      "elemSize: 12 elemSize1: 4 type: 21 depth: 5 channels: 3 ) ");
+
+#endif
+
+#ifdef HAVE_EIGEN
+EXPECTED_OBJECT_PRINT(Eigen::Matrix3f,
+                      "(data: [1 0 0 0 1 0 0 0 1] shape: [3 3] size: 9 colStride: 3 rowStride: 1 cols: 3 rows: 3 ) ");
+EXPECTED_OBJECT_PRINT(Eigen::MatrixXf,
+                      "(data: [1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1] shape: [5 5] size: "
+                      "25 colStride: 5 rowStride: 1 cols: 5 rows: 5 ) ");
+#endif
 
 template <class T>
 struct ReflectPrinter : ::testing::Test
@@ -80,7 +113,7 @@ TYPED_TEST_P(ReflectPrinter, object_test)
 
 TYPED_TEST_P(ReflectPrinter, struct_test)
 {
-    this->objectPrint();
+    this->staticPrint();
 }
 
 REGISTER_TYPED_TEST_SUITE_P(ReflectPrinter, object_test, struct_test);

@@ -188,9 +188,26 @@ struct TestData<DerivedC>
 };
 TEST_DATA(Virtual, {});
 TEST_DATA(Templated<double>, {});
+
 #ifdef HAVE_OPENCV
 TEST_DATA(cv::Vec2f, {2, 3});
+TEST_DATA(cv::Rect2f, {0, 1, 2, 3});
+TEST_DATA(cv::Rect, {0, 1, 2, 3});
+TEST_DATA(cv::Point2f, {0, 1});
+TEST_DATA(cv::Point, {0, 1});
+TEST_DATA(cv::Point3f, {0, 1, 2});
+TEST_DATA(cv::Scalar, {0, 1, 2, 3});
+TEST_DATA(cv::Mat_<float>, cv::Mat_<float>::eye(4, 4));
+TEST_DATA(cv::Mat_<cv::Vec3f>, cv::Mat_<cv::Vec3f>::ones(4, 4) * 3.14159);
 #endif
+
+#ifdef HAVE_EIGEN
+using EigenStaticMatrix = Eigen::Matrix<float, 3, 3>;
+using EigenDynamicMatrix = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>;
+TEST_DATA(Eigen::Matrix3f, Eigen::Matrix3f::Identity());
+TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
+#endif
+
 using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       Inherited,
                                       Composite,
@@ -202,7 +219,27 @@ using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       InternallyReflected,
                                       PrivateGetAndSet,
                                       std::vector<ReflectedStruct>,
-                                      std::map<std::string, Inherited>>;
+                                      std::map<std::string, Inherited>
+#ifdef HAVE_OPENCV
+                                      ,
+                                      cv::Vec2f,
+                                      cv::Rect2f,
+                                      cv::Rect,
+                                      cv::Point2f,
+                                      cv::Point,
+                                      cv::Point3f,
+                                      cv::Scalar,
+                                      cv::Mat_<float>,
+                                      cv::Mat_<cv::Vec3f>
+#endif
+#ifdef HAVE_EIGEN
+#if !(defined(_MSC_VER) && _MSC_VER == 1900)
+                                      ,
+                                      Eigen::Matrix3f,
+                                      Eigen::MatrixXf
+#endif
+#endif
+                                      >;
 
 template <class T>
 struct ToTestTypes;
@@ -213,68 +250,6 @@ struct ToTestTypes<ct::VariadicTypedef<Ts...>>
     using type = ::testing::Types<Ts...>;
 };
 
-/*template <class Tester>
-void testTypes(Tester& tester)
-{
-#ifdef HAVE_OPENCV
-    {
-        cv::Rect2f data(0, 1, 2, 3);
-        tester.test(data);
-    }
-    {
-        cv::Rect data(0, 1, 2, 3);
-        tester.test(data);
-    }
-    {
-        cv::Point2f data(0, 1);
-        tester.test(data);
-    }
-
-    {
-        cv::Point data(0, 1);
-        tester.test(data);
-    }
-    {
-        cv::Point3f data(0, 1, 2);
-        tester.test(data);
-    }
-
-    {
-        cv::Scalar data(0, 1, 2, 3);
-        tester.test(data);
-    }
-    {
-        cv::Mat_<float> mat = cv::Mat_<float>::eye(4, 4);
-        tester.test(mat);
-    }
-
-    {
-        cv::Mat_<cv::Vec3f> mat = cv::Mat_<cv::Vec3f>::zeros(4, 4);
-        mat += 1;
-        mat *= 3.14159;
-        tester.test(mat);
-    }
-    {
-        // cv::Mat mat(CV_32F, 4, 4);
-        // tester.test(mat);
-    }
-#endif
-
-#ifdef HAVE_EIGEN
-#if !(defined(_MSC_VER) && _MSC_VER == 1900)
-    {
-        Eigen::Matrix<float, 3, 3> mat = Eigen::Matrix<float, 3, 3>::Identity();
-        tester.test(mat);
-    }
-    {
-        Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic> mat =
-            Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic>::Identity(5, 5);
-        tester.test(mat);
-    }
-#endif
-#endif
-}
-*/
 namespace ct
 {
 #ifdef HAVE_OPENCV
