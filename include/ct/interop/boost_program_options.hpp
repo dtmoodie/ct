@@ -26,7 +26,7 @@ namespace ct
     template <class T>
     DisableIfReflected<T> registerWithMetadata(const T& field,
                                                po::options_description& desc,
-                                               const metadata::Description* field_desc,
+                                               const Description* field_desc,
                                                const std::string& path)
     {
         if (field_desc)
@@ -55,9 +55,9 @@ namespace ct
         {
             path += '.';
         }
-        const auto name = getName<I, T>();
-        path += name.toString();
-        auto field_desc = ptr.getMetadata().template getMetadata<ct::metadata::Description>();
+        const auto field_name = getName<I, T>();
+        path += field_name.toString();
+        auto field_desc = ptr.getMetadata().template getMetadata<ct::Description>();
         registerWithMetadata(field, desc, field_desc, path);
     }
 
@@ -99,8 +99,8 @@ namespace ct
         {
             path += '.';
         }
-        const auto name = getName<I, T>();
-        path += name.toString();
+        const auto field_name = getName<I, T>();
+        path += field_name.toString();
 
         if (vm.count(path))
         {
@@ -117,8 +117,8 @@ namespace ct
         {
             path += '.';
         }
-        const auto name = getName<I, T>();
-        path += name.toString();
+        const auto field_name = getName<I, T>();
+        path += field_name.toString();
         readOptions(ptr.set(obj), vm, path);
     }
 

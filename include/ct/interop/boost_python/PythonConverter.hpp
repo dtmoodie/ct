@@ -103,7 +103,7 @@ namespace ct
         }
         registered = true;
 
-        std::string name = ct::Reflect<T>::getName().toString();
+        std::string name = ct::Reflect<T>:: getName().toString();
         eraseAll(name, ':');
         replaceAll(name, '<', '_');
         replaceAll(name, '>', '_');

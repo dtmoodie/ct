@@ -1,11 +1,11 @@
 #pragma once
+#include "Data.hpp"
+#include "Reflect.hpp"
 
 #ifdef HAVE_OPENCV
 #include <ct/types/opencv.hpp>
 #endif
 
-#include "Data.hpp"
-#include "Reflect.hpp"
 
 #ifdef HAVE_EIGEN
 #include <ct/types/eigen.hpp>

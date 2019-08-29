@@ -262,7 +262,7 @@ namespace ct
                 auto shape_ptr = Reflect<T>::getPtr(Indexer<SHAPE_INDEX>());
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
                 auto shape = shape_ptr.get(obj);
-                if (!(getFlags<decltype(shape_ptr)>() & ct::value(Flags::COMPILE_TIME_CONSTANT)))
+                if (!(flags<decltype(shape_ptr)>() & ct::value(Flags::COMPILE_TIME_CONSTANT)))
                 {
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);

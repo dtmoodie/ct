@@ -33,14 +33,14 @@ namespace ct
     struct GetNameGCC
     {
         static CT_CONSTEXPR_NAME const char* funcName() { return CT_FUNCTION_NAME; }
-        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(funcName()); }
+        static CT_CONSTEXPR_NAME StringView  getName() { return detail::parseClassNameGCC(funcName()); }
     };
 
     template <class T>
     struct GetNameMSVC
     {
         static constexpr StringView funcName() { return StringView(CT_FUNCTION_NAME); }
-        static constexpr StringView getName() { return detail::parseClassNameMSVC(funcName()); }
+        static constexpr StringView  getName() { return detail::parseClassNameMSVC(funcName()); }
     };
 #ifdef _MSC_VER
     template <class T>
@@ -56,18 +56,18 @@ namespace ct
 #endif
 }
 
-#define DECL_NAME_1(name)                                                                                              \
+#define DECL_NAME_1(SYM)                                                                                              \
     template <>                                                                                                        \
-    struct GetName<name>                                                                                               \
+    struct GetName<SYM>                                                                                               \
     {                                                                                                                  \
-        static constexpr StringView getName() { return #name; }                                                        \
+        static constexpr StringView  getName() { return #SYM; }                                                        \
     }
 
-#define DECL_NAME_2(sym, name)                                                                                         \
+#define DECL_NAME_2(SYM, NAME)                                                                                         \
     template <>                                                                                                        \
-    struct GetName<sym>                                                                                                \
+    struct GetName<SYM>                                                                                                \
     {                                                                                                                  \
-        static constexpr StringView getName() { return #name; }                                                        \
+        static constexpr StringView  getName() { return #NAME; }                                                        \
     }
 
 #ifdef _MSC_VER

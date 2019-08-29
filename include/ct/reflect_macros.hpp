@@ -18,7 +18,7 @@
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
-            #NAME, &DataType::NAME, ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT));                     \
+            #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                     \
     }
 
 #define REFLECT_INTERNAL_MEMBER_4(TYPE, NAME, INIT, METADATA)                                                          \
@@ -32,7 +32,7 @@
         return ct::makeMemberObjectPointer(                                                                            \
             #NAME,                                                                                                     \
             &DataType::NAME,                                                                                           \
-            ct::metadata::makePack(ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
+            ct::makePack(ct::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
     }
 
 #ifdef _MSC_VER

@@ -374,14 +374,14 @@ namespace ct
 
         template <class T, class BP, class PROPERTY, index_t I>
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
-            -> EnableIf<!(getFlags<PROPERTY>() & Flags::WRITABLE) && (getFlags<PROPERTY>() & Flags::READABLE)>
+            -> EnableIf<!(flags<PROPERTY>() & Flags::WRITABLE) && (flags<PROPERTY>() & Flags::READABLE)>
         {
             bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>);
         }
 
         template <class T, class BP, class PROPERTY, index_t I>
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
-            -> EnableIf<(getFlags<PROPERTY>() & Flags::WRITABLE) && (getFlags<PROPERTY>() & Flags::READABLE)>
+            -> EnableIf<(flags<PROPERTY>() & Flags::WRITABLE) && (flags<PROPERTY>() & Flags::READABLE)>
         {
             bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>, &pythonSet<I, T>);
         }
@@ -395,7 +395,7 @@ namespace ct
         void addMemberFunctionImpl(BP& bpobj, MemberFunctionPointers<U, FLAGS, MDATA, PTRS...> ptrs, Indexer<I>)
         {
             auto ptr = ptrs.template getPtr<I>();
-            bpobj.def(static_cast<const char*>(ptrs.name()), ptr.m_ptr);
+            bpobj.def(static_cast<const char*>(ptrs. getName()), ptr.m_ptr);
         }
 
         template <class T, class BP, class PTRS>
@@ -444,12 +444,12 @@ namespace ct
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<!(getFlags<PTR>() & Flags::READABLE)>
+        auto registerPropertyReturn(PTR) -> EnableIf<!(flags<PTR>() & Flags::READABLE)>
         {
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<getFlags<PTR>() & Flags::READABLE>
+        auto registerPropertyReturn(PTR) -> EnableIf<flags<PTR>() & Flags::READABLE>
         {
             using type = typename GetType<PTR>::type;
             ct::registerToPython<decay_t<type>>();

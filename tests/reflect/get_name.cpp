@@ -15,6 +15,7 @@ void checkName(ct::StringView expected_name)
 #define CHECK_NAME(NAME)                                                                                               \
     TEST(check_name, NAME) { checkName<NAME>(#NAME); }
 
+CHECK_NAME(float);
 CHECK_NAME(InternallyReflected);
 CHECK_NAME(TestA);
 CHECK_NAME(ReflectedStruct);

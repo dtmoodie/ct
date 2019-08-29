@@ -28,7 +28,7 @@ namespace ct
 #endif
     }
 
-    template <class PTR, Flag_t FLAGS = 0, class METADATA = metadata::Empty>
+    template <class PTR, Flag_t FLAGS = 0, class METADATA = Empty>
     struct MemberObjectPointer;
 
     template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
@@ -75,7 +75,7 @@ namespace ct
             obj.*m_ptr = std::move(val);
         }
 
-        constexpr StringView getName() const { return m_name; }
+        constexpr StringView  getName() const { return m_name; }
 
         METADATA getMetadata() const { return m_metadata; }
 
@@ -85,31 +85,31 @@ namespace ct
     };
 
     template <class M, class T, Flag_t F>
-    const M* getMetadata(const MemberObjectPointer<T, F, M>& ptr)
+    const M* metadata(const MemberObjectPointer<T, F, M>& ptr)
     {
         return &ptr.m_metadata;
     }
 
     template <class M, class T, Flag_t F>
-    M* getMetadata(MemberObjectPointer<T, F, M>& ptr)
+    M* metadata(MemberObjectPointer<T, F, M>& ptr)
     {
         return &ptr.m_metadata;
     }
 
     template <class M, class T, Flag_t F, class M2>
-    EnableIf<!std::is_same<M, M2>::value, const M*> getMetadata(const MemberObjectPointer<T, F, M2>&)
+    EnableIf<!std::is_same<M, M2>::value, const M*> metadata(const MemberObjectPointer<T, F, M2>&)
     {
         return nullptr;
     }
 
     template <class M, class T, Flag_t F, class M2>
-    EnableIf<!std::is_same<M, M2>::value, M*> getMetadata(MemberObjectPointer<T, F, M2>&)
+    EnableIf<!std::is_same<M, M2>::value, M*> metadata(MemberObjectPointer<T, F, M2>&)
     {
         return nullptr;
     }
 
     template <class PTR_TYPE>
-    constexpr Flag_t getFlags()
+    constexpr Flag_t flags()
     {
         using type = typename std::decay<PTR_TYPE>::type;
         return type::DataFlags;
@@ -129,14 +129,11 @@ namespace ct
         return MemberObjectPointer<PTR, FLAGS | Flags::READABLE | Flags::WRITABLE, METADATA>(name, ptr, metadata);
     }
 
-    namespace metadata
+    template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
+    struct MetaDataType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
     {
-        template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA>
-        struct MetaDataType<MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA>>
-        {
-            using type = METADATA;
-        };
-    }
+        using type = METADATA;
+    };
 }
 
 #endif // CT_MEMBER_OBJECT_POINTER_HPP

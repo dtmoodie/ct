@@ -78,7 +78,7 @@ namespace ct
         return AccessToken<void (*)(BASE&, DTYPE)>(obj, set_ptr, get(get_ptr, obj));
     }
 
-    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = 0, class METADATA = metadata::Empty>
+    template <class GET_PTR, class SET_PTR, Flag_t FLAGS = 0, class METADATA = Empty>
     struct MemberPropertyPointer
     {
         StringView m_name;

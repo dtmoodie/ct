@@ -85,13 +85,13 @@ int main()
     // StaticEquality < size_t, StringView("asdf").
 
     // The following is not portable to gcc 4.8 :(
-    // GCC's output ct::GetName<test::TestClass>::name();
+    // GCC's output ct::GetName<test::TestClass>:: getName();
     /*constexpr const char* class_name1 =
-        "static constexpr ct::StringView ct::GetNameGCC<T>::name() [with T = test::TestClass]";
+        "static constexpr ct::StringView ct::GetNameGCC<T>:: getName() [with T = test::TestClass]";
     // MSVC's output
-    constexpr const char* class_name2 = "GetNameMSVC<class test::TestClass>::getName";
+    constexpr const char* class_name2 = "GetNameMSVC<class test::TestClass>::name";
     // Just to be able to double check
-    std::cout << ct::GetName<test::TestClass>::name() << std::endl;
+    std::cout << ct::GetName<test::TestClass>:: getName() << std::endl;
 
     std::cout << class_name1 << std::endl;
     std::cout << class_name2 << std::endl;
@@ -100,22 +100,22 @@ int main()
 
     static_assert(
         ct::crc32(ct::detail::parseClassNameMSVC(
-            "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::getName")) >
+            "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::name")) >
     0,
         "asdf");
 
     using type = TestStruct::DataType;
-    std::cout << std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>::getName())>::value << std::endl;
+    std::cout << std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>:: getName())>::value << std::endl;
     ct::StaticEquality<uint32_t,
-                       std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>::getName())>::value,
+                       std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>:: getName())>::value,
                        ct::crc32("TestStruct")>();
-    std::cout << ct::GetName<type>::getName() << std::endl;
+    std::cout << ct::GetName<type>:: getName() << std::endl;
 
     std::cout << ct::findNthFromBeginning("asdfasdfasdf", 2, 'a') << std::endl;
 
     std::cout << ct::detail::parseClassNameMSVC(
                      "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> >
-    >::getName")
+    >::name")
               << std::endl;*/
 
     return 0;

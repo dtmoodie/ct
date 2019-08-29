@@ -45,7 +45,7 @@ struct CheckPrint
 EXPECTED_OBJECT_PRINT(ReflectedStruct, "(x: 0 y: 1 z: 2 id: 3 ) ");
 EXPECTED_OBJECT_PRINT(Inherited, "(x: 0 y: 1 z: 2 id: 3 w: 4 ) ");
 EXPECTED_OBJECT_PRINT(Composite, "(a: (x: 0 y: 1 z: 2 id: 3 )  b: (x: 4 y: 5 z: 6 id: 7 )  ) ");
-EXPECTED_OBJECT_PRINT(TestA, "(x: 0 y: 1 z: 2 norm: 2.23607 ) ");
+EXPECTED_OBJECT_PRINT(TestA, "(x: 0 y: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(TestB, "(x: 0 y: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(TestC, "(y: 0 x: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(TestVec, "(vec: [0 1 2 3 4] ) ");
@@ -62,15 +62,14 @@ EXPECTED_OBJECT_PRINT(cv::Point, "(x: 0 y: 1 ) ");
 EXPECTED_OBJECT_PRINT(cv::Point3f, "(x: 0 y: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(cv::Vec2f, "(data: [2 3] shape: [2 1] size: 2 ) ");
 EXPECTED_OBJECT_PRINT(cv::Scalar, "(data: [0 1 2 3] shape: [4 1] size: 4 ) ");
-EXPECTED_OBJECT_PRINT(cv::Mat_<float>,
-                      "(data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] shape: [4 4] size: 16 elemSize: 4 "
-                      "elemSize1: 4 type: 5 depth: 5 channels: 1 ) ");
+EXPECTED_OBJECT_PRINT(cv::Rect2f, "(x: 0 y: 1 width: 2 height: 3 ) ");
+EXPECTED_OBJECT_PRINT(cv::Rect, "(x: 0 y: 1 width: 2 height: 3 ) ");
+EXPECTED_OBJECT_PRINT(cv::Mat_<float>, "(data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] shape: [4 4] size: 16 ) ");
 EXPECTED_OBJECT_PRINT(cv::Mat_<cv::Vec3f>,
                       "(data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
                       "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, "
                       "0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
-                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] shape: [4 4] size: 16 "
-                      "elemSize: 12 elemSize1: 4 type: 21 depth: 5 channels: 3 ) ");
+                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] shape: [4 4] size: 16 ) ");
 
 #endif
 
@@ -99,7 +98,7 @@ struct ReflectPrinter : ::testing::Test
         std::cout << "\n====================\n";
         std::cout << ct::Reflect<T>::getName() << std::endl;
         std::stringstream ss;
-        ct::printStruct<ct::PrintAllOptions>(ss, data);
+        ct::printStruct<ct::PrintOptions>(ss, data);
         CheckPrint<T>::check(ss.str());
     }
 };

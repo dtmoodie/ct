@@ -194,7 +194,7 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
-        constexpr StringView name() const { return m_name; }
+        constexpr StringView  getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -240,7 +240,7 @@ namespace ct
             return std::get<I>(m_ptrs).bind(obj);
         }
 
-        constexpr StringView name() const { return m_name; }
+        constexpr StringView  getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -311,7 +311,7 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
-        constexpr StringView name() const { return m_name; }
+        constexpr StringView  getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -343,36 +343,12 @@ namespace ct
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
-        constexpr StringView name() const { return m_name; }
+        constexpr StringView  getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
             return std::get<I>(m_ptrs);
         }
-    };
-
-    template <class T>
-    struct IsFunction
-    {
-        static constexpr const bool value = false;
-    };
-
-    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
-    struct IsFunction<StaticFunctions<T, FLAGS, METADATA, PTRS...>>
-    {
-        static constexpr const bool value = true;
-    };
-
-    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
-    struct IsFunction<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
-    {
-        static constexpr const bool value = true;
-    };
-
-    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
-    struct GetType<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
-    {
-        using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
     };
 
     template <class T, Flag_t FLAGS = Flags::DO_NOT_SERIALIZE, class... ARGS>

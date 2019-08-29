@@ -28,7 +28,7 @@ namespace ct
     {
         static const bool SPECIALIZED = false;
         using BaseTypes = VariadicTypedef<>;
-        static constexpr auto getName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
+        static constexpr auto  getName() -> decltype(GetName<T>:: getName()) { return GetName<T>:: getName(); }
     };
 
     // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
@@ -172,8 +172,8 @@ namespace ct
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
         constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
 
-        // constexpr static StringView getName() { return IMPL::getName(); }
-        CT_CONSTEXPR_NAME static StringView getName() { return getNameImpl<IMPL>(); }
+        // constexpr static StringView  getName() { return IMPL:: getName(); }
+        CT_CONSTEXPR_NAME static StringView  getName() { return nameImpl<IMPL>(); }
 
         template <index_t I>
         constexpr static auto getPtr(const Indexer<I>)
@@ -194,7 +194,7 @@ namespace ct
             auto num_fields = IMPL::NUM_FIELDS;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
-            os << indent << "Reflect<" << getName() << ", Visited: ";
+            os << indent << "Reflect<" <<  getName() << ", Visited: ";
             printTypes(VISITED{}, os);
             os << "> (" << start_index << ":" << num_fields << ":" << end_index << ')' << std::endl;
             Bases_t::printHierarchy(os, indent + "  ");
@@ -203,15 +203,15 @@ namespace ct
         static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
       private:
         template <class U = T>
-        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<Has_getName<U>::value, StringView>
+        static CT_CONSTEXPR_NAME auto nameImpl() -> EnableIf<Has_name<U>::value, StringView>
         {
-            return U::getName();
+            return U:: getName();
         }
 
         template <class U = T>
-        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<!Has_getName<U>::value, StringView>
+        static CT_CONSTEXPR_NAME auto nameImpl() -> EnableIf<!Has_name<U>::value, StringView>
         {
-            return GetName<T>::getName();
+            return GetName<T>:: getName();
         }
     };
 
@@ -244,7 +244,7 @@ namespace ct
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <index_t I, class T>
-    constexpr StringView getName()
+    constexpr StringView  getName()
     {
         return Reflect<T>::getPtr(ct::Indexer<I>{}).m_name;
     }
@@ -293,13 +293,13 @@ namespace ct
     template <class T>
     void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
     {
-        os << ct::Reflect<T>::getName();
+        os << ct::Reflect<T>:: getName();
     }
 
     template <class T, class... T1>
     void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
     {
-        os << ct::Reflect<T>::getName() << ", ";
+        os << ct::Reflect<T>:: getName() << ", ";
         printTypes(ct::VariadicTypedef<T1...>{}, os);
     }
 } // namespace ct

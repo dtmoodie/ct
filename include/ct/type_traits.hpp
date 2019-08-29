@@ -67,7 +67,7 @@ namespace ct
         static const bool value = std::is_same<typename ReferenceType<T>::Type, T>::value;
     };
 
-    DEFINE_HAS_STATIC_FUNCTION(Has_getName, getName, ct::StringView (*)());
+    DEFINE_HAS_STATIC_FUNCTION(Has_name, name, ct::StringView (*)());
 
     template <class T>
     struct StreamWritable

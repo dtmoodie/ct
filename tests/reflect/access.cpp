@@ -63,8 +63,8 @@ int main()
 
         // TODO move to hash unit test
         const auto accessor = ct::Reflect<Inherited>::getPtr(ct::Indexer<0>{});
-        STATIC_NE(ctv<ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{}))>::value, 0);
-        STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::getName(ct::Indexer<0>{})), ct::crc32("x"));
+        STATIC_NE(ctv<ct::crc32(ct::Reflect<Inherited>::name(ct::Indexer<0>{}))>::value, 0);
+        STATIC_EQUAL(ct::crc32(ct::Reflect<Inherited>::name(ct::Indexer<0>{})), ct::crc32("x"));
     }*/
     PrivateGetAndSet pgs;
     pgs.setX(2);

@@ -24,28 +24,46 @@ namespace ct
         return max(static_cast<typename T::EnumValueType>(Reflect<T>::getPtr(idx).value()), enumMax<T>(--idx));
     }
 
-    template <class E, uint8_t VALUE, uint16_t I>
-    struct BitsetIndex : public BitsetTag
+    template <class E, uint16_t VALUE, uint16_t I>
+    struct BitsetIndex
     {
+        constexpr BitsetIndex()
+        {
+            static_assert(VALUE < 64, "We currently only support a bit field up to 64");
+        }
+
         static constexpr uint16_t index = I;
-        constexpr BitsetIndex() = default;
+        static constexpr uint16_t bit_index = VALUE;
+
         constexpr uint64_t toBitset() const { return uint64_t(1) << VALUE; }
-        constexpr operator uint64_t() const { return uint64_t(1) << VALUE; }
+        constexpr operator uint64_t() const { return toBitset(); }
+        constexpr uint8_t bitIndex() const{return bit_index;}
 
 #ifdef _MSC_VER
         static constexpr uint64_t value = 1 << VALUE;
 #else
         static constexpr E value = E(uint64_t(1) << VALUE);
 #endif
+
+        constexpr BitsetIndex<E, VALUE + 1, I + 1> operator+(int) const
+        {
+            return {};
+        }
     };
 
-    template <class T, class E, uint8_t V, uint16_t I>
+    template<class E, uint16_t V, uint16_t I>
+    constexpr uint16_t index(BitsetIndex<E, V, I>)
+    {
+        return V;
+    }
+
+    template <class T, class E, uint16_t V, uint16_t I>
     constexpr bool operator==(T v, BitsetIndex<E, V, I>)
     {
         return v == V;
     }
 
-    template <class T, class E, uint8_t V, uint16_t I>
+    template <class T, class E, uint16_t V, uint16_t I>
     constexpr bool operator!=(T v, BitsetIndex<E, V, I>)
     {
         return v != V;
@@ -58,7 +76,14 @@ namespace ct
 
         constexpr EnumBitset(STORAGE v = 0) : m_data{v} {}
 
-        template <class U, uint8_t V, uint16_t I>
+        template<uint16_t V, uint16_t I>
+        EnumBitset& operator=(BitsetIndex<T, V, I> v)
+        {
+            m_data = v.toBitset();
+            return *this;
+        }
+
+        template <class U, uint16_t V, uint16_t I>
         constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
             return (m_data & indexToBit(idx)) != 0;
@@ -79,13 +104,13 @@ namespace ct
 
         void reset(STORAGE bitset) { m_data = m_data & (~bitset); }
 
-        template <class U, uint8_t V, uint16_t I>
+        template <class U, uint16_t V, uint16_t I>
         void reset(BitsetIndex<U, V, I> idx)
         {
             reset(idx.toBitset());
         }
 
-        template <class U, uint8_t V, uint16_t I>
+        template <class U, uint16_t V, uint16_t I>
         void set(BitsetIndex<U, V, I> idx)
         {
             m_data = m_data | indexToBit(idx);
@@ -94,7 +119,7 @@ namespace ct
         void set(STORAGE bitset) { m_data = m_data | bitset; }
 
         // TODO implement flip
-        template <class U, uint8_t V, uint16_t I>
+        template <class U, uint16_t V, uint16_t I>
         void flip(BitsetIndex<U, V, I>)
         {
         }
@@ -103,40 +128,33 @@ namespace ct
 
         constexpr operator STORAGE() const { return m_data; }
 
-        template <uint8_t V, uint16_t I>
-        EnumBitset& operator=(BitsetIndex<T, V, I> v)
-        {
-            m_data = v;
-            return *this;
-        }
-
         // This should only be used when this EnumBitset represents a single set bit, otherwise it doesn't make sense
-        template <uint8_t V, uint16_t I>
+        template <uint16_t V, uint16_t I>
         constexpr bool operator>(BitsetIndex<T, V, I> v) const
         {
             return m_data > v.toBitset();
         }
 
-        template <uint8_t V, uint16_t I>
+        template <uint16_t V, uint16_t I>
         constexpr bool operator<(BitsetIndex<T, V, I> v) const
         {
             return m_data < v.toBitset();
         }
 
-        template <uint8_t V, uint16_t I>
+        template <uint16_t V, uint16_t I>
         constexpr bool operator<=(BitsetIndex<T, V, I> v) const
         {
             return m_data <= v.toBitset();
         }
 
-        template <uint8_t V, uint16_t I>
+        template <uint16_t V, uint16_t I>
         constexpr bool operator>=(BitsetIndex<T, V, I> v) const
         {
             return m_data >= v.toBitset();
         }
 
       private:
-        template <class U, uint8_t V, uint16_t I>
+        template <class U, uint16_t V, uint16_t I>
         constexpr STORAGE indexToBit(BitsetIndex<U, V, I>) const
         {
             static_assert(V < MAX_BIT, "Can only do bitsets up to 64 bits for now :/");
@@ -164,43 +182,43 @@ namespace ct
         return v;
     }
 
-    template <class E, uint8_t V1, uint16_t I>
+    template <class E, uint16_t V1, uint16_t I>
     constexpr E operator|(E e, BitsetIndex<E, V1, I>)
     {
         return E(uint64_t(e) | (1 << V1));
     }
 
-    template <class E, uint8_t V1, uint8_t V2, uint16_t I1, uint16_t I2>
+    template <class E, uint16_t V1, uint16_t V2, uint16_t I1, uint16_t I2>
     constexpr E operator|(BitsetIndex<E, V1, I1> b0, BitsetIndex<E, V2, I2> b1)
     {
         return E(b0.toBitset() | b1.toBitset());
     }
 
-    template <class E, class T, T V1, uint8_t V2, uint16_t I1, uint16_t I2>
+    template <class E, class T, T V1, uint16_t V2, uint16_t I1, uint16_t I2>
     constexpr E operator|(EnumValue<E, T, V1, I1> b0, BitsetIndex<E, V2, I2> b1)
     {
         return E(b0 | b1.toBitset());
     }
 
-    template <class E, class T, T V1, uint8_t V2, uint16_t I1, uint16_t I2>
+    template <class E, class T, T V1, uint16_t V2, uint16_t I1, uint16_t I2>
     constexpr E operator|(BitsetIndex<E, V2, I2> b1, EnumValue<E, T, V1, I1> b0)
     {
         return E(b1.toBitset() | b0);
     }
 
-    template <class E, uint8_t V1, uint16_t I>
+    template <class E, uint16_t V1, uint16_t I>
     constexpr E operator|(BitsetIndex<E, V1, I> idx, E e)
     {
         return E(idx | uint64_t(e));
     }
 
-    template <class E, uint8_t V1, uint16_t I>
+    template <class E, uint16_t V1, uint16_t I>
     constexpr bool operator&(E val, BitsetIndex<E, V1, I>)
     {
         return val & (1 << V1);
     }
 
-    template <class E, uint8_t V1, uint16_t I>
+    template <class E, uint16_t V1, uint16_t I>
     constexpr uint64_t operator&(BitsetIndex<E, V1, I>, E val)
     {
         return (1 << V1) & val;
@@ -270,12 +288,18 @@ namespace ct
     {                                                                                                                  \
         using EnumValueType = uint64_t;                                                                                \
         using EnumType = NAME;                                                                                         \
-        template <uint8_t V, uint16_t I>                                                                               \
+        template <uint16_t V, uint16_t I>                                                                              \
         using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
-        constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
-        template <uint8_t V, uint16_t I>                                                                               \
+        constexpr NAME(uint64_t v = 0): ct::EnumBitset<NAME>(v){}                                                      \
+        template <uint16_t V, uint16_t I>                                                                              \
         constexpr NAME(ct::BitsetIndex<NAME, V, I> v) : ct::EnumBitset<NAME>(v.toBitset())                             \
         {                                                                                                              \
+        }                                                                                                              \
+        template<uint16_t V, uint16_t I>                                                                               \
+        NAME& operator=(ct::BitsetIndex<NAME, V, I> v)                                                                 \
+        {                                                                                                              \
+            ct::EnumBitset<NAME>::operator=(v);                                                                        \
+            return *this;                                                                                              \
         }                                                                                                              \
         REFLECT_STUB
 

@@ -72,7 +72,7 @@ namespace ct
         template <class T, class OPTS = HashOptions>
         constexpr auto hashStructName() -> EnableIf<OPTS::hash_struct_name, uint32_t>
         {
-            return crc32(Reflect<T>::getName());
+            return crc32(Reflect<T>:: getName());
         }
 
         template <class T, class OPTS = HashOptions>
@@ -85,7 +85,7 @@ namespace ct
         constexpr uint32_t hashMemberName()
         {
             return OPTS::hash_member_names
-                       ? std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}).getName())>::value
+                       ? std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}). getName())>::value
                        : 0;
         }
 
@@ -151,7 +151,7 @@ namespace ct
     template <class T>
     constexpr uint32_t hashStruct()
     {
-        return crc32(Reflect<T>::getName()) ^ hashMembers<T>();
+        return crc32(Reflect<T>:: getName()) ^ hashMembers<T>();
     }
 
     template <class T>
@@ -171,14 +171,14 @@ namespace ct
     template <class T>
     constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<0U> /*idx*/)
     {
-        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<0U>{}))>;
+        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::name(Indexer<0U>{}))>;
         return (hash ^ hashMember<T, 0U>());
     }
 
     template <class T, index_t I>
     constexpr uint32_t hashMemberHelper(const uint32_t hash, const Indexer<I> idx)
     {
-        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::getName(Indexer<I>{}))>;
+        // using name_hash_t = typename std::integral_constant<uint32_t, crc32(Reflect<T>::name(Indexer<I>{}))>;
         return hashMemberHelper<T>((hash ^ hashMember<T, I>()), --idx);
     }
 

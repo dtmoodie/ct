@@ -14,7 +14,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
 
         REFLECT_STUB
             PUBLIC_ACCESS(rows)
@@ -34,7 +34,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
         static constexpr int rows() { return R; }
         static constexpr int cols() { return C; }
 
@@ -65,7 +65,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
 
         static void reshape(DataType& data, const std::array<int, 2>& new_shape)
@@ -102,7 +102,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
     };
 
     template <class T>

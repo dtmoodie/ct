@@ -10,7 +10,7 @@
     template <>                                                                                                        \
     struct Reflect<TYPE> : public ReflectBase<TYPE>                                                                    \
     {                                                                                                                  \
-        static constexpr const char* getName() { return "TYPE"; }                                                      \
+        static constexpr const char*  getName() { return "TYPE"; }                                                      \
     }
 
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)

@@ -24,6 +24,18 @@ namespace ct
         using type = typename MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>::Data_t;
     };
 
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct GetType<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
+    {
+        using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct GetType<StaticFunctions<T, FLAGS, METADATA, PTRS...>>
+    {
+        using type = VariadicTypedef<typename InferPointerType<PTRS>::Data_t...>;
+    };
+
     template <class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
     struct SetType<MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>>
     {
@@ -44,6 +56,24 @@ namespace ct
 
     template <class T, index_t I>
     using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));
+
+    template <class T>
+    struct IsFunction
+    {
+        static constexpr const bool value = false;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct IsFunction<StaticFunctions<T, FLAGS, METADATA, PTRS...>>
+    {
+        static constexpr const bool value = true;
+    };
+
+    template <class T, Flag_t FLAGS, class METADATA, class... PTRS>
+    struct IsFunction<MemberFunctionPointers<T, FLAGS, METADATA, PTRS...>>
+    {
+        static constexpr const bool value = true;
+    };
 
     template <class T, index_t I>
     struct IsMemberFunction
@@ -103,21 +133,21 @@ namespace ct
     struct IsReadable
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & Flags::READABLE;
+        constexpr static const bool value = flags<type>() & Flags::READABLE;
     };
 
     template <class T, index_t I>
     struct IsWritable
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & Flags::WRITABLE;
+        constexpr static const bool value = flags<type>() & Flags::WRITABLE;
     };
 
     template <class T, index_t I>
     struct ShouldSerialize
     {
         using type = PtrType<T, I>;
-        constexpr static const bool value = !(getFlags<type>() & Flags::DO_NOT_SERIALIZE);
+        constexpr static const bool value = !(flags<type>() & Flags::DO_NOT_SERIALIZE);
     };
 
     template <class T, index_t I>

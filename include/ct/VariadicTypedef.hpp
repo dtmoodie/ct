@@ -48,7 +48,10 @@ namespace ct
             return count<T>() != 0;
         }
 
-        static constexpr VariadicTypedefIterator<Args...> begin();
+        static constexpr VariadicTypedefIterator<Args...> begin()
+        {
+            return {};
+        }
 
         using tuple_type = std::tuple<Args...>;
     };

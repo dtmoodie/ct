@@ -3,6 +3,7 @@
 #include "ct/EnumBitset.hpp"
 #include "enum.hpp"
 #include <ct/static_asserts.hpp>
+
 #include <iostream>
 #include <sstream>
 
@@ -291,6 +292,14 @@ TEST(enum_value_from_string, BitwiseEnum)
 
 TEST(enum_bitwise, bitwise)
 {
+    ct::StaticEquality<uint64_t, Bitset::v0.toBitset(), 1>{};
+    ct::StaticEquality<uint64_t, Bitset::v1.toBitset(), 1 << 1>{};
+    ct::StaticEquality<uint64_t, Bitset::v2.toBitset(), 1 << 2>{};
+    ct::StaticEquality<uint64_t, Bitset::v3.toBitset(), 1 << 3>{};
+    ct::StaticEquality<uint64_t, Bitset::v4.toBitset(), 1 << 4>{};
+    ct::StaticEquality<uint64_t, Bitset::v5.toBitset(), 1 << 5>{};
+
+
     Bitset bitset(Bitset::v0);
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
     {

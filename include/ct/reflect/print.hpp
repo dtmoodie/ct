@@ -70,7 +70,7 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
+        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>:: getName() << " " << ptr.m_name;
         os << std::endl;
     }
 
@@ -176,7 +176,7 @@ namespace ct
             if (recursion_block)
             {
                 os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
-                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getName() << PRINT_OPTIONS::type_end;
+                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>:: getName() << PRINT_OPTIONS::type_end;
                 return;
             }
             recursion_block = true;
@@ -235,11 +235,11 @@ namespace ct
             os << path;
             if (PRINT_OPTIONS::print_description)
             {
-                auto desc = getMetadata<metadata::Description, I, T>();
+                auto desc = getMetadata<Description, I, T>();
                 os << PRINT_OPTIONS::description_begin;
                 if (desc)
                 {
-                    os << getMetadata<metadata::Description, I, T>()->getDescription();
+                    os << getMetadata<Description, I, T>()->description();
                 }
                 else
                 {

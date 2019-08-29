@@ -11,7 +11,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
@@ -41,7 +41,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
