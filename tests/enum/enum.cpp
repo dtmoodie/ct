@@ -1,6 +1,8 @@
 #include "gtest/gtest.h"
 
 #include "ct/EnumBitset.hpp"
+#include <ct/reflect/print.hpp>
+
 #include "enum.hpp"
 #include <ct/static_asserts.hpp>
 
@@ -225,6 +227,7 @@ TEST(enum_value_to_string, MixedBitwise)
     checkPrint(val, "kVALUE6");
 
     val = MyClass::MixedBitwise::kVALUE0 | MyClass::MixedBitwise::kFLAG0;
+    EXPECT_EQ(val.value, 1 + (1 << 4));
     checkPrint(val, "kFLAG0|kVALUE0");
     val = MyClass::MixedBitwise::kVALUE0 | MyClass::MixedBitwise::kFLAG1;
     checkPrint(val, "kFLAG1|kVALUE0");
@@ -298,7 +301,6 @@ TEST(enum_bitwise, bitwise)
     ct::StaticEquality<uint64_t, Bitset::v3.toBitset(), 1 << 3>{};
     ct::StaticEquality<uint64_t, Bitset::v4.toBitset(), 1 << 4>{};
     ct::StaticEquality<uint64_t, Bitset::v5.toBitset(), 1 << 5>{};
-
 
     Bitset bitset(Bitset::v0);
     for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)

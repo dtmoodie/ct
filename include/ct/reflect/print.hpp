@@ -70,7 +70,7 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>:: getName() << " " << ptr.m_name;
+        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
         os << std::endl;
     }
 
@@ -176,7 +176,7 @@ namespace ct
             if (recursion_block)
             {
                 os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
-                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>:: getName() << PRINT_OPTIONS::type_end;
+                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getName() << PRINT_OPTIONS::type_end;
                 return;
             }
             recursion_block = true;
@@ -408,7 +408,7 @@ namespace std
         return os;
     }
 
-    template <class E, uint8_t V, uint16_t I>
+    template <class E, uint16_t V, uint16_t I>
     ostream& operator<<(ostream& os, ct::BitsetIndex<E, V, I>)
     {
         os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
@@ -481,6 +481,7 @@ namespace std
             const auto mask = ~value;
             v = T(v & mask);
             success = true;
+            check_bitwise = false;
         }
         return printEnumHelper(os, v, --idx, check_bitwise, multi_value) || success;
     }

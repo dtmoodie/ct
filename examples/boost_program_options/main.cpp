@@ -4,7 +4,7 @@
 #include <ct/static_asserts.hpp>
 #include <iostream>
 
-using ct::metadata::Description;
+using ct::Description;
 // Externally reflected
 struct SubOptions
 {

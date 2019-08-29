@@ -12,7 +12,7 @@
 #include <ct/interop/boost_program_options.hpp>
 #endif
 
-using Description = ct::metadata::Description;
+using Description = ct::Description;
 
 struct MyStruct
 {
