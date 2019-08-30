@@ -12,16 +12,9 @@ namespace ct
             return name.slice(name.rfind('=') + 2, name.size() - 1);
         }
 
-		// This isn't the greatest solution but in msvc if there is a templated argument then it inserts an additional whitespace after the name
-		constexpr StringView parseClassNameMSVCMultiTemplate(const StringView name, ssize_t first, ssize_t last)
-		{
-            return name.slice(first, (name[static_cast<size_t>(last-1)] == ' ') ? last - 1 : last );
-		}
-
         constexpr StringView parseClassNameMSVC(const StringView name)
         {
-            return parseClassNameMSVCMultiTemplate(
-                name, ct::findFirst(name.data(), ' ') + 1, ct::findLast(name.data(), '>'));
+            return name.slice(name.find(' ') + 1, name.rfind('>')).strip();
         }
     }
 
