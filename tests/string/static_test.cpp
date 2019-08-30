@@ -129,8 +129,6 @@ int main()
     constexpr const auto expected_str = StringView("std::vector<float>");
     static_assert(generated_str == expected_str, "asdf");
 
-    static_assert(StringView(CompileTimeString<5>().data, 5) == StringView("\0\0\0\0\0", 5), "asdf");
-
     STATIC_EQUAL(ct::strLen("asdf"), 4);
     STATIC_EQUAL(ct::strLen(getString()), 4);
 
