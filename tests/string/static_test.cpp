@@ -20,68 +20,73 @@ static constexpr const char* getString()
     return "asdf";
 }
 
-template<size_t N>
+template <size_t N>
 struct CompileTimeString;
 
-template<size_t N, size_t ... I1, size_t ... I2>
-constexpr CompileTimeString<N> insertImpl(CompileTimeString<N> str, StringView insert_string, IndexSequence<I1...>, IndexSequence<I2...>)
+template <size_t N, size_t... I1, size_t... I2>
+constexpr CompileTimeString<N>
+insertImpl(CompileTimeString<N> str, StringView insert_string, IndexSequence<I1...>, IndexSequence<I2...>)
 {
     return {str.data[I1]..., insert_string[I2]...};
 }
 
-template<size_t N>
+template <size_t N>
 struct CompileTimeString
 {
-    template<size_t N1>
-    constexpr CompileTimeString<N + N1 - 1> operator +(CompileTimeString<N1> other) const
+    template <class... T>
+    constexpr CompileTimeString(T... vals) : data{vals...}
+    {
+    }
+
+    template <size_t N1>
+    constexpr CompileTimeString<N + N1 - 1> operator+(CompileTimeString<N1> other) const
     {
         return appendImpl(other, makeIndexSequence<N - 1>{}, makeIndexSequence<N1>{});
     }
 
-    constexpr size_t size() const{return N;}
+    constexpr size_t size() const { return N; }
 
     char data[N] = {};
 
-    template<size_t N1, size_t ... I1, size_t ... I2>
-    constexpr CompileTimeString<N + N1 - 1> appendImpl(CompileTimeString<N1> other, IndexSequence<I1...>, IndexSequence<I2...>) const
+    template <size_t N1, size_t... I1, size_t... I2>
+    constexpr CompileTimeString<N + N1 - 1>
+    appendImpl(CompileTimeString<N1> other, IndexSequence<I1...>, IndexSequence<I2...>) const
     {
         return {data[I1]..., other.data[I2]...};
     }
 };
 
-template<size_t N, size_t ... I>
+template <size_t N, size_t... I>
 constexpr CompileTimeString<N> makeCTS(const char (&str)[N], IndexSequence<I...>)
 {
     return {str[I]...};
 }
 
-template<size_t N, size_t ... I>
+template <size_t N, size_t... I>
 constexpr CompileTimeString<N> makeCTS(StringView str, IndexSequence<I...>)
 {
     return {str[I]...};
 }
 
-template<size_t N>
+template <size_t N>
 constexpr CompileTimeString<N> makeCTS(const char (&str)[N])
 {
     return makeCTS(str, makeIndexSequence<N>{});
 }
 
-template<size_t N>
+template <size_t N>
 constexpr CompileTimeString<N> makeCTS(StringView str)
 {
-    return makeCTS<N>(str, makeIndexSequence<N-1>{});
+    return makeCTS<N>(str, makeIndexSequence<N - 1>{});
 }
 
-template<size_t N, size_t ... I>
+template <size_t N, size_t... I>
 CompileTimeString<N> expand(CompileTimeString<N> str, IndexSequence<I...>)
 {
     return {str.data[I]...};
 }
 
-
-
-template<size_t N, size_t ... I>
+template <size_t N, size_t... I>
 constexpr CompileTimeString<N> generateString(StringView str, IndexSequence<I...>)
 {
     return {str[I]...};
@@ -90,8 +95,9 @@ constexpr CompileTimeString<N> generateString(StringView str, IndexSequence<I...
 // Goal is to generate the name std::vector<T> where T is filled in with the name of T
 // ie: std::vector<float>
 // Why?  Because there isn't a great cross platform way of having consistent names, for most stuff it works correctly
-// but for containers it's still iffy, so if we just make specializations of ct::GetName we can consistently generate strings with the following.
-template<class T>
+// but for containers it's still iffy, so if we just make specializations of ct::GetName we can consistently generate
+// strings with the following.
+template <class T>
 struct GenerateName
 {
     static constexpr const auto prefix = makeCTS("std::vector<");
@@ -101,17 +107,19 @@ struct GenerateName
 
     static constexpr const auto substring_ = ct::GetName<T>::getName();
     static constexpr const auto substring_len = substring_.size();
-    static constexpr const auto substring = makeCTS<substring_len+1>(substring_);
+    static constexpr const auto substring = makeCTS<substring_len + 1>(substring_);
 
     static constexpr const size_t total_len = prefix_len + substring_len + postfix_len;
-    static constexpr const CompileTimeString<total_len-1> name = (prefix + substring) + postfix;
+    static constexpr const CompileTimeString<total_len - 1> name = (prefix + substring) + postfix;
     static constexpr const auto test = (prefix + substring);
-    static constexpr const StringView getName(){return StringView(name.data, prefix_len + substring_len + postfix_len - 2);}
+    static constexpr const StringView getName()
+    {
+        return StringView(name.data, prefix_len + substring_len + postfix_len - 2);
+    }
 };
 
-template<class T>
-constexpr const CompileTimeString<GenerateName<T>::total_len-1> GenerateName<T>::name;
-
+template <class T>
+constexpr const CompileTimeString<GenerateName<T>::total_len - 1> GenerateName<T>::name;
 
 int main()
 {
