@@ -8,25 +8,119 @@
 #include <iterator>
 #include <type_traits>
 
-namespace test
+using namespace ct;
+
+namespace ct
 {
-    class TestClass;
+    DECL_NAME_1(float);
 }
 
-struct TestStruct
-{
-    static constexpr auto getTypeHelper() -> typename std::remove_reference<decltype(*this)>::type;
-    using DataType = decltype(getTypeHelper());
-};
-
-using namespace ct;
 static constexpr const char* getString()
 {
     return "asdf";
 }
 
+template<size_t N>
+struct CompileTimeString;
+
+template<size_t N, size_t ... I1, size_t ... I2>
+constexpr CompileTimeString<N> insertImpl(CompileTimeString<N> str, StringView insert_string, IndexSequence<I1...>, IndexSequence<I2...>)
+{
+    return {str.data[I1]..., insert_string[I2]...};
+}
+
+template<size_t N>
+struct CompileTimeString
+{
+    template<size_t N1>
+    constexpr CompileTimeString<N + N1 - 1> operator +(CompileTimeString<N1> other) const
+    {
+        return appendImpl(other, makeIndexSequence<N - 1>{}, makeIndexSequence<N1>{});
+    }
+
+    constexpr size_t size() const{return N;}
+
+    char data[N] = {};
+
+    template<size_t N1, size_t ... I1, size_t ... I2>
+    constexpr CompileTimeString<N + N1 - 1> appendImpl(CompileTimeString<N1> other, IndexSequence<I1...>, IndexSequence<I2...>) const
+    {
+        return {data[I1]..., other.data[I2]...};
+    }
+};
+
+template<size_t N, size_t ... I>
+constexpr CompileTimeString<N> makeCTS(const char (&str)[N], IndexSequence<I...>)
+{
+    return {str[I]...};
+}
+
+template<size_t N, size_t ... I>
+constexpr CompileTimeString<N> makeCTS(StringView str, IndexSequence<I...>)
+{
+    return {str[I]...};
+}
+
+template<size_t N>
+constexpr CompileTimeString<N> makeCTS(const char (&str)[N])
+{
+    return makeCTS(str, makeIndexSequence<N>{});
+}
+
+template<size_t N>
+constexpr CompileTimeString<N> makeCTS(StringView str)
+{
+    return makeCTS<N>(str, makeIndexSequence<N-1>{});
+}
+
+template<size_t N, size_t ... I>
+CompileTimeString<N> expand(CompileTimeString<N> str, IndexSequence<I...>)
+{
+    return {str.data[I]...};
+}
+
+
+
+template<size_t N, size_t ... I>
+constexpr CompileTimeString<N> generateString(StringView str, IndexSequence<I...>)
+{
+    return {str[I]...};
+}
+
+// Goal is to generate the name std::vector<T> where T is filled in with the name of T
+// ie: std::vector<float>
+// Why?  Because there isn't a great cross platform way of having consistent names, for most stuff it works correctly
+// but for containers it's still iffy, so if we just make specializations of ct::GetName we can consistently generate strings with the following.
+template<class T>
+struct GenerateName
+{
+    static constexpr const auto prefix = makeCTS("std::vector<");
+    static constexpr const auto prefix_len = prefix.size();
+    static constexpr const auto postfix = makeCTS(">");
+    static constexpr const auto postfix_len = postfix.size();
+
+    static constexpr const auto substring_ = ct::GetName<T>::getName();
+    static constexpr const auto substring_len = substring_.size();
+    static constexpr const auto substring = makeCTS<substring_len+1>(substring_);
+
+    static constexpr const size_t total_len = prefix_len + substring_len + postfix_len;
+    static constexpr const CompileTimeString<total_len-1> name = (prefix + substring) + postfix;
+    static constexpr const auto test = (prefix + substring);
+    static constexpr const StringView getName(){return StringView(name.data, prefix_len + substring_len + postfix_len - 2);}
+};
+
+template<class T>
+constexpr const CompileTimeString<GenerateName<T>::total_len-1> GenerateName<T>::name;
+
+
 int main()
 {
+    constexpr const auto generated_str = GenerateName<float>::getName();
+    constexpr const auto expected_str = StringView("std::vector<float>");
+    static_assert(generated_str == expected_str, "asdf");
+
+    static_assert(StringView(CompileTimeString<5>{}.data, 5) == StringView("\0\0\0\0\0", 5), "asdf");
+
     STATIC_EQUAL(ct::strLen("asdf"), 4);
     STATIC_EQUAL(ct::strLen(getString()), 4);
 
@@ -82,41 +176,14 @@ int main()
 
     static_assert(StringView("asdf").equal(StringView("ASDF"), false), "asdf");
 
-    // StaticEquality < size_t, StringView("asdf").
+    StaticEquality<size_t, StringView("  asdf  ").findFirstChar(), 2>{};
+    StaticEquality<size_t, StringView("  asdf  ").findLastChar(), 5>{};
+    static_assert(StringView("  asdf  ").strip() == StringView("asdf"), "asdf");
+    static_assert(StringView("  asdf  asdf  ").strip() == StringView("asdf  asdf"), "asdf");
 
-    // The following is not portable to gcc 4.8 :(
-    // GCC's output ct::GetName<test::TestClass>:: getName();
-    /*constexpr const char* class_name1 =
-        "static constexpr ct::StringView ct::GetNameGCC<T>:: getName() [with T = test::TestClass]";
-    // MSVC's output
-    constexpr const char* class_name2 = "GetNameMSVC<class test::TestClass>::name";
-    // Just to be able to double check
-    std::cout << ct::GetName<test::TestClass>:: getName() << std::endl;
-
-    std::cout << class_name1 << std::endl;
-    std::cout << class_name2 << std::endl;
-
-    // StaticEquality < size_t,
-
-    static_assert(
-        ct::crc32(ct::detail::parseClassNameMSVC(
-            "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> > >::name")) >
-    0,
-        "asdf");
-
-    using type = TestStruct::DataType;
-    std::cout << std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>:: getName())>::value << std::endl;
-    ct::StaticEquality<uint32_t,
-                       std::integral_constant<uint32_t, ct::crc32(ct::GetName<type>:: getName())>::value,
-                       ct::crc32("TestStruct")>();
-    std::cout << ct::GetName<type>:: getName() << std::endl;
-
-    std::cout << ct::findNthFromBeginning("asdfasdfasdf", 2, 'a') << std::endl;
-
-    std::cout << ct::detail::parseClassNameMSVC(
-                     "GetName<class std::vector<struct TestStruct,class std::allocator<struct TestStruct> >
-    >::name")
-              << std::endl;*/
-
+    StaticEquality<size_t, StringView("asdfadfa").find("fadf"), 3>{};
+    StaticEquality<size_t, StringView("asdfadfa").rfind("fadf"), 3>{};
+    StaticEquality<size_t, StringView("asdfasdf").find("bgr"), StringView::npos>{};
+    StaticEquality<size_t, StringView("bgr").find("asdfasdf"), StringView::npos>{};
     return 0;
 }

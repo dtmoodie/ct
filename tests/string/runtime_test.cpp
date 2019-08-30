@@ -91,3 +91,13 @@ TEST(string_hash, full_string)
     ASSERT_EQ(crc32(StringView(str1).substr(0, 4)), crc32("asdf"));
     ASSERT_EQ(crc32(StringView(str1).substr(1, 4)), crc32("sdfa"));
 }
+
+TEST(string_strip, strip)
+{
+    ASSERT_EQ(StringView("  asdf  ").strip(), StringView("asdf"));
+}
+
+TEST(string_search, substring)
+{
+    ASSERT_EQ(StringView("asdfadfa").find("fadf"), 3);
+}
