@@ -20,6 +20,13 @@ void checkName(ct::StringView expected_name)
     TEST(check_name, NAME) { checkName<NAME>(#NAME); }
 
 CHECK_NAME(float);
+CHECK_NAME(double);
+CHECK_NAME(uint32_t);
+CHECK_NAME(int32_t);
+CHECK_NAME(int8_t);
+CHECK_NAME(uint8_t);
+CHECK_NAME(uint16_t);
+CHECK_NAME(int16_t);
 CHECK_NAME(InternallyReflected);
 CHECK_NAME(TestA);
 CHECK_NAME(ReflectedStruct);
@@ -38,6 +45,21 @@ CHECK_NAME(PointerOwner);
 CHECK_NAME(Virtual);
 CHECK_NAME(ExplicitThisProperty);
 CHECK_NAME(WeirdWeakOwnerShip);
+
+TEST(check_name, string)
+{
+    checkName<std::string>("std::string");
+}
+
+TEST(check_name, vector)
+{
+    checkName<std::vector<float>>("std::vector<float>");
+}
+
+TEST(check_name, vector_string)
+{
+    checkName<std::vector<std::string>>("std::vector<std::string>");
+}
 
 TEST(check_name, Templated)
 {
