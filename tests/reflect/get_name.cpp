@@ -9,6 +9,10 @@
 template <class T>
 void checkName(ct::StringView expected_name)
 {
+    if (ct::Reflect<T>::getName() != expected_name)
+    {
+        std::cout << "funcname: " << ct::GetName<T>::funcName() << std::endl;
+    }
     EXPECT_EQ(ct::Reflect<T>::getName(), expected_name);
 }
 
