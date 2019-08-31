@@ -397,7 +397,8 @@ namespace ct
         ar(::cereal::make_size_tag(size));
         if (size != view.size())
         {
-            throw std::runtime_error("Deserializing an unexpected size");
+            throw std::runtime_error("Deserializing an unexpected size, expected " + std::to_string(view.size()) +
+                                     " but read size of " + std::to_string(size));
         }
         for (size_t i = 0; i < view.size(); ++i)
         {
