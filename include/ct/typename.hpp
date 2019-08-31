@@ -12,9 +12,14 @@ namespace ct
             return name.slice(name.rfind('=') + 2, name.size() - 1);
         }
 
+		constexpr StringView parseClassNameMSVCHelper(const StringView name, size_t struct_pos)
+		{
+            return name.slice((struct_pos != StringView::npos ? struct_pos + 7 : name.find("C<") + 2), name.rfind('>') - 1).strip();
+		}
+
         constexpr StringView parseClassNameMSVC(const StringView name)
         {
-            return name.slice(name.find(' ') + 1, name.rfind('>') - 1).strip();
+            return parseClassNameMSVCHelper(name, name.find("struct"));
         }
     }
 
