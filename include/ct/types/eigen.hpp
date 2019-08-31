@@ -71,14 +71,22 @@ namespace ct
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
+} // namespace ct
 
 #ifdef _MSC_VER
-    template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
-    struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
-        : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
-    {
-    };
-#endif
+#include <ct/reflect/cerealize.hpp>
+namespace ct
+{
+	namespace cereal
+	{
+        template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
+        struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
+            : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
+        {
+        };
+	}
 }
+
+#endif
 
 #endif // CT_EIGEN_HPP

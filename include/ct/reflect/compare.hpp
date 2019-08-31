@@ -25,7 +25,7 @@ namespace ct
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = accessor.m_name;
+        const char* name = accessor.m_name.cStr();
         if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;
@@ -45,7 +45,7 @@ namespace ct
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = accessor.m_name;
+        const char* name = accessor.m_name.cStr();
         if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;

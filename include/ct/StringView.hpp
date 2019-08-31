@@ -61,7 +61,8 @@ namespace ct
 
         constexpr BasicStringView strip() const;
 
-        constexpr operator const T*() const;
+        //constexpr operator const T*() const;
+        constexpr const T* cStr() const;
         operator std::basic_string<T>() const;
         std::basic_string<T> toString() const;
 
@@ -369,11 +370,17 @@ namespace ct
                                                                : count(character, pos + 1, cnt));
     }
 
-    template <class T>
+	template <class T>
+    constexpr const T* BasicStringView<T>::cStr() const
+	{
+        return m_data;
+	}
+
+    /*template <class T>
     constexpr BasicStringView<T>::operator const T*() const
     {
         return m_data;
-    }
+    }*/
 
     template <class T>
     BasicStringView<T>::operator std::basic_string<T>() const
