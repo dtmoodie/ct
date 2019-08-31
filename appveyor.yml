@@ -65,6 +65,8 @@ test_script:
    
    reflect\debug\test_ct_reflect_cerealize.exe
 
+   reflect\debug\test_ct_get_name.exe
+
    enum\debug\test_ct_enum.exe
    
 
@@ -88,4 +90,6 @@ test_script:
    reflect/test_ct_reflect_cerealize false
 
    enum/test_ct_enum
+
+   reflect/test_ct_get_name
    
