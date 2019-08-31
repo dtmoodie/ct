@@ -14,7 +14,7 @@ namespace ct
 
         constexpr StringView parseClassNameMSVC(const StringView name)
         {
-            return name.slice(name.find(' ') + 1, name.rfind('>')).strip();
+            return name.slice(name.find(' ') + 1, name.rfind('>') - 1).strip();
         }
     }
 
