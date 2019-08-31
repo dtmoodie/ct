@@ -1,8 +1,8 @@
 #ifndef CT_TYPENAME_HPP
 #define CT_TYPENAME_HPP
+#include "CompileTimeString.hpp"
 #include "StringView.hpp"
 #include "config.hpp"
-#include "CompileTimeString.hpp"
 
 #include <cstdint>
 
@@ -58,9 +58,10 @@ namespace ct
     };
 #endif
 
-	template<class T, class A>
-	struct GetName<std::vector<T, A>>
-	{
+    // not generically ready for prime time
+    /*template<class T, class A>
+    struct GetName<std::vector<T, A>>
+    {
         static constexpr const auto prefix = makeCTS("std::vector<");
         static constexpr const auto prefix_len = prefix.size();
         static constexpr const auto postfix = makeCTS(">");
@@ -78,8 +79,7 @@ namespace ct
         {
             return StringView(name.data, prefix_len + substring_len + postfix_len - 2);
         }
-	};
-
+    };*/
 
 } // namespace ct
 
@@ -87,7 +87,7 @@ namespace ct
     template <>                                                                                                        \
     struct GetName<SYM>                                                                                                \
     {                                                                                                                  \
-		static constexpr const char* funcName() { return ""; }														   \
+        static constexpr const char* funcName() { return ""; }                                                         \
         static constexpr StringView getName() { return #SYM; }                                                         \
     }
 
@@ -95,7 +95,7 @@ namespace ct
     template <>                                                                                                        \
     struct GetName<SYM>                                                                                                \
     {                                                                                                                  \
-		static constexpr const char* funcName() { return ""; }														   \
+        static constexpr const char* funcName() { return ""; }                                                         \
         static constexpr StringView getName() { return #NAME; }                                                        \
     }
 
