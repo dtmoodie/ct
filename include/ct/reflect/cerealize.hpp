@@ -270,7 +270,8 @@ namespace ct
                 const auto size = size_ptr.get(obj);
                 if (size > 0)
                 {
-                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.set(obj), size)));
+                    auto view = makeArrayView(data_ptr.set(obj), size);
+                    ar(::cereal::make_nvp("data", view));
                 }
                 loadItr(ar, obj, ct::Reflect<T>::end());
             }
