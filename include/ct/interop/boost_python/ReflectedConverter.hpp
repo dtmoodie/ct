@@ -70,9 +70,9 @@ namespace ct
             boost::python::object python_member;
             boost::python::dict dict(bpobj);
             boost::python::object key(name);
-            if (PyObject_HasAttrString(ptr, ct::getName<I, T>()))
+            if (PyObject_HasAttrString(ptr, ct::getName<I, T>().cStr()))
             {
-                python_member = bpobj.attr(ct::getName<I, T>());
+                python_member = bpobj.attr(ct::getName<I, T>().cStr());
             }
             else if (dict && dict.has_key(key))
             {
@@ -168,8 +168,7 @@ namespace ct
                                 const ct::Indexer<I>,
                                 const size_t kwarg_index) -> EnableIfIsWritable<T, I, bool>
         {
-            kwargs[kwarg_index] =
-                (boost::python::arg(static_cast<const char*>(ct::getName<I, T>())) = boost::python::object());
+            kwargs[kwarg_index] = (boost::python::arg(ct::getName<I, T>().cStr()) = boost::python::object());
             return true;
         }
 
@@ -376,14 +375,14 @@ namespace ct
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
             -> EnableIf<!(flags<PROPERTY>() & Flags::WRITABLE) && (flags<PROPERTY>() & Flags::READABLE)>
         {
-            bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>);
+            bpobj.add_property(ct::getName<I, T>().cStr(), &pythonGet<I, T>);
         }
 
         template <class T, class BP, class PROPERTY, index_t I>
         auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
             -> EnableIf<(flags<PROPERTY>() & Flags::WRITABLE) && (flags<PROPERTY>() & Flags::READABLE)>
         {
-            bpobj.add_property(static_cast<const char*>(ct::getName<I, T>()), &pythonGet<I, T>, &pythonSet<I, T>);
+            bpobj.add_property(ct::getName<I, T>().cStr(), &pythonGet<I, T>, &pythonSet<I, T>);
         }
 
         template <class T, class BP, class PROPERTY>
@@ -395,7 +394,7 @@ namespace ct
         void addMemberFunctionImpl(BP& bpobj, MemberFunctionPointers<U, FLAGS, MDATA, PTRS...> ptrs, Indexer<I>)
         {
             auto ptr = ptrs.template getPtr<I>();
-            bpobj.def(static_cast<const char*>(ptrs. getName()), ptr.m_ptr);
+            bpobj.def(ptrs.getName().cStr(), ptr.m_ptr);
         }
 
         template <class T, class BP, class PTRS>
