@@ -242,7 +242,7 @@ namespace ct
             }
 
             template <class SHAPE, class PTR>
-            static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, false>)
+            static void reshapeImpl(const SHAPE&, PTR, T&, std::integral_constant<bool, false>)
             {
             }
 
