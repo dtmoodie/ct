@@ -33,8 +33,17 @@ struct Cerealization : ::testing::Test
             ASSERT_TRUE(ifs.is_open());
             READ archive(ifs);
             T loaded_data;
-            archive(cereal::make_nvp("data", loaded_data));
-            const auto cerealization_success = ct::compare(data, loaded_data, DebugEqual());
+            bool cerealization_success = false;
+            try
+            {
+                archive(cereal::make_nvp("data", loaded_data));
+            }
+            catch (std::exception& exception)
+            {
+                std::cout << "Cerealization of " << ct::Reflect<T>::getName()
+                          << " failed with exception: " << exception.what() << std::endl;
+            }
+            cerealization_success = ct::compare(data, loaded_data, DebugEqual());
             if (!cerealization_success)
             {
                 std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
