@@ -26,13 +26,12 @@ namespace ct
 
         REFLECT_STUB
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, colStride)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rowStride)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, cols)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, rows)
-
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, colStride)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rowStride)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, cols)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rows)
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
@@ -69,10 +68,25 @@ namespace ct
             PROPERTY(rowStride)
             PROPERTY(cols)
             PROPERTY(rows)
-
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
+} // namespace ct
+
+#ifdef _MSC_VER
+#include <ct/reflect/cerealize.hpp>
+namespace ct
+{
+	namespace cereal
+	{
+        template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
+        struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
+            : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
+        {
+        };
+	}
 }
+
+#endif
 
 #endif // CT_EIGEN_HPP

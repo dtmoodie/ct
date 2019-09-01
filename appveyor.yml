@@ -20,13 +20,17 @@ for:
 before_build:
 - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
 - git clone https://github.com/eigenteam/eigen-git-mirror
+- cd eigen-git-mirror
+- git checkout 3.3.7
+- cd ..
+- git submodule update --init --recursive
 
 - cmd: >-
    if not exist "build" mkdir build
    
    cd build
    
-   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/
+   cmake .. -DBOOST_ROOT=C:\Libraries\boost_1_67_0 -DBOOST_LIBRARYDIR=C:\Libraries\boost_1_67_0\stage\lib -Dcereal_INCLUDE_DIR=%APPVEYOR_BUILD_FOLDER%/cereal/include -DBUILD_EXAMPLES=OFF -DEIGEN3_INCLUDE_DIRS=%APPVEYOR_BUILD_FOLDER%/eigen-git-mirror/ -Dgtest_force_shared_crt=ON
 
 - sh: >-
     mkdir -p build
@@ -60,6 +64,10 @@ test_script:
    reflect\debug\test_ct_reflect_compare.exe
    
    reflect\debug\test_ct_reflect_cerealize.exe
+
+   reflect\debug\test_ct_get_name.exe
+
+   enum\debug\test_ct_enum.exe
    
 
 - sh: >-
@@ -79,5 +87,9 @@ test_script:
    
    reflect/test_ct_reflect_compare
    
-   reflect/test_ct_reflect_cerealize
+   reflect/test_ct_reflect_cerealize false
+
+   enum/test_ct_enum
+
+   reflect/test_ct_get_name
    

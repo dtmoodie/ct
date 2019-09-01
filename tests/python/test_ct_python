@@ -1,0 +1,86 @@
+#!/usr/bin/python
+
+import test_ct_python
+import math
+
+obj = test_ct_python.ReflectedStruct(x=1, y=2, z=3, id=10)
+print(obj)
+assert(obj.x == 1)
+assert(obj.y == 2)
+assert(obj.z == 3)
+assert(obj.id == 10)
+
+obj = test_ct_python.ReflectedStruct(id=10, y=2, z=3, x=1)
+assert(obj.x == 1)
+assert(obj.y == 2)
+assert(obj.z == 3)
+assert(obj.id == 10)
+
+obj = test_ct_python.Inherited(x=1, y=2, z=3, id=20, w = 5)
+print(obj)
+assert(obj.x == 1)
+assert(obj.y == 2)
+assert(obj.z == 3)
+assert(obj.id == 20)
+assert(obj.w == 5)
+
+obj = test_ct_python.Composite(a={'x':1,'y':2}, b={'x':5,'z':10})
+assert(obj.a.x == 1)
+assert(obj.a.y == 2)
+assert(obj.a.z == 0)
+assert(obj.a.id == 0)
+
+assert(obj.b.x == 5)
+assert(obj.b.y == 0)
+assert(obj.b.z == 10)
+assert(obj.b.id == 0)
+print(obj)
+
+obj = test_ct_python.TestA(x=5, y=10, z=100)
+assert(obj.x == 5)
+assert(obj.y == 10)
+assert(obj.z == 100)
+assert(abs(obj.norm() - 100.623) < 0.001)
+print(obj)
+
+obj = test_ct_python.TestB(x=4, y=5, z=6)
+assert(obj.x == 4)
+assert(obj.y == 5)
+assert(obj.z == 6)
+print(obj)
+
+obj = test_ct_python.TestC()
+print(obj)
+
+obj = test_ct_python.TestVec()
+print(obj)
+
+obj = test_ct_python.PrivateMutableAccess(5)
+assert(obj.private_mutable_property == 5)
+print(obj)
+
+obj = test_ct_python.InternallyReflected()
+print(obj)
+
+obj = test_ct_python.PrivateGetAndSet(5)
+assert(obj.private_get_and_set == 5)
+print(obj)
+
+obj = test_ct_python.MultipleInheritance(private_mutable_property=10, x=5, y = 12, z = 15, id=11, asdf = 20)
+assert(obj.private_mutable_property == 10)
+assert(obj.id == 11)
+assert(obj.asdf == 20)
+assert(obj.x == 5)
+assert(obj.y == 12)
+assert(obj.z == 15)
+print(obj)
+
+obj = test_ct_python.ExplicitThisProperty(prop=10)
+assert(obj.prop == 10)
+print(obj)
+
+obj = test_ct_python.DerivedC()
+print(obj)
+
+obj = test_ct_python.Virtual()
+print(obj)

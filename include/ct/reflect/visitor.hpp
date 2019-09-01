@@ -1,7 +1,7 @@
 #ifndef CT_REFLECT_VISITOR_HPP
 #define CT_REFLECT_VISITOR_HPP
 #include "../reflect.hpp"
-
+#include "../reflect_traits.hpp"
 namespace ct
 {
     struct DefaultVisitorParams
@@ -17,32 +17,32 @@ namespace ct
         constexpr static const bool ACCUMULATE_PATH = true;
 
         template <class T>
-        constexpr static bool visitMemberFunctions(T*)
+        constexpr static bool visitMemberFunctions(T)
         {
             return true;
         }
         template <class T>
-        constexpr static bool visitMemberFunction(T*)
+        constexpr static bool visitMemberFunction(T)
         {
             return true;
         }
         template <class T>
-        constexpr static bool visitStaticFunctions(T*)
+        constexpr static bool visitStaticFunctions(T)
         {
             return true;
         }
         template <class T>
-        constexpr static bool visitStaticFunction(T*)
+        constexpr static bool visitStaticFunction(T)
         {
             return true;
         }
         template <class T>
-        constexpr static bool visitMemberObject(T*)
+        constexpr static bool visitMemberObject(T)
         {
             return true;
         }
         template <class T>
-        constexpr static bool visitProperty(T*)
+        constexpr static bool visitProperty(T)
         {
             return true;
         }
@@ -356,13 +356,15 @@ namespace ct
             {
                 path_ = ptrs.m_name.toString();
             }
-
-            static_cast<DERIVED*>(this)->visitMemberFunction(obj,
-                                                             mem_fun,
-                                                             path_,
-                                                             static_cast<Ret_t*>(nullptr),
-                                                             static_cast<Args_t*>(nullptr),
-                                                             std::forward<ARGS>(args)...);
+            if (VisitorParams::visitMemberFunction(mem_fun))
+            {
+                static_cast<DERIVED*>(this)->visitMemberFunction(obj,
+                                                                 mem_fun,
+                                                                 path_,
+                                                                 static_cast<Ret_t*>(nullptr),
+                                                                 static_cast<Args_t*>(nullptr),
+                                                                 std::forward<ARGS>(args)...);
+            }
         }
 
         template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I, class... ARGS>
@@ -372,8 +374,9 @@ namespace ct
                         Indexer<I> idx,
                         ARGS&&... args) -> EnableIf<OPTS::visitMemberObject(static_cast<decltype(ptrs)*>(nullptr))>
         {
-            static_cast<DERIVED*>(this)->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & DO_NOT_SERIALIZE)>(
-                obj, path, ptrs, idx, std::forward<ARGS>(args)...);
+            static_cast<DERIVED*>(this)
+                ->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & Flags::DO_NOT_SERIALIZE)>(
+                    obj, path, ptrs, idx, std::forward<ARGS>(args)...);
         }
 
         template <class T, index_t I, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA, class... ARGS>

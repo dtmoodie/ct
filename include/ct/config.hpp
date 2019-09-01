@@ -50,6 +50,28 @@
 #define CT_CONSTEXPR_NAME
 #endif
 
+#if __cplusplus >= 201703L
+    #define CT_INLINE_VAR static inline constexpr const
+#endif
+
+// before c++17 this is as good as we have :/
+#ifndef CT_INLINE_VAR
+    #define CT_INLINE_VAR static constexpr const
+#endif
+
+
+#ifdef __CUDA_ARCH__
+#include <cuda_runtime_api.h>
+#define CT_DEVICE_INLINE __host__ __device__ __inline__
+#else
+#ifdef _MSC_VER
+#define CT_DEVICE_INLINE inline
+#else
+#define CT_DEVICE_INLINE __inline__
+#endif
+#endif
+
+
 // clang-format on
 
 #endif // CT_CONFIG_HPP

@@ -1,10 +1,13 @@
 #ifndef CT_REFLECT_PRINT_HPP
 #define CT_REFLECT_PRINT_HPP
+#include "../EnumBitset.hpp"
 #include "../StringView.hpp"
+#include "../enum.hpp"
 #include "../reflect.hpp"
 #include "visitor.hpp"
 
 #include <ostream>
+#include <string>
 #include <typeinfo>
 
 namespace ct
@@ -48,7 +51,7 @@ namespace ct
     {
         static const bool error_on_nonprintable = false;
         template <class T>
-        static std::ostream& onUnprintable(std::ostream& os, const char* name, const T& data)
+        static std::ostream& onUnprintable(std::ostream& os, const char* name, const T&)
         {
             os << "Unable to print '" << name << "' no << operator available for " << typeid(T).name();
             return os;
@@ -67,7 +70,7 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::pointerValue(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
+        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
         os << std::endl;
     }
 
@@ -133,12 +136,34 @@ namespace ct
         printStructInfoHelper<T>(os, ct::Reflect<T>::end());
     }
 
+    template <class OPTS>
     struct PrintVisitorParams : public ct::DefaultVisitorParams
     {
         constexpr static const bool ACCUMULATE_PATH = false;
+
+        template <class T>
+        constexpr static bool visitMemberFunctions(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitMemberFunction(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitStaticFunctions(T)
+        {
+            return OPTS::print_calculated_values;
+        }
+        template <class T>
+        constexpr static bool visitStaticFunction(T)
+        {
+            return OPTS::print_calculated_values;
+        }
     };
 
-    template <class PRINT_OPTIONS = PrintOptions, class PARAMS = PrintVisitorParams>
+    template <class PRINT_OPTIONS = PrintOptions, class PARAMS = PrintVisitorParams<PRINT_OPTIONS>>
     struct PrintVisitor : public ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>
     {
         using Super_t = ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>;
@@ -210,11 +235,11 @@ namespace ct
             os << path;
             if (PRINT_OPTIONS::print_description)
             {
-                auto desc = getMetadata<metadata::Description, I, T>();
+                auto desc = getMetadata<Description, I, T>();
                 os << PRINT_OPTIONS::description_begin;
                 if (desc)
                 {
-                    os << getMetadata<metadata::Description, I, T>()->getDescription();
+                    os << getMetadata<Description, I, T>()->description();
                 }
                 else
                 {
@@ -288,6 +313,27 @@ namespace ct
         uint32_t m_indent = 0;
     };
 
+    template <class T>
+    void printEnums(std::ostream& os, ct::Indexer<0> idx)
+    {
+        auto mdata = ct::Reflect<T>::getPtr(idx);
+        os << mdata << '\n';
+    }
+
+    template <class T, ct::index_t I>
+    void printEnums(std::ostream& os, ct::Indexer<I> idx)
+    {
+        printEnums<T>(os, --idx);
+        auto mdata = ct::Reflect<T>::getPtr(idx);
+        os << mdata << '\n';
+    }
+
+    template <class T>
+    void printEnums(std::ostream& ios)
+    {
+        printEnums<T>(ios, ct::Reflect<T>::end());
+    }
+
 } // namespace ct
 
 #include <cstdint>
@@ -297,7 +343,8 @@ namespace ct
 namespace std
 {
     template <class T>
-    auto operator<<(ostream& os, const T& obj) -> ct::EnableIfReflected<T, ostream&>
+    auto operator<<(ostream& os, const T& obj)
+        -> ct::EnableIf<ct::IsReflected<T>::value && !ct::EnumChecker<T>::value, ostream&>
     {
         thread_local bool recursion_block = false;
         if (recursion_block)
@@ -342,6 +389,113 @@ namespace std
             os << arr[i];
         }
         os << ']';
+        return os;
+    }
+
+    template <class E, class T, T V, uint16_t I>
+    auto operator<<(ostream& os, ct::EnumValue<E, T, V, I>) -> ct::EnableIf<!std::is_enum<T>::value, ostream&>
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << V;
+        return os;
+    }
+
+    template <class E, class T, T V, uint16_t I>
+    auto operator<<(ostream& os, ct::EnumValue<E, T, V, I>) -> ct::EnableIf<std::is_enum<T>::value, ostream&>
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
+        return os;
+    }
+
+    template <class E, uint16_t V, uint16_t I>
+    ostream& operator<<(ostream& os, ct::BitsetIndex<E, V, I>)
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
+        return os;
+    }
+
+    template <class E, unsigned char V, uint16_t I>
+    ostream& operator<<(ostream& os, ct::EnumValue<E, unsigned char, V, I>)
+    {
+        os << ct::Reflect<E>::getPtr(ct::Indexer<I>()).name << " ";
+        os << int(V);
+        return os;
+    }
+
+    template <class T>
+    ostream& operator<<(ostream& os, ct::EnumField<T> v)
+    {
+        if (std::is_same<decltype(v.value()), uint8_t>::value)
+        {
+            os << v.name << " " << static_cast<int32_t>(v.value());
+        }
+        else
+        {
+            auto value = v.value();
+            os << value;
+        }
+
+        return os;
+    }
+
+    template <class T>
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<0> idx, bool check_bitwise, bool multi_value = false)
+    {
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        if (value == v || (check_bitwise && (value & v)))
+        {
+            if (multi_value)
+            {
+                os << "|";
+            }
+            os << ct::Reflect<T>::getPtr(idx).name;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    template <class T, ct::index_t I>
+    bool printEnumHelper(ostream& os, T v, ct::Indexer<I> idx, bool check_bitwise, bool multi_value = false)
+    {
+        const auto value = ct::Reflect<T>::getPtr(idx).value();
+        bool success = false;
+        const bool check_bitwise_ =
+            check_bitwise || std::is_base_of<ct::BitsetTag, typename std::decay<decltype(value)>::type>::value;
+        if (value == v || (check_bitwise_ && (value & v)))
+        {
+            if (multi_value)
+            {
+                os << "|";
+            }
+            os << ct::Reflect<T>::getPtr(idx).name;
+            if (!check_bitwise_)
+            {
+                return true;
+            }
+            multi_value = true;
+            const auto mask = ~value;
+            v = T(v & mask);
+            success = true;
+            check_bitwise = false;
+        }
+        return printEnumHelper(os, v, --idx, check_bitwise, multi_value) || success;
+    }
+
+    template <class T>
+    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
+    {
+        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), std::is_base_of<ct::BitsetTag, T>::value))
+        {
+            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
+            {
+                os << "Invalid value";
+            }
+        }
         return os;
     }
 }

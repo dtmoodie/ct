@@ -1,0 +1,12 @@
+add_executable(test_ct_enum enum.cpp)
+target_link_libraries(test_ct_enum ct gtest gtest_main)
+set_target_properties(test_ct_enum PROPERTIES FOLDER Tests/ct)
+add_test(test_ct_enum test_ct_enum)
+
+if(CUDA_FOUND)
+    set(CUDA_NVCC_FLAGS "-std=c++11")
+    cuda_add_executable(test_ct_enum_cuda enum.cu)
+    target_link_libraries(test_ct_enum_cuda ct gtest gtest_main)
+    set_target_properties(test_ct_enum_cuda PROPERTIES FOLDER Tests/ct)
+    add_test(test_ct_enum_cuda test_ct_enum_cuda)
+endif()

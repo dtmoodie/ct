@@ -12,52 +12,83 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
 
-template <class Read, class Write>
-struct CerealizationTester
+template <class T>
+struct Cerealization : ::testing::Test
 {
-    CerealizationTester(std::string path) : m_path(std::move(path)) {}
-
-    template <class T>
-    void test(const T& data)
+    template <class READ, class WRITE>
+    void test()
     {
+        const T data = TestData<T>::init();
         {
-            std::ofstream ofs(m_path);
-            Write archive(ofs);
+            std::ofstream ofs;
+            ofs.open(m_path);
+            ASSERT_TRUE(ofs.is_open());
+
+            WRITE archive(ofs);
             archive(cereal::make_nvp("data", data));
         }
         {
-            std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
-            Write archive(std::cout);
-            archive(cereal::make_nvp("data", data));
-        }
-        {
-            std::ifstream ifs(m_path);
-            Read archive(ifs);
+            std::ifstream ifs;
+            ifs.open(m_path);
+            ASSERT_TRUE(ifs.is_open());
+            READ archive(ifs);
             T loaded_data;
-            archive(cereal::make_nvp("data", loaded_data));
-            if (!ct::compare(data, loaded_data, DebugEqual()))
+            bool cerealization_success = false;
+            try
             {
-                std::cout << "Failed cerealization" << std::endl;
-                std::abort();
+                archive(cereal::make_nvp("data", loaded_data));
             }
+            catch (std::exception& exception)
+            {
+                std::cout << "Cerealization of " << ct::Reflect<T>::getName()
+                          << " failed with exception: " << exception.what() << std::endl;
+            }
+            cerealization_success = ct::compare(data, loaded_data, DebugEqual());
+            if (!cerealization_success)
+            {
+                std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
+                WRITE archive(std::cout);
+                archive(cereal::make_nvp("data", data));
+            }
+            EXPECT_TRUE(cerealization_success);
         }
         std::cout << std::endl;
+    }
+
+    void testBinary()
+    {
+        m_path = "test.bin";
+        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
+    }
+
+    void testJson()
+    {
+        m_path = "test.json";
+        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
     }
 
     std::string m_path;
 };
 
-int main()
+TYPED_TEST_SUITE_P(Cerealization);
+TYPED_TEST_SUITE_P(BinaryCerealizationTester);
+
+TYPED_TEST_P(Cerealization, binary)
 {
-    {
-        CerealizationTester<cereal::JSONInputArchive, cereal::JSONOutputArchive> json_tester("test.json");
-        testTypes(json_tester);
-    }
-    std::cout << "====================" << std::endl;
-    std::cout << "Binary serialization" << std::endl;
-    std::cout << "====================" << std::endl;
-    {
-        // CerealizationTester<cereal::BinaryInputArchive, cereal::BinaryOutputArchive> json_tester("test.bin");
-        // testTypes(json_tester);
-    }
+    this->testBinary();
+}
+
+TYPED_TEST_P(Cerealization, json)
+{
+    this->testJson();
+}
+
+REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<TestTypes>::type);
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }

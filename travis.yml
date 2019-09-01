@@ -10,15 +10,17 @@ cache:
   apt: true
 
 before_install:
- - sudo apt-get install -y libboost-test-dev
+ - sudo apt-get install -y libboost-test-dev libboost-python-dev
  - sudo apt-get install -y libopencv-core-dev
+ - sudo apt-get install -y libpython-dev python-numpy
  - git clone https://github.com/eigenteam/eigen-git-mirror
  - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
+ - cd eigen-git-mirror && git checkout 3.3.7 && cd ..
 
 script:
  - mkdir build
  - cd build
- - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror -DBUILD_EXAMPLES=OFF
+ - cmake .. -Dcereal_INCLUDE_DIR=$TRAVIS_BUILD_DIR/cereal/include -DEIGEN3_INCLUDE_DIRS=$TRAVIS_BUILD_DIR/eigen-git-mirror -DBUILD_EXAMPLES=OFF -DPYTHON_INCLUDE_DIR=/usr/include/python2.7/
  - make
  - cd tests
  - hash/test_ct_string_hash
@@ -32,3 +34,5 @@ script:
  - reflect/test_ct_reflect_cerealize
  - reflect/test_ct_static_checks
  - reflect/test_ct_data_table
+ - reflect/test_ct_get_name
+ - enum/test_ct_enum

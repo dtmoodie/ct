@@ -5,9 +5,13 @@
 #include "config.hpp"
 #include "hash.hpp"
 #include "macros.hpp"
-#include "reflect/member_pointer.hpp"
+#include "reflect/MemberFunctionPointer.hpp"
+#include "reflect/MemberObjectPointer.hpp"
+#include "reflect/MemberPropertyPointer.hpp"
+#include "reflect_forward.hpp"
 #include "static_asserts.hpp"
 #include "type_traits.hpp"
+#include "typename.hpp"
 
 #include <cstdint>
 #include <ostream>
@@ -15,66 +19,19 @@
 
 namespace ct
 {
-    namespace detail
-    {
-        constexpr StringView parseClassNameGCC(const StringView name)
-        {
-            return name.slice(name.rfind('=') + 2, name.size() - 1);
-        }
+    // Reflect is responsible for selecting the source of reflection information
+    // for class T.  The non specializaed version seen here means that the provided type T has no source of reflection
+    // information.
 
-        constexpr StringView parseClassNameMSVC(const StringView name)
-        {
-            return name.slice(ct::findFirst(name.data(), ' ') + 1, ct::findLast(name.data(), '>'));
-        }
-    }
-
-    // This works at compile time on gcc 5.4 but not 4.8 :(
-    // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=55425
-    // Which is why CT_CONSTEXPR_NAME is constexpr on 5.4 and not 4.8
-    template <class T>
-    struct GetNameGCC
-    {
-        static CT_CONSTEXPR_NAME const char* funcName() { return CT_FUNCTION_NAME; }
-        static CT_CONSTEXPR_NAME StringView getName() { return detail::parseClassNameGCC(funcName()); }
-    };
-
-    template <class T>
-    struct GetNameMSVC
-    {
-        static constexpr StringView funcName() { return StringView(CT_FUNCTION_NAME); }
-        static constexpr StringView getName() { return detail::parseClassNameMSVC(funcName()); }
-    };
-#ifdef _MSC_VER
-    template <class T>
-    using GetName = GetNameMSVC<T>;
-#else
-    template <class T>
-    using GetName = GetNameGCC<T>;
-#endif
-
-    template <class T, class VISITED = VariadicTypedef<>, class ENABLE = void>
+    template <class T, class VISITED, class ENABLE>
     struct Reflect
     {
         static const bool SPECIALIZED = false;
         using BaseTypes = VariadicTypedef<>;
-        static constexpr StringView getName() { return ""; }
+        static constexpr auto  getName() -> decltype(GetName<T>:: getName()) { return GetName<T>:: getName(); }
     };
 
-    inline void printTypes(const ct::VariadicTypedef<>, std::ostream&) {}
-
-    template <class T>
-    void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
-    {
-        os << ct::Reflect<T>::getName();
-    }
-
-    template <class T, class... T1>
-    void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
-    {
-        os << ct::Reflect<T>::getName() << ", ";
-        printTypes(ct::VariadicTypedef<T1...>{}, os);
-    }
-
+    // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
     template <class T>
     struct ReflectImpl
     {
@@ -94,8 +51,8 @@ namespace ct
         static void printHierarchy(std::ostream&, const std::string& = "") {}
     };
 
-    template <class T, class V>
-    struct ReflectBasesImpl;
+    // These classes are used for reflecting about base classes of type T
+    // Implementation details not necessary for most users
 
     // Recurse over the list of base types
     template <class T, class... BASES, class V>
@@ -176,10 +133,8 @@ namespace ct
 
     // This disables an implementation if it already exists in the visitation list
     // This prevents multiply including a base class in diamond inheritance
-    template <class T, class IMPL, class VISITED, class ENABLE = void>
-    struct ImplementationFilter;
 
-    template <class IMPL, class ENABLE = void>
+    template <class IMPL, class ENABLE>
     struct BaseSelector
     {
         using BaseTypes_t = ct::VariadicTypedef<>;
@@ -191,7 +146,17 @@ namespace ct
         using BaseTypes_t = typename IMPL::BaseTypes;
     };
 
-    // Include the implementation
+    /* ImplementationFilter is used to filter out repeatedly visiting base classes while visiting an inheritance
+     structure
+     IE: in the diamond inheritance case of:
+        A
+       / \
+      B   C
+       \ /
+        D
+     When we reflect about the fields of D, we have two paths to visit A, the implementation filter detects
+     if we've already visited A and thus prevents a second pass through A
+    */
     template <class T, class IMPL, class VISITED>
     struct ImplementationFilter<T, IMPL, VISITED, EnableIf<!ContainsType<T, VISITED>::value>>
     {
@@ -207,8 +172,8 @@ namespace ct
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
         constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
 
-        // constexpr static StringView getName() { return IMPL::getName(); }
-        CT_CONSTEXPR_NAME static StringView getName() { return getNameImpl<IMPL>(); }
+        // constexpr static StringView  getName() { return IMPL:: getName(); }
+        CT_CONSTEXPR_NAME static StringView  getName() { return nameImpl<IMPL>(); }
 
         template <index_t I>
         constexpr static auto getPtr(const Indexer<I>)
@@ -226,10 +191,10 @@ namespace ct
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
-            auto num_fields = IMPL::REFLECTION_COUNT;
+            auto num_fields = IMPL::NUM_FIELDS;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
-            os << indent << "Reflect<" << getName() << ", Visited: ";
+            os << indent << "Reflect<" <<  getName() << ", Visited: ";
             printTypes(VISITED{}, os);
             os << "> (" << start_index << ":" << num_fields << ":" << end_index << ')' << std::endl;
             Bases_t::printHierarchy(os, indent + "  ");
@@ -238,15 +203,15 @@ namespace ct
         static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
       private:
         template <class U = T>
-        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<Has_getName<U>::value, StringView>
+        static CT_CONSTEXPR_NAME auto nameImpl() -> EnableIf<Has_name<U>::value, StringView>
         {
-            return U::getName();
+            return U:: getName();
         }
 
         template <class U = T>
-        static CT_CONSTEXPR_NAME auto getNameImpl() -> EnableIf<!Has_getName<U>::value, StringView>
+        static CT_CONSTEXPR_NAME auto nameImpl() -> EnableIf<!Has_name<U>::value, StringView>
         {
-            return GetName<T>::getName();
+            return GetName<T>:: getName();
         }
     };
 
@@ -259,57 +224,27 @@ namespace ct
         using VisitationList = VariadicTypedef<>;
     };
 
-    // Externally defined reflection
+    // Specialization for when ReflectImpl is specialized, IE a type has external reflection information
     template <class T, class VISITED>
     struct Reflect<T, VISITED, EnableIf<ReflectImpl<T>::SPECIALIZED>>
         : public ImplementationFilter<T, ReflectImpl<T>, VISITED>
     {
+        using ImplementationFilter_t = ImplementationFilter<T, ReflectImpl<T>, VISITED>;
     };
 
-    // Internally defined reflection
+    // Specialization for when a type has the appropriate reflection information built into the type
     template <class T, class VISITED>
-    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS>> : public ImplementationFilter<T, T, VISITED>
+    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS != -1>> : public ImplementationFilter<T, T, VISITED>
     {
+        using ImplementationFilter_t = ImplementationFilter<T, T, VISITED>;
     };
 
-    template <class T>
-    struct IsReflected
-    {
-        constexpr static const bool value = Reflect<T>::SPECIALIZED;
-    };
-
-    template <class T, class U = void>
-    using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
-
-    template <class T, class U = void>
-    using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
-
-    template <class T, index_t I>
-    using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));
-
-    template <class T, index_t I>
-    struct IsMemberFunction
-    {
-        using Accessor_t = PtrType<T, I>;
-        static constexpr const bool value = IsFunction<Accessor_t>::value;
-    };
-
-    template <class T, index_t I>
-    struct IsMemberObject
-    {
-        using Accesosr_t = PtrType<T, I>;
-        static constexpr const bool value = IsMemberObjectPointer<Accesosr_t>::value;
-    };
-
-    template <class T, index_t I>
-    struct IsMemberProperty
-    {
-        using Accessor_t = PtrType<T, I>;
-        static constexpr const bool value = IsMemberPropertyPointer<Accessor_t>::value;
-    };
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// These are helpers to get common traits of a reflected type
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     template <index_t I, class T>
-    constexpr StringView getName()
+    constexpr StringView  getName()
     {
         return Reflect<T>::getPtr(ct::Indexer<I>{}).m_name;
     }
@@ -345,137 +280,27 @@ namespace ct
         return indexOfField<T>(field_name) != -1;
     }
 
-    template <class T, index_t I>
-    struct IsReadable
-    {
-        using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & READABLE;
-    };
-
-    template <class T, index_t I>
-    struct IsWritable
-    {
-        using type = PtrType<T, I>;
-        constexpr static const bool value = getFlags<type>() & WRITABLE;
-    };
-
-    template <class T, index_t I>
-    struct ShouldSerialize
-    {
-        using type = PtrType<T, I>;
-        constexpr static const bool value = !(getFlags<type>() & DO_NOT_SERIALIZE);
-    };
-
-    template <class T, index_t I>
-    struct FieldGetType
-    {
-        using Ptr_t = PtrType<T, I>;
-        using type = typename GetType<Ptr_t>::type;
-    };
-
-    template <class T, index_t I>
-    struct FieldSetType
-    {
-        using Ptr_t = PtrType<T, I>;
-        using type = typename SetType<Ptr_t>::type;
-    };
-
-    template <class T, index_t I, index_t J = 0>
-    struct CountArgs
-    {
-        using Ptr_t = PtrType<T, I>;
-        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
-        constexpr static const index_t NUM_ARGS = FunctionPtr_t::NUM_ARGS;
-    };
-
-    template <class T, index_t I, class U = void>
-    using EnableIfArgs = EnableIf<CountArgs<T, I>::NUM_ARGS >= 1, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfNoArgs = EnableIf<CountArgs<T, I>::NUM_ARGS == 0, U>;
-
-    template <class T, index_t I, index_t J = 0>
-    struct ConstFunction
-    {
-        using Ptr_t = PtrType<T, I>;
-        using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
-        static constexpr const bool value = FunctionPtr_t::IS_CONST;
-    };
-
-    template <index_t I, class T>
-    auto set(T& obj) -> typename FieldSetType<T, I>::type
-    {
-        auto ptr = Reflect<T>::getPtr(Indexer<I>{});
-        return set(ptr, obj);
-    }
-
-    template <class T, index_t I, class U = void>
-    using EnableIfIsReadable = EnableIf<IsReadable<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfIsWritable = EnableIf<IsWritable<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using DisableIfIsWritable = EnableIf<!IsWritable<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfMemberFunction = EnableIf<IsMemberFunction<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using DisableIfMemberFunction = EnableIf<!IsMemberFunction<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfIsMemberObject = EnableIf<IsMemberObject<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using EnableIfIsMemberProperty = EnableIf<IsMemberProperty<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using DisableIfIsMemberObject = EnableIf<!IsMemberObject<T, I>::value, U>;
-
-    template <class T, index_t I, class U = void>
-    using DisableIfIsReadable = EnableIf<!IsReadable<T, I>::value, U>;
-
-    template <class T, index_t I, class ENABLE = EnableIfIsMemberObject<T, I>>
-    struct GlobMemberObjectsHelper
-    {
-        using Ptr_t = PtrType<T, I>;
-        using type = typename std::decay<typename GetType<Ptr_t>::type>::type;
-        using types = typename Append<typename GlobMemberObjectsHelper<T, I - 1, void>::types, type>::type;
-    };
-
-    template <class T, index_t I>
-    struct GlobMemberObjectsHelper<T, I, DisableIfIsMemberObject<T, I>>
-    {
-        using types = typename GlobMemberObjectsHelper<T, I - 1, void>::types;
-    };
-
-    template <class T>
-    struct GlobMemberObjectsHelper<T, 0, EnableIfIsMemberObject<T, 0>>
-    {
-        using Ptr_t = PtrType<T, 0>;
-        using types = VariadicTypedef<typename std::decay<typename GetType<Ptr_t>::type>::type>;
-    };
-
-    template <class T>
-    struct GlobMemberObjectsHelper<T, 0, DisableIfIsMemberObject<T, 0>>
-    {
-        using types = VariadicTypedef<>;
-    };
-
-    template <class T>
-    struct GlobMemberObjects
-    {
-        using types = typename GlobMemberObjectsHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
-        constexpr static const auto num = LenVariadicTypedef<types>::value;
-    };
-
     template <class M, ct::index_t I, class T>
     M* getMetadata()
     {
         auto ptr = ct::Reflect<T>::getPtr(ct::Indexer<I>());
         auto mdata = ptr.getMetadata();
         return mdata.template getMetadata<M>();
+    }
+
+    inline void printTypes(const ct::VariadicTypedef<>, std::ostream&) {}
+
+    template <class T>
+    void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
+    {
+        os << ct::Reflect<T>:: getName();
+    }
+
+    template <class T, class... T1>
+    void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
+    {
+        os << ct::Reflect<T>:: getName() << ", ";
+        printTypes(ct::VariadicTypedef<T1...>{}, os);
     }
 } // namespace ct
 

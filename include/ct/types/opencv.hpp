@@ -14,7 +14,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
 
         REFLECT_STUB
             PUBLIC_ACCESS(rows)
@@ -34,7 +34,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
         static constexpr int rows() { return R; }
         static constexpr int cols() { return C; }
 
@@ -45,8 +45,8 @@ namespace ct
 
         REFLECT_STUB
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
-            PROPERTY_WITH_FLAG(COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
             STATIC_FUNCTION(eye, &DataType::eye)
             STATIC_FUNCTION(zeros, &DataType::zeros)
             STATIC_FUNCTION(ones, &DataType::ones)
@@ -65,7 +65,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
 
         static void reshape(DataType& data, const std::array<int, 2>& new_shape)
@@ -88,8 +88,6 @@ namespace ct
             PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
             PROPERTY(shape, &Reflect<DataType>::getShape, &Reflect<DataType>::reshape)
             PROPERTY(size, &Reflect<DataType>::getSize)
-            // PUBLIC_ACCESS(rows)
-            // PUBLIC_ACCESS(cols)
             MEMBER_FUNCTION(elemSize)
             MEMBER_FUNCTION(elemSize1)
             MEMBER_FUNCTION(type)
@@ -104,13 +102,31 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
     };
 
     template <class T>
     struct Reflect<cv::Scalar_<T>> : public Reflect<cv::Vec<T, 4>>
     {
     };
+
+    template <class T>
+    cv::Rect_<T> intersection(const cv::Rect_<T>& r0, const cv::Rect_<T>& r1)
+    {
+        return r0 & r1;
+    }
+
+    template <class T>
+    cv::Rect_<T> rectUnion(const cv::Rect_<T>& r0, const cv::Rect_<T>& r1)
+    {
+        return r0 | r1;
+    }
+
+    template <class T, class U>
+    cv::Rect_<T> rectAs(const cv::Rect_<U>& r)
+    {
+        return r;
+    }
 
     REFLECT_TEMPLATED_START(cv::Rect_)
         PUBLIC_ACCESS(x)
@@ -122,22 +138,41 @@ namespace ct
         MEMBER_FUNCTION(bottomRight, &DataType::br)
         MEMBER_FUNCTION(area)
         MEMBER_FUNCTION(empty)
+        MEMBER_FUNCTION(contains)
+        MEMBER_FUNCTION(intersection, &intersection<Args...>)
+        MEMBER_FUNCTION(union, &rectUnion<Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, long, &rectAs<long, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, float, &rectAs<float, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, double, &rectAs<double, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, uint8, &rectAs<uint8_t, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, char, &rectAs<int8_t, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, short, &rectAs<short, Args...>)
+        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, ushort, &rectAs<unsigned short, Args...>)
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Point_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
+        MEMBER_FUNCTION(dot)
+        MEMBER_FUNCTION(ddot)
+        MEMBER_FUNCTION(cross)
+        MEMBER_FUNCTION(inside)
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Point3_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
+        MEMBER_FUNCTION(dot)
+        MEMBER_FUNCTION(ddot)
+        MEMBER_FUNCTION(cross)
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Size_)
         PUBLIC_ACCESS(width)
         PUBLIC_ACCESS(height)
+        MEMBER_FUNCTION(area)
+        MEMBER_FUNCTION(empty)
     REFLECT_END;
 }
 

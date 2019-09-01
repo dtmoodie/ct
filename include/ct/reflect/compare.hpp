@@ -1,6 +1,8 @@
 #ifndef CT_REFLECT_COMPARE_HPP
 #define CT_REFLECT_COMPARE_HPP
 #include <ct/reflect.hpp>
+#include <ct/reflect_traits.hpp>
+
 namespace ct
 {
     struct Equal
@@ -14,6 +16,7 @@ namespace ct
 
     template <class T, class Comparator = Equal>
     auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::EnableIfReflected<T, bool>;
+
     template <class T, class Comparator = Equal>
     auto compare(const T& lhs, const T& rhs, const Comparator& cmp = Comparator()) -> ct::DisableIfReflected<T, bool>;
 
@@ -22,7 +25,7 @@ namespace ct
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<0> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = accessor.m_name;
+        const char* name = accessor.m_name.cStr();
         if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;
@@ -42,7 +45,7 @@ namespace ct
     compareHelper(const T& lhs, const T& rhs, const ct::Indexer<I> idx, const Comparator& cmp)
     {
         auto accessor = Reflect<T>::getPtr(idx);
-        const char* name = accessor.m_name;
+        const char* name = accessor.m_name.cStr();
         if (!cmp.test(name, accessor.get(lhs), accessor.get(rhs)))
         {
             return false;

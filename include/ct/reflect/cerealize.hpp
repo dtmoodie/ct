@@ -1,5 +1,6 @@
 #ifndef CT_REFLECT_CEREALIZE_HPP
 #define CT_REFLECT_CEREALIZE_HPP
+
 namespace ct
 {
     template <class AR, class T>
@@ -7,7 +8,7 @@ namespace ct
 
     template <class AR, class T>
     void saveStruct(AR& ar, const T& obj);
-}
+} // namespace ct
 
 /////////////////////////////////////////////////////////////
 /// implementation
@@ -16,13 +17,14 @@ namespace ct
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
 // TODO make specialization for text archives that uses a size tag
+#include <ct/VariadicTypedef.hpp>
 #include <ct/types/std_array.hpp>
 
 #include <ct/reflect.hpp>
+#include <ct/reflect_traits.hpp>
 #include <ct/static_asserts.hpp>
 #include <ct/type_traits.hpp>
 #include <ct/types/TArrayView.hpp>
-
 namespace ct
 {
     namespace cereal
@@ -77,43 +79,43 @@ namespace ct
         struct FieldCerealizer<T, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, void>
         {
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
+            static constexpr const auto WRITABLE = FLAGS & ct::Flags::WRITABLE;
+            static constexpr const auto CONST = FLAGS & ct::Flags::COMPILE_TIME_CONSTANT;
 
             template <class AR>
             static void load(AR& ar, T& obj, const Ptr_t ptr)
             {
-                loadImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+                loadImpl(ar, obj, ptr, std::integral_constant<bool, WRITABLE != 0>{});
             }
 
             template <class AR>
             static void save(AR& ar, const T& obj, const Ptr_t ptr)
             {
-                saveImpl<getFlags<Ptr_t>()>(ar, obj, ptr);
+                saveImpl(ar, obj, ptr, std::integral_constant<bool, CONST == 0>{});
             }
 
           private:
-            template <Flag_t FG, class AR>
-            static auto loadImpl(AR& ar, T& obj, const Ptr_t ptr) -> EnableIf<FG & ct::WRITABLE>
+            template <class AR>
+            static void loadImpl(AR& ar, T& obj, const Ptr_t ptr, std::integral_constant<bool, true>)
             {
                 using Set_t = typename SetType<Ptr_t>::type;
                 using Ref_t = typename ReferenceType<Set_t>::Type;
                 ar(::cereal::make_nvp(ptr.m_name.toString(), static_cast<Ref_t>(ptr.set(obj))));
             }
 
-            template <Flag_t FG, class AR>
-            static auto loadImpl(AR&, T&, const Ptr_t) -> EnableIf<!(FG & ct::WRITABLE)>
+            template <class AR>
+            static void loadImpl(AR&, T&, const Ptr_t, std::integral_constant<bool, false>)
             {
             }
 
-            template <Flag_t FG, class AR>
-            static auto saveImpl(AR& ar, const T& obj, const Ptr_t ptr)
-                -> EnableIf<(FG & ct::READABLE) && !(FG & ct::COMPILE_TIME_CONSTANT)>
+            template <class AR>
+            static void saveImpl(AR& ar, const T& obj, const Ptr_t ptr, std::integral_constant<bool, true>)
             {
                 ar(::cereal::make_nvp(ptr.m_name.toString(), ptr.get(obj)));
             }
 
-            template <Flag_t FG, class AR>
-            static auto saveImpl(AR&, const T&, const Ptr_t)
-                -> EnableIf<!(FG & ct::READABLE) || (FG & ct::COMPILE_TIME_CONSTANT)>
+            template <class AR>
+            static void saveImpl(AR&, const T&, const Ptr_t, std::integral_constant<bool, false>)
             {
             }
         };
@@ -233,19 +235,23 @@ namespace ct
                 save(ar, obj, idx);
             }
 
-            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-            static auto reshape(const SHAPE& shape,
-                                MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr,
-                                T& obj) -> EnableIf<FLAGS & WRITABLE>
+            template <class SHAPE, class PTR>
+            static void reshapeImpl(const SHAPE& shape, PTR ptr, T& obj, std::integral_constant<bool, true>)
             {
                 ptr.set(obj, shape);
             }
 
-            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
-            static auto reshape(const SHAPE&, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>, T&)
-                -> EnableIf<!(FLAGS & WRITABLE)>
+            template <class SHAPE, class PTR>
+            static void reshapeImpl(const SHAPE&, PTR, T&, std::integral_constant<bool, false>)
             {
-                // means shape is set at compile time, can't do anything
+            }
+
+            template <class SHAPE, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA>
+            static void
+            reshape(const SHAPE& shape, MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptr, T& obj)
+            {
+                constexpr const bool MODIFYABLE_SHAPE = FLAGS & Flags::WRITABLE;
+                reshapeImpl(shape, ptr, obj, std::integral_constant<bool, MODIFYABLE_SHAPE>{});
             }
 
           public:
@@ -255,16 +261,18 @@ namespace ct
                 auto data_ptr = Reflect<T>::getPtr(Indexer<DATA_INDEX>());
                 auto shape_ptr = Reflect<T>::getPtr(Indexer<SHAPE_INDEX>());
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
-                const auto size = size_ptr.get(obj);
                 auto shape = shape_ptr.get(obj);
-                if (!(getFlags<decltype(shape_ptr)>() & COMPILE_TIME_CONSTANT))
+                if (!(flags<decltype(shape_ptr)>() & ct::value(Flags::COMPILE_TIME_CONSTANT)))
                 {
                     ar(::cereal::make_nvp("shape", shape));
                     reshape(shape, shape_ptr, obj);
                 }
-                // FieldCerealizer<T, decltype(shape_ptr)>::load(ar, obj, shape_ptr);
-                auto view = makeArrayView(data_ptr.set(obj), size);
-                ar(::cereal::make_nvp("data", view));
+                const auto size = size_ptr.get(obj);
+                if (size > 0)
+                {
+                    auto view = makeArrayView(data_ptr.set(obj), size);
+                    ar(::cereal::make_nvp("data", view));
+                }
                 loadItr(ar, obj, ct::Reflect<T>::end());
             }
 
@@ -276,8 +284,10 @@ namespace ct
                 auto size_ptr = Reflect<T>::getPtr(Indexer<indexOfField<T>("size")>());
                 const auto size = size_ptr.get(obj);
                 FieldCerealizer<T, decltype(shape_ptr)>::save(ar, obj, shape_ptr);
-                auto view = makeArrayView(data_ptr.get(obj), size);
-                ar(::cereal::make_nvp("data", view));
+                if (size > 0)
+                {
+                    ar(::cereal::make_nvp("data", makeArrayView(data_ptr.get(obj), size)));
+                }
                 saveItr(ar, obj, Reflect<T>::end());
             }
         };
@@ -340,12 +350,14 @@ namespace ct
         {
         };
 
-        // Higher priority if IsTensor<T> is true, use the TensorCerealizer
+// Higher priority if IsTensor<T> is true, use the TensorCerealizer
+#ifndef _MSC_VER
+        // automatic tensor detection and serialization does not work with msvc since IsTensor fails to be constexpr
         template <class T>
         struct CerealizerSelector<T, 1, EnableIf<IsTensor<T>::value>> : public TensorCerealizer<T>
         {
         };
-
+#endif
         /*template <class T>
         struct CerealizerSelector<T, 1, EnableIf<CountSerializableFields<T>::value == 1>>
             : public SingleValueCerealizer<T>
@@ -369,7 +381,7 @@ namespace ct
     }
 
     template <class AR, class T>
-    void serialize(AR& ar, TArrayView<T>& view)
+    EnableIf<!VariadicTypedef<void, const void>::contains<T>()> save(AR& ar, const TArrayView<T>& view)
     {
         ::cereal::size_type size = view.size();
         ar(::cereal::make_size_tag(size));
@@ -377,6 +389,46 @@ namespace ct
         {
             ar(view[i]);
         }
+    }
+
+    template <class AR, class T>
+    EnableIf<!VariadicTypedef<void, const void>::contains<T>()> load(AR& ar, TArrayView<T>& view)
+    {
+        ::cereal::size_type size = 0;
+        ar(::cereal::make_size_tag(size));
+        if (size != view.size())
+        {
+            throw std::runtime_error("Deserializing an unexpected size, expected " + std::to_string(view.size()) +
+                                     " but read size of " + std::to_string(size));
+        }
+        for (size_t i = 0; i < view.size(); ++i)
+        {
+            ar(view[i]);
+        }
+    }
+
+    template <class AR>
+    void load(AR& ar, TArrayView<void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void save(AR& ar, const TArrayView<void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void save(AR& ar, const TArrayView<const void>& view)
+    {
+        ar(::cereal::binary_data(view.data(), view.size()));
+    }
+
+    template <class AR>
+    void load(AR&, TArrayView<const void>&)
+    {
+        throw std::runtime_error("Attempting to load a const array view");
     }
 }
 
@@ -394,5 +446,5 @@ namespace cereal
     {
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
-}
+} // namespace cereal
 #endif // CT_REFLECT_CEREALIZE_HPP

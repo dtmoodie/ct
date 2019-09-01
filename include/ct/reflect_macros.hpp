@@ -18,7 +18,7 @@
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
-            #NAME, &DataType::NAME, ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT));                     \
+            #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                     \
     }
 
 #define REFLECT_INTERNAL_MEMBER_4(TYPE, NAME, INIT, METADATA)                                                          \
@@ -32,7 +32,7 @@
         return ct::makeMemberObjectPointer(                                                                            \
             #NAME,                                                                                                     \
             &DataType::NAME,                                                                                           \
-            ct::metadata::makePack(ct::metadata::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
+            ct::makePack(ct::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
     }
 
 #ifdef _MSC_VER
@@ -41,6 +41,8 @@
 #else
 #define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
 #endif
+
+#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
 #ifndef __NVCC__
 
@@ -69,8 +71,6 @@
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
-
-#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
 
 #define REFLECT_INTERNAL_START                                                                                         \
     REFLECT_STUB                                                                                                       \
@@ -139,7 +139,7 @@
 
 #ifdef _MSC_VER
 #define PROPERTY_WITH_FLAG(FLAG, ...)                                                                                  \
-    CT_PP_CAT(CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(FLAG, __VA_ARGS__), CT_PP_EMPTY())
+    CT_PP_CAT(CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(uint64_t(FLAG), __VA_ARGS__), CT_PP_EMPTY())
 #else
 #define PROPERTY_WITH_FLAG(FLAG, ...) CT_PP_OVERLOAD(PROPERTY_WITH_FLAG_, __VA_ARGS__)(FLAG, __VA_ARGS__)
 
@@ -157,14 +157,14 @@
         return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
 
-#define MEMBER_FUNCTION_2(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_3(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_4(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_5(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_6(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_7(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_8(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
-#define MEMBER_FUNCTION_9(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__);
+#define MEMBER_FUNCTION_2(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_3(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_4(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_5(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_6(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_7(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_8(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define MEMBER_FUNCTION_9(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
 
 #ifdef _MSC_VER
 #define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
@@ -190,10 +190,7 @@
         return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
-#define REFLECT_INTERNAL_END                                                                                           \
-    static constexpr const ct::index_t REFLECT_COUNT_END = __COUNTER__;                                                \
-    static constexpr const ct::index_t REFLECTION_COUNT = REFLECT_COUNT_END - REFLECT_COUNT_START;                     \
-    static constexpr const ct::index_t NUM_FIELDS = REFLECTION_COUNT
+#define REFLECT_INTERNAL_END static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START
 
 #define REFLECT_END                                                                                                    \
     REFLECT_INTERNAL_END                                                                                               \

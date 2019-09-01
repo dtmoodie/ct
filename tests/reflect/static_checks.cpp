@@ -16,19 +16,19 @@ void checkFieldRange()
 template <class PTR>
 void checkWritable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::WRITABLE, "Field not writable");
+    static_assert(ct::flags<PTR>() & ct::Flags::WRITABLE, "Field not writable");
 }
 
 template <class PTR>
 void checkReadable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::READABLE, "Field not readable");
+    static_assert(ct::flags<PTR>() & ct::Flags::READABLE, "Field not readable");
 }
 
 template <class PTR>
 void checkInvokable(PTR)
 {
-    static_assert(ct::getFlags<PTR>() & ct::INVOKABLE, "Field not invokable");
+    static_assert(ct::flags<PTR>() & ct::Flags::INVOKABLE, "Field not invokable");
 }
 
 int main()
@@ -92,7 +92,7 @@ int main()
         std::cout << "crc32 of MultipleInheritance not working" << std::endl;
     }
 #ifdef CT_HAVE_CONSTEXPR_NAME
-#if !(defined(_MSC_VER) && _MSC_VER == 1900)
+#if !(defined(_MSC_VER))
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<ReflectedStruct>::getName()), ct::crc32("ReflectedStruct")>{};
 
     ct::StaticEquality<uint32_t, ct::crc32(ct::Reflect<Inherited>::getName()), ct::crc32("Inherited")>{};
@@ -125,8 +125,8 @@ int main()
 
     static_assert(ct::IsDefaultConstructible<ReflectedStruct>::value, "asdf");
 
-    static_assert(!ct::Has_getName<InternallyReflected>::value, "asdf");
-    static_assert(!ct::Has_getName<ReflectedStruct>::value, "asdf");
+    static_assert(!ct::Has_name<InternallyReflected>::value, "asdf");
+    static_assert(!ct::Has_name<ReflectedStruct>::value, "asdf");
 
     return 0;
 }
