@@ -52,6 +52,7 @@
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         static constexpr const bool SPECIALIZED = true;                                                                \
+        static constexpr ct::StringView getName(){ return #TYPE; }                                                     \
         REFLECT_STUB
 
 #define REFLECT_DERIVED(TYPE, ...)                                                                                     \
@@ -61,6 +62,7 @@
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
         static constexpr const bool SPECIALIZED = true;                                                                \
+        static constexpr ct::StringView getName(){ return #TYPE; }                                                     \
         REFLECT_STUB
 
 #define REFLECT_TEMPLATED_START(TYPE)                                                                                  \

@@ -250,10 +250,3 @@ struct ToTestTypes<ct::VariadicTypedef<Ts...>>
     using type = ::testing::Types<Ts...>;
 };
 
-namespace ct
-{
-#ifdef HAVE_OPENCV
-    DECL_NAME(cv::Rect, Rect);
-    DECL_NAME(cv::Rect2f, Rectf);
-#endif
-}

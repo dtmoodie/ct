@@ -1,11 +1,12 @@
 #ifndef CT_TYPES_OPENCV_HPP
 #define CT_TYPES_OPENCV_HPP
 
-#include "TArrayView.hpp"
-#include <opencv2/core.hpp>
-
 #include "../StringView.hpp"
 #include "../reflect.hpp"
+#include "../typename.hpp"
+#include "TArrayView.hpp"
+
+#include <opencv2/core.hpp>
 
 namespace ct
 {
@@ -14,7 +15,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
-        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
         REFLECT_STUB
             PUBLIC_ACCESS(rows)
@@ -34,7 +35,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
-        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static constexpr int rows() { return R; }
         static constexpr int cols() { return C; }
 
@@ -65,7 +66,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
-        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
 
         static void reshape(DataType& data, const std::array<int, 2>& new_shape)
@@ -102,7 +103,7 @@ namespace ct
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
-        static constexpr StringView  getName() { return GetName<DataType>:: getName(); }
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
     };
 
     template <class T>
@@ -174,6 +175,17 @@ namespace ct
         MEMBER_FUNCTION(area)
         MEMBER_FUNCTION(empty)
     REFLECT_END;
+
+    DECL_NAME(cv::Point2f);
+    DECL_NAME(cv::Vec3b);
+    DECL_NAME(cv::Point);
+    DECL_NAME(cv::Point3f);
+    DECL_NAME(cv::Rect);
+    DECL_NAME(cv::Rect2f);
+    DECL_NAME(cv::Size);
+    DECL_NAME(cv::Scalar);
+    using CvScalarVec = cv::Vec<double, 4>;
+    DECL_NAME(CvScalarVec, cv::Scalar);
 }
 
 #endif // CT_TYPES_HPP

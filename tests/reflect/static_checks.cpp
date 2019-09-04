@@ -33,6 +33,8 @@ void checkInvokable(PTR)
 
 int main()
 {
+    static_assert(ct::Has_name<ct::ReflectImpl<ReflectedStruct>>::value, "asdf");
+
     checkFieldRange<ReflectedStruct, 0, 4, 4>();
     checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<0>()));
     checkWritable(ct::Reflect<ReflectedStruct>::getPtr(ct::Indexer<1>()));

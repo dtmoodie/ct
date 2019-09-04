@@ -3,8 +3,11 @@
 #include "CompileTimeString.hpp"
 #include "StringView.hpp"
 #include "config.hpp"
+#include "macros.hpp"
+#include "reflect_forward.hpp"
 
 #include <cstdint>
+#include <map>
 
 namespace ct
 {
@@ -59,27 +62,128 @@ namespace ct
 #endif
 
     // not generically ready for prime time
-    /*template<class T, class A>
+    template <class T, class A>
     struct GetName<std::vector<T, A>>
     {
+#ifdef CT_HAVE_CONSTEXPR_NAME
         static constexpr const auto prefix = makeCTS("std::vector<");
         static constexpr const auto prefix_len = prefix.size();
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_ = ct::GetName<T>::getName();
+        static constexpr const auto substring_ = ct::Reflect<T>::getName();
         static constexpr const auto substring_len = substring_.size();
         static constexpr const auto substring = makeCTS<substring_len + 1>(substring_);
 
         static constexpr const size_t total_len = prefix_len + substring_len + postfix_len;
         static constexpr const CompileTimeString<total_len - 1> name = (prefix + substring) + postfix;
-        static constexpr const auto test = (prefix + substring);
+
         static constexpr StringView funcName() { return ""; }
-        static constexpr const StringView getName()
+        static constexpr StringView getName()
         {
             return StringView(name.data, prefix_len + substring_len + postfix_len - 2);
         }
-    };*/
+#else
+        static constexpr StringView funcName() { return ""; }
+        static const StringView getName()
+        {
+            static const std::string name = "std::vector<" + std::string(ct::GetName<T>::getName()) + ">";
+            return StringView(name.data(), name.size());
+        }
+#endif
+    };
+#ifdef CT_HAVE_CONSTEXPR_NAME
+    template <class T, class A>
+    constexpr const CompileTimeString<GetName<std::vector<T, A>>::total_len - 1> GetName<std::vector<T, A>>::name;
+#endif
+
+    template <class K, class V, class C, class A>
+    struct GetName<std::map<K, V, C, A>>
+    {
+#ifdef CT_HAVE_CONSTEXPR_NAME
+        static constexpr const auto prefix = makeCTS("std::map<");
+        static constexpr const auto prefix_len = prefix.size();
+
+        static constexpr const auto deliminator = makeCTS(", ");
+        static constexpr const auto deliminator_len = deliminator.size();
+
+        static constexpr const auto postfix = makeCTS(">");
+        static constexpr const auto postfix_len = postfix.size();
+
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_len = substring_a_.size();
+        static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
+
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_len = substring_b_.size();
+        static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
+
+        static constexpr const size_t total_len =
+            prefix_len + substring_a_len + deliminator_len + substring_b_len + postfix_len;
+        static constexpr const CompileTimeString<total_len - 2> name =
+            ((((prefix + substring_a) + deliminator) + substring_b) + postfix);
+
+        static constexpr StringView funcName() { return ""; }
+        static constexpr StringView getName() { return StringView(name.data, total_len - 3); }
+#else
+        static constexpr StringView funcName() { return ""; }
+        static const StringView getName()
+        {
+            static const std::string name = "std::map<" + std::string(ct::GetName<K>::getName()) + ", " +
+                                            std::string(ct::GetName<V>::getName()) + ">";
+            return StringView(name.data(), name.size());
+        }
+#endif
+    };
+#ifdef CT_HAVE_CONSTEXPR_NAME
+    template <class K, class V, class C, class A>
+    constexpr const CompileTimeString<GetName<std::map<K, V, C, A>>::total_len - 2> GetName<std::map<K, V, C, A>>::name;
+#endif
+
+    template <class K, class V>
+    struct GetName<std::pair<K, V>>
+    {
+// TODO constexpr generation
+#ifdef CT_HAVE_CONSTEXPR_NAME
+        static constexpr const auto prefix = makeCTS("std::pair<");
+        static constexpr const auto prefix_len = prefix.size();
+
+        static constexpr const auto deliminator = makeCTS(", ");
+        static constexpr const auto deliminator_len = deliminator.size();
+
+        static constexpr const auto postfix = makeCTS(">");
+        static constexpr const auto postfix_len = postfix.size();
+
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_len = substring_a_.size();
+        static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
+
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_len = substring_b_.size();
+        static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
+
+        static constexpr const size_t total_len =
+            prefix_len + substring_a_len + deliminator_len + substring_b_len + postfix_len;
+        static constexpr const CompileTimeString<total_len - 2> name =
+            ((((prefix + substring_a) + deliminator) + substring_b) + postfix);
+
+        static constexpr StringView funcName() { return ""; }
+        static constexpr StringView getName() { return StringView(name.data, total_len - 3); }
+#else
+        static StringView funcName() { return ""; }
+        static StringView getName()
+        {
+            static const std::string name = "std::pair<" + std::string(ct::Reflect<K>::getName()) + ", " +
+                                            std::string(ct::Reflect<V>::getName()) + ">";
+            return StringView(name.data(), name.size());
+        }
+
+#endif
+    };
+#ifdef CT_HAVE_CONSTEXPR_NAME
+    template <class K, class V>
+    constexpr const CompileTimeString<GetName<std::pair<K, V>>::total_len - 2> GetName<std::pair<K, V>>::name;
+#endif
 
 } // namespace ct
 
@@ -107,6 +211,7 @@ namespace ct
 
 namespace ct
 {
+    DECL_NAME(char);
     DECL_NAME(float);
     DECL_NAME(double);
     DECL_NAME(uint8_t);
