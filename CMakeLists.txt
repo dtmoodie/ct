@@ -27,16 +27,8 @@ if(NOT TARGET ct)
     include_directories(include)
     add_library(ct INTERFACE)
 
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-            target_compile_features(ct
-                INTERFACE cxx_return_type_deduction
-            )
-        else()
-            target_compile_options(ct INTERFACE "-std=c++1y")
-        endif()
-    endif()
+    include("${CMAKE_CURRENT_LIST_DIR}/cmake/platform.cmake")
+    setTargetPlatformFlags(ct)
 
     target_include_directories(ct
         INTERFACE
@@ -49,6 +41,7 @@ if(NOT TARGET ct)
     export(TARGETS ct
         FILE ct-targets.cmake
     )
+
     install(TARGETS ct 
           EXPORT ct
           DESTINATION lib

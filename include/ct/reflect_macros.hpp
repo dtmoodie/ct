@@ -74,10 +74,10 @@
         static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
 
-#define REFLECT_INTERNAL_START                                                                                         \
-    REFLECT_STUB                                                                                                       \
-        static constexpr auto getTypeHelper()->decltype(this);                                                         \
-        using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;
+#define REFLECT_INTERNAL_START(TYPE)                                                                                   \
+        REFLECT_STUB                                                                                                   \
+        using DataType = TYPE;                                                                                         \
+        static constexpr ct::StringView getName(){return #TYPE; }
 
 #define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     REFLECT_STUB                                                                                                       \

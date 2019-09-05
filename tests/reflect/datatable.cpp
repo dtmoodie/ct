@@ -23,7 +23,7 @@ struct TimeIt
 
 struct DynStruct
 {
-    REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START(DynStruct)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, w)

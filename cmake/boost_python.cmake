@@ -36,7 +36,7 @@ if(PythonLibs_FOUND AND PythonInterp_FOUND)
             STRING( REGEX REPLACE "([0-9.]+).[0-9]+" "\\1" version ${version} )
 
             STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
-            find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
+            find_package(Boost 1.46 QUIET COMPONENTS "python-py${boost_py_version}")
             list(APPEND searched_libs "python-py${boost_py_version}")
             set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
 
