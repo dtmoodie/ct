@@ -18,7 +18,7 @@
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
-            #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                     \
+            #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                               \
     }
 
 #define REFLECT_INTERNAL_MEMBER_4(TYPE, NAME, INIT, METADATA)                                                          \
@@ -30,9 +30,7 @@
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
-            #NAME,                                                                                                     \
-            &DataType::NAME,                                                                                           \
-            ct::makePack(ct::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));           \
+            #NAME, &DataType::NAME, ct::makePack(ct::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));       \
     }
 
 #ifdef _MSC_VER
@@ -52,7 +50,7 @@
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         static constexpr const bool SPECIALIZED = true;                                                                \
-        static constexpr ct::StringView getName(){ return #TYPE; }                                                     \
+        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
         REFLECT_STUB
 
 #define REFLECT_DERIVED(TYPE, ...)                                                                                     \
@@ -62,7 +60,7 @@
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
         static constexpr const bool SPECIALIZED = true;                                                                \
-        static constexpr ct::StringView getName(){ return #TYPE; }                                                     \
+        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
         REFLECT_STUB
 
 #define REFLECT_TEMPLATED_START(TYPE)                                                                                  \
@@ -75,14 +73,17 @@
         REFLECT_STUB
 
 #define REFLECT_INTERNAL_START(TYPE)                                                                                   \
-        REFLECT_STUB                                                                                                   \
-        using DataType = TYPE;                                                                                         \
-        static constexpr ct::StringView getName(){return #TYPE; }
-
-#define REFLECT_INTERNAL_DERIVED(...)                                                                                  \
     REFLECT_STUB                                                                                                       \
-        static constexpr auto getTypeHelper()->decltype(this);                                                         \
-        using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;                                \
+        using DataType = TYPE;                                                                                         \
+        static constexpr ct::StringView getName() { return #TYPE; }
+
+#define INFER_THIS_TYPE                                                                                                \
+    static constexpr auto getTypeHelper()->decltype(this);                                                             \
+    using DataType = typename std::remove_pointer<decltype(getTypeHelper())>::type;
+
+#define REFLECT_INTERNAL_DERIVED(TYPE, ...)                                                                            \
+    REFLECT_STUB                                                                                                       \
+        using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
