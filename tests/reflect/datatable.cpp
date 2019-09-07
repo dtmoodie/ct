@@ -1,7 +1,10 @@
 #include "common.hpp"
+#include <ct/extensions/DataTable.hpp>
+
 #include <chrono>
 #include <cstring>
-#include <ct/extensions/DataTable.hpp>
+
+#include <gtest/gtest.h>
 
 using namespace ct;
 
@@ -32,13 +35,12 @@ struct DynStruct
     REFLECT_INTERNAL_END;
 };
 
-struct DerivedDynStruct: public DynStruct
+struct DerivedDynStruct : public DynStruct
 {
     REFLECT_INTERNAL_DERIVED(DerivedDynStruct, DynStruct)
         REFLECT_INTERNAL_MEMBER(float, conf)
     REFLECT_INTERNAL_END;
 };
-
 
 // We intentionally use a IDataTable of the base struct here to ensure
 // We can still interact with a table of the derived type
@@ -52,32 +54,86 @@ bool fclose(float f1, float f2, float eps = 0.00001F)
     return std::abs(f1 - f2) < eps;
 }
 
-int main()
+TEST(datatable, write)
 {
+    ct::ext::DataTable<TestB> table;
+    // Fill table
+    TestB val{1, 2, 3};
+    for (size_t i = 0; i < 20; ++i)
     {
-        ct::ext::DataTable<TestB> table;
-        std::cout << memberOffset(&TestA::x) << std::endl;
-        std::cout << memberOffset(&TestA::y) << std::endl;
-        std::cout << memberOffset(&TestA::z) << std::endl;
-
-        TestB val;
-        val.x = 1;
-        val.y = 2;
-        val.z = 3;
-        for (size_t i = 0; i < 20; ++i)
-        {
-            table.push_back(val);
-            mul(val);
-        }
-
-        for (size_t i = 0; i < 20; ++i)
-        {
-            const auto x = table.access(&TestB::x, i);
-            const auto y = table.access(&TestB::y, i);
-            const auto z = table.access(&TestB::z, i);
-            std::cout << x << ", " << y << ", " << z << std::endl;
-        }
+        table.push_back(val);
+        mul(val);
     }
+    EXPECT_EQ(table.size(), 20);
+}
+
+TEST(datatable, read)
+{
+    ct::ext::DataTable<TestB> table;
+    // Fill table
+    TestB val{1, 2, 3};
+    for (size_t i = 0; i < 20; ++i)
+    {
+        table.push_back(val);
+        mul(val);
+    }
+    val = TestB{1, 2, 3};
+    for (size_t i = 0; i < 20; ++i)
+    {
+        auto read = table.access(i);
+        EXPECT_EQ(val, read);
+        mul(val);
+    }
+}
+
+TEST(datatable, read_element)
+{
+    ct::ext::DataTable<TestB> table;
+    // Fill table
+    TestB val{1, 2, 3};
+    table.reserve(20);
+    for (size_t i = 0; i < 20; ++i)
+    {
+        table.push_back(val);
+        mul(val);
+    }
+
+    auto begin_x = table.begin(&TestB::x);
+    auto begin_y = table.begin(&TestB::y);
+    auto begin_z = table.begin(&TestB::z);
+    auto end_x = table.end(&TestB::x);
+    auto end_y = table.end(&TestB::y);
+    auto end_z = table.end(&TestB::z);
+    EXPECT_EQ(end_x - begin_x, 20);
+    EXPECT_EQ(end_y - begin_y, 20);
+    EXPECT_EQ(end_z - begin_z, 20);
+
+    val = TestB{1, 2, 3};
+    for (auto x : table.view(&TestB::x))
+    {
+        EXPECT_EQ(x, val.x);
+        mul(val);
+    }
+
+    val = TestB{1, 2, 3};
+    for (auto y : table.view(&TestB::y))
+    {
+        EXPECT_EQ(y, val.y);
+        mul(val);
+    }
+
+    val = TestB{1, 2, 3};
+    for (auto z : table.view(&TestB::z))
+    {
+        EXPECT_EQ(z, val.z);
+        mul(val);
+    }
+}
+
+int main(int argc, char** argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 
     for (size_t i = 20; i < 18; i += 4)
     {
@@ -183,7 +239,7 @@ int main()
                 }
             }
             auto emb = table.access(&DynStruct::embeddings, 0);
-            if(val.embeddings.data() != emb.data())
+            if (val.embeddings.data() != emb.data())
             {
                 std::cout << "Retrieved embeddings pointing to the wrong thing" << std::endl;
                 return -1;
@@ -195,7 +251,7 @@ int main()
             ext::DataTable<DerivedDynStruct> table;
             DerivedDynStruct tmp;
             tmp.embeddings = ct::TArrayView<float>(embeddings.data(), 20);
-            for(int i = 0; i < 20; ++i)
+            for (int i = 0; i < 20; ++i)
             {
                 tmp.x = i;
                 tmp.y = i * 2;
@@ -211,5 +267,4 @@ int main()
             tableViewer(table);
         }
     }
-
 }
