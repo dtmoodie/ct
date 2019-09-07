@@ -20,7 +20,7 @@ namespace ct
     template <typename T, typename U>
     constexpr size_t memberOffset(U T::*member)
     {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
         // Have to test if this works on GCC
         return *(unsigned int*)(&member);
 #else
