@@ -84,3 +84,5 @@ print(obj)
 
 obj = test_ct_python.Virtual()
 print(obj)
+
+print(dir(test_ct_python.std))
