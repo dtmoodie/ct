@@ -67,6 +67,21 @@ namespace ct
         static const bool value = std::is_same<typename ReferenceType<T>::Type, T>::value;
     };
 
+    template<class T>
+    struct TypeIs{using type = T;};
+
+    template<class T>
+    struct Base: TypeIs<T>{};
+
+    template<class T>
+    struct Derived: TypeIs<T>{};
+
+    template<class T, class U>
+    struct IsBase;
+
+    template<class T, class U>
+    struct IsBase<Base<T>, Derived<U>>: std::is_base_of<T, U>{};
+
     DEFINE_HAS_STATIC_FUNCTION(Has_name, getName, ct::StringView (*)());
 
     template <class T>
