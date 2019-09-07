@@ -1,6 +1,7 @@
 #ifndef CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
 #define CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <ct/types.hpp>
 
 namespace ct
@@ -25,6 +26,27 @@ namespace ct
         static void registerToPython(const char*);
         static bool convertFromPython(const boost::python::object& obj, T& val);
         static boost::python::object convertToPython(const T& result);
+    };
+
+    template<class T, class A>
+    struct PythonConverter<std::vector<T, A>, 4, void>
+    {
+        static void registerToPython(const char* name)
+        {
+            boost::python::class_<std::vector<T, A>> vec(name, boost::python::no_init);
+            vec.def(boost::python::vector_indexing_suite<std::vector<T, A>>());
+        }
+
+        static bool convertFromPython(const boost::python::object&, std::vector<T, A>&)
+        {
+            // TODO
+            return false;
+        }
+
+        static boost::python::object convertToPython(const std::vector<T, A>& result)
+        {
+            return boost::python::object(result);
+        }
     };
 
     template <index_t PRIORITY>
@@ -101,8 +123,8 @@ namespace ct
         const bool have_namespace = pos != std::string::npos;
         auto bracketed_pos = name.find("<");
         // This is false if for example we have vector<std::string> since the namespace std is within the template arg
-        const bool namespace_not_in_template_arg = bracketed_pos > pos;
-        if(have_namespace && namespace_not_in_template_arg)
+        const bool namespace_in_template_arg = bracketed_pos < pos;
+        if(have_namespace && !namespace_in_template_arg)
         {
             auto namespace_name = name.substr(0, pos);
             bp::scope current_scope;
