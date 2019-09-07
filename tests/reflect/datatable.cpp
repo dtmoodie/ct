@@ -32,6 +32,26 @@ struct DynStruct
     REFLECT_INTERNAL_END;
 };
 
+struct DerivedDynStruct: public DynStruct
+{
+    REFLECT_INTERNAL_DERIVED(DerivedDynStruct, DynStruct)
+        REFLECT_INTERNAL_MEMBER(float, conf)
+    REFLECT_INTERNAL_END;
+};
+
+
+// We intentionally use a IDataTable of the base struct here to ensure
+// We can still interact with a table of the derived type
+void tableViewer(const ext::IDataTable<DynStruct>& table)
+{
+    std::cout << table << std::endl;
+}
+
+bool fclose(float f1, float f2, float eps = 0.00001F)
+{
+    return std::abs(f1 - f2) < eps;
+}
+
 int main()
 {
     {
@@ -59,7 +79,7 @@ int main()
         }
     }
 
-    for (size_t i = 20; i < 32; i += 4)
+    for (size_t i = 20; i < 18; i += 4)
     {
         // compare performance to vector of structs
         std::vector<TestB> vec_of_structs;
@@ -93,7 +113,7 @@ int main()
             TimeIt time;
             for (size_t i = 0; i < vec_of_structs.size(); ++i)
             {
-                if (vec_of_structs[i].x == search_value)
+                if (fclose(vec_of_structs[i].x, search_value))
                 {
                     std::cout << "Found at " << i << std::endl;
                     break;
@@ -109,7 +129,7 @@ int main()
             TimeIt time;
             for (size_t i = 0; i < vec_of_structs.size(); ++i)
             {
-                if (table.access(&TestB::x, i) == search_value)
+                if (fclose(table.access(&TestB::x, i), search_value))
                 {
                     std::cout << "Found at " << i << std::endl;
                     break;
@@ -127,7 +147,7 @@ int main()
             const auto end = table.end(&TestB::x);
             for (auto itr = begin; itr != end; ++itr)
             {
-                if (*itr == search_value)
+                if (fclose(*itr, search_value))
                 {
                     std::cout << "Found at " << (itr - begin) << std::endl;
                     break;
@@ -140,27 +160,56 @@ int main()
     }
 
     {
-        ext::DataTable<DynStruct> table;
-        table.resizeSubarray(&DynStruct::embeddings, 20);
-        table.reserve(10);
         std::vector<float> embeddings;
         embeddings.resize(20);
         for (auto& x : embeddings)
         {
             x = float(std::rand()) / float(RAND_MAX);
         }
-        DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
-        table.push_back(tmp);
-        auto val = table[0];
-        for (size_t i = 0; i < val.embeddings.size(); ++i)
         {
-            if (val.embeddings[i] != embeddings[i])
+            ext::DataTable<DynStruct> table;
+            table.resizeSubarray(&DynStruct::embeddings, 20);
+            table.reserve(10);
+
+            DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
+            table.push_back(tmp);
+            auto val = table[0];
+            for (size_t i = 0; i < val.embeddings.size(); ++i)
             {
-                std::cout << "Embeddings not copied correctly" << std::endl;
+                if (!fclose(val.embeddings[ssize_t(i)], embeddings[i]))
+                {
+                    std::cout << "Embeddings not copied correctly" << std::endl;
+                    return -1;
+                }
+            }
+            auto emb = table.access(&DynStruct::embeddings, 0);
+            if(val.embeddings.data() != emb.data())
+            {
+                std::cout << "Retrieved embeddings pointing to the wrong thing" << std::endl;
                 return -1;
             }
+            assert(table.storage(&DynStruct::x).size() == 1);
+            assert(table.storage(&DynStruct::embeddings).size() == 20);
         }
-        assert(table.storage(&DynStruct::x).size() == 1);
-        assert(table.storage(&DynStruct::embeddings).size() == 20);
+        {
+            ext::DataTable<DerivedDynStruct> table;
+            DerivedDynStruct tmp;
+            tmp.embeddings = ct::TArrayView<float>(embeddings.data(), 20);
+            for(int i = 0; i < 20; ++i)
+            {
+                tmp.x = i;
+                tmp.y = i * 2;
+                tmp.w = i * 3;
+                tmp.h = i * 4;
+                tmp.conf = 0.9F;
+                for (auto& x : embeddings)
+                {
+                    x = float(std::rand()) / float(RAND_MAX);
+                }
+                table.push_back(tmp);
+            }
+            tableViewer(table);
+        }
     }
+
 }
