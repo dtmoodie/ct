@@ -8,10 +8,15 @@
 
 #include <iostream>
 
-template<class T>
+template <class T>
 struct ExpectedName;
 
-#define EXPECTED_NAME(...) template<> struct ExpectedName<__VA_ARGS__>{ static constexpr const ct::StringView getName(){return #__VA_ARGS__;} }
+#define EXPECTED_NAME(...)                                                                                             \
+    template <>                                                                                                        \
+    struct ExpectedName<__VA_ARGS__>                                                                                   \
+    {                                                                                                                  \
+        static constexpr const ct::StringView getName() { return #__VA_ARGS__; }                                       \
+    }
 
 EXPECTED_NAME(float);
 EXPECTED_NAME(double);
@@ -50,8 +55,8 @@ EXPECTED_NAME(Templated<double>);
 EXPECTED_NAME(std::map<std::string, Inherited>);
 
 #ifdef HAVE_EIGEN
-EXPECTED_NAME(Eigen::Matrix<float, 3, 3>);
-EXPECTED_NAME(Eigen::Matrix<float, -1, -1>);
+EXPECTED_NAME(Eigen::Matrix3f);
+EXPECTED_NAME(Eigen::MatrixXf);
 #endif
 
 #ifdef HAVE_OPENCV
@@ -65,12 +70,13 @@ EXPECTED_NAME(cv::Point);
 EXPECTED_NAME(cv::Point3f);
 EXPECTED_NAME(cv::Scalar);
 EXPECTED_NAME(cv::Mat_<float>);
+// clang-format off
 EXPECTED_NAME(cv::Mat_<cv::Vec<float, 3> >);
+// clang-format on
 #endif
 
-
-template<class T>
-struct CheckName: ::testing::Test
+template <class T>
+struct CheckName : ::testing::Test
 {
     void testName()
     {
@@ -92,7 +98,18 @@ TYPED_TEST_P(CheckName, test)
 
 REGISTER_TYPED_TEST_SUITE_P(CheckName, test);
 
-using TestNameTypes = typename TestTypes::Append<ct::VariadicTypedef<float, double, uint32_t, int32_t, int8_t, uint8_t, uint16_t, int16_t, std::string, std::vector<std::string>, std::vector<std::vector<std::string>>, Templated<double>>>::type;
+using TestNameTypes = typename TestTypes::Append<ct::VariadicTypedef<float,
+                                                                     double,
+                                                                     uint32_t,
+                                                                     int32_t,
+                                                                     int8_t,
+                                                                     uint8_t,
+                                                                     uint16_t,
+                                                                     int16_t,
+                                                                     std::string,
+                                                                     std::vector<std::string>,
+                                                                     std::vector<std::vector<std::string>>,
+                                                                     Templated<double>>>::type;
 
 INSTANTIATE_TYPED_TEST_SUITE_P(name, CheckName, ToTestTypes<TestNameTypes>::type);
 
