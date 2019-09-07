@@ -71,20 +71,31 @@ namespace ct
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
+
+    DECL_NAME(Eigen::MatrixXf);
+    DECL_NAME(Eigen::Matrix2f);
+    DECL_NAME(Eigen::Matrix3f);
+    DECL_NAME(Eigen::Matrix4f);
+
+    DECL_NAME(Eigen::MatrixXd);
+    DECL_NAME(Eigen::Matrix2d);
+    DECL_NAME(Eigen::Matrix3d);
+    DECL_NAME(Eigen::Matrix4d);
+
 } // namespace ct
 
 #ifdef _MSC_VER
 #include <ct/reflect/cerealize.hpp>
 namespace ct
 {
-	namespace cereal
-	{
+    namespace cereal
+    {
         template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
         struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
             : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
         {
         };
-	}
+    }
 }
 
 #endif
