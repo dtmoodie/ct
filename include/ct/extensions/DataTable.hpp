@@ -5,8 +5,8 @@
 #include "../type_traits.hpp"
 #include "../types/TArrayView.hpp"
 #include "datatable/DataTableArrayIterator.hpp"
-#include "datatable/DataTableStorage.hpp"
 #include "datatable/DataTableBase.hpp"
+#include "datatable/DataTableStorage.hpp"
 
 #include <cassert>
 #include <tuple>
@@ -21,6 +21,17 @@ namespace ct
         {
             using Super = typename DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>::Super;
 
+            DataTable() = default;
+            template <class A>
+            DataTable(const std::vector<U, A>& vec)
+            {
+                reserve(vec.size());
+                for (const auto& val : vec)
+                {
+                    push_back(val);
+                }
+            }
+
             void push_back(const U& data);
 
             template <class T>
@@ -29,10 +40,10 @@ namespace ct
             template <class T>
             const T& access(T U::*mem_ptr, const size_t idx) const;
 
-            template<class T>
+            template <class T>
             TArrayView<T> access(TArrayView<T> U::*mem_ptr, const size_t idx);
 
-            template<class T>
+            template <class T>
             TArrayView<const T> access(TArrayView<T> U::*mem_ptr, const size_t idx) const;
 
             template <class T>
@@ -68,13 +79,14 @@ namespace ct
             size_t size() const override;
         };
 
-
         // IMPLEMENTATION
-        template<class U, template<class...> class STORAGE_POLICY>
-        void DataTable<U, STORAGE_POLICY>::push_back(const U& data) { this->push(data, ct::Reflect<U>::end()); }
+        template <class U, template <class...> class STORAGE_POLICY>
+        void DataTable<U, STORAGE_POLICY>::push_back(const U& data)
+        {
+            this->push(data, ct::Reflect<U>::end());
+        }
 
-
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         T& DataTable<U, STORAGE_POLICY>::access(T U::*mem_ptr, const size_t idx)
         {
@@ -82,7 +94,7 @@ namespace ct
             return p.template as<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         const T& DataTable<U, STORAGE_POLICY>::access(T U::*mem_ptr, const size_t idx) const
         {
@@ -90,23 +102,23 @@ namespace ct
             return p.template as<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
-        template<class T>
+        template <class U, template <class...> class STORAGE_POLICY>
+        template <class T>
         TArrayView<T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx)
         {
             auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
             return *p;
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
-        template<class T>
+        template <class U, template <class...> class STORAGE_POLICY>
+        template <class T>
         TArrayView<const T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx) const
         {
             auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
             return *p;
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr)
         {
@@ -114,7 +126,7 @@ namespace ct
             return p.template ptr<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         const T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr) const
         {
@@ -122,7 +134,7 @@ namespace ct
             return p.template ptr<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr)
         {
@@ -130,7 +142,7 @@ namespace ct
             return p.template ptr<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         const T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr) const
         {
@@ -138,7 +150,7 @@ namespace ct
             return p.template ptr<T>();
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         U DataTable<U, STORAGE_POLICY>::access(const size_t idx)
         {
             U out;
@@ -146,20 +158,26 @@ namespace ct
             return out;
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
-        void DataTable<U, STORAGE_POLICY>::reserve(const size_t size) { this->reserveImpl(size, Reflect<U>::end()); }
+        template <class U, template <class...> class STORAGE_POLICY>
+        void DataTable<U, STORAGE_POLICY>::reserve(const size_t size)
+        {
+            this->reserveImpl(size, Reflect<U>::end());
+        }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         void DataTable<U, STORAGE_POLICY>::resizeSubarray(T U::*mem_ptr, size_t size)
         {
             this->resizeSubarrayImpl(memberOffset(mem_ptr), size, Reflect<U>::end());
         }
 
-        template<class U, template<class...> class STORAGE_POLICY>
-        U DataTable<U, STORAGE_POLICY>::operator[](size_t idx) { return access(idx); }
+        template <class U, template <class...> class STORAGE_POLICY>
+        U DataTable<U, STORAGE_POLICY>::operator[](size_t idx)
+        {
+            return access(idx);
+        }
 
-        template<class U, template<class...> class STORAGE_POLICY>
+        template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         const DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr) const
         {
@@ -167,22 +185,6 @@ namespace ct
             assert(out != nullptr);
             return *static_cast<const DataTableStorage<T>*>(out);
         }
-
-        template<class U, template<class...> class STORAGE_POLICY>
-        template <class T>
-        DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr)
-        {
-            void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
-            assert(out != nullptr);
-            return *static_cast<DataTableStorage<T>*>(out);
-        }
-
-        template<class U, template<class...> class STORAGE_POLICY>
-        size_t DataTable<U, STORAGE_POLICY>::size() const
-        {
-            return Super::template get<0>().size();
-        }
-
     }
 }
 #include "datatable/print.hpp"
