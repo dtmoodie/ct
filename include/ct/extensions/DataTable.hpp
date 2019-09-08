@@ -19,7 +19,8 @@ namespace ct
         template <class U, template <class...> class STORAGE_POLICY = DefaultStoragePolicy>
         struct DataTable : public DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>
         {
-            using Super = typename DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>::Super;
+            using Super = DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>;
+            using Storage = typename Super::Storage;
 
             DataTable() = default;
             template <class A>
@@ -138,7 +139,7 @@ namespace ct
         template <class T>
         T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr)
         {
-            auto p = this->ptr(memberOffset(mem_ptr), Super::template get<0>().size(), Reflect<U>::end());
+            auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
             return p.template ptr<T>();
         }
 
@@ -146,7 +147,7 @@ namespace ct
         template <class T>
         const T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr) const
         {
-            auto p = this->ptr(memberOffset(mem_ptr), Super::template get<0>().size(), Reflect<U>::end());
+            auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
             return p.template ptr<T>();
         }
 
@@ -184,6 +185,12 @@ namespace ct
             const void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
             assert(out != nullptr);
             return *static_cast<const DataTableStorage<T>*>(out);
+        }
+
+        template <class U, template <class...> class STORAGE_POLICY>
+        size_t DataTable<U, STORAGE_POLICY>::size() const
+        {
+            return Storage::template get<0>().size();
         }
     }
 }
