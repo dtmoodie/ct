@@ -127,7 +127,7 @@ int main()
 
     static_assert(ct::IsDefaultConstructible<ReflectedStruct>::value, "asdf");
 
-    static_assert(!ct::Has_name<InternallyReflected>::value, "asdf");
+    static_assert(ct::Has_name<InternallyReflected>::value, "asdf");
     static_assert(!ct::Has_name<ReflectedStruct>::value, "asdf");
 
     return 0;

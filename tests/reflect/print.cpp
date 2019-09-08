@@ -43,12 +43,18 @@ struct CheckPrint
     }
 
 EXPECTED_OBJECT_PRINT(ReflectedStruct, "(x: 0 y: 1 z: 2 id: 3 ) ");
+EXPECTED_OBJECT_PRINT(MultipleInheritance, "(private_mutable_property: 4 x: 0 y: 1 z: 2 id: 3 asdf: 5 ) ");
 EXPECTED_OBJECT_PRINT(Inherited, "(x: 0 y: 1 z: 2 id: 3 w: 4 ) ");
 EXPECTED_OBJECT_PRINT(Composite, "(a: (x: 0 y: 1 z: 2 id: 3 )  b: (x: 4 y: 5 z: 6 id: 7 )  ) ");
 EXPECTED_OBJECT_PRINT(TestA, "(x: 0 y: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(TestB, "(x: 0 y: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(TestC, "(y: 0 x: 1 z: 2 ) ");
+EXPECTED_OBJECT_PRINT(DerivedA, "(base_x: 0 base_y: 1 base_z: 2 derived_a: 3 ) ");
+EXPECTED_OBJECT_PRINT(DerivedB, "(base_x: 0 base_y: 1 base_z: 2 derived_b: 4 ) ");
+EXPECTED_OBJECT_PRINT(DerivedC, "(derived_b: 4 base_x: 0 base_y: 1 base_z: 2 derived_a: 3 derived_c: 5 ) ");
 EXPECTED_OBJECT_PRINT(TestVec, "(vec: [0 1 2 3 4] ) ");
+EXPECTED_OBJECT_PRINT(ExplicitThisProperty, "(prop: 0 ) ");
+EXPECTED_OBJECT_PRINT(Virtual, "() ");
 EXPECTED_OBJECT_PRINT(PrivateMutableAccess, "(private_mutable_property: 4 ) ");
 EXPECTED_OBJECT_PRINT(InternallyReflected, "(x: 5 y: 10 z: 15 ) ");
 EXPECTED_OBJECT_PRINT(PrivateGetAndSet, "(private_get_and_set: 5.2 ) ");

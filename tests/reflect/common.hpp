@@ -173,6 +173,33 @@ struct TestData<MultipleInheritance>
 
 TEST_DATA(ExplicitThisProperty, {});
 template <>
+struct TestData<DerivedA>
+{
+    static DerivedA init()
+    {
+        DerivedA derived;
+        derived.base_x = 0;
+        derived.base_y = 1;
+        derived.base_z = 2;
+        derived.derived_a = 3;
+        return derived;
+    }
+};
+template <>
+struct TestData<DerivedB>
+{
+    static DerivedB init()
+    {
+        DerivedB derived;
+        derived.base_x = 0;
+        derived.base_y = 1;
+        derived.base_z = 2;
+        derived.derived_b = 4;
+        return derived;
+    }
+};
+
+template <>
 struct TestData<DerivedC>
 {
     static DerivedC init()
@@ -184,6 +211,7 @@ struct TestData<DerivedC>
         derived.derived_a = 3;
         derived.derived_b = 4;
         derived.derived_c = 5;
+        return derived;
     }
 };
 TEST_DATA(Virtual, {});
@@ -211,13 +239,15 @@ TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
 using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       Inherited,
                                       Composite,
-                                      TestA,
-                                      TestB,
-                                      TestC,
+                                      TestA, TestB, TestC,
                                       TestVec,
+                                      DerivedA, DerivedB, DerivedC,
                                       PrivateMutableAccess,
                                       InternallyReflected,
                                       PrivateGetAndSet,
+                                      MultipleInheritance,
+                                      ExplicitThisProperty,
+                                      Virtual,
                                       std::vector<ReflectedStruct>,
                                       std::map<std::string, Inherited>
 #ifdef HAVE_OPENCV

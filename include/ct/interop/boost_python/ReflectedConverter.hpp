@@ -227,7 +227,7 @@ namespace ct
         template <class T, class BP>
         EnableIf<ct::IsDefaultConstructible<T>::value && ct::GlobWritable<T>::num >= 1> addInit(BP& bpobj)
         {
-            ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
+            //ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
             using Signature_t = typename FunctionSignatureBuilder<boost::python::object,
                                                                   ct::GlobWritable<T>::num - 1>::VariadicTypedef_t;
             using Creator_t = CreateDataObject<T, Signature_t>;
@@ -443,12 +443,12 @@ namespace ct
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<!(flags<PTR>() & Flags::READABLE)>
+        auto registerPropertyReturn(PTR) -> EnableIf<(flags<PTR>() & Flags::READABLE) == 0>
         {
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<flags<PTR>() & Flags::READABLE>
+        auto registerPropertyReturn(PTR) -> EnableIf<(flags<PTR>() & Flags::READABLE) != 0>
         {
             using type = typename GetType<PTR>::type;
             ct::registerToPython<decay_t<type>>();

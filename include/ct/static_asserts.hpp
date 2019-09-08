@@ -1,6 +1,7 @@
 #ifndef CT_STATIC_ASSERTS_HPP
 #define CT_STATIC_ASSERTS_HPP
 #include "Indexer.hpp"
+#include "type_traits.hpp"
 
 #include <type_traits>
 
@@ -35,6 +36,15 @@ namespace ct
     struct StaticInRange
     {
         static_assert(I >= START && I < END, "I must be in range");
+    };
+
+    template<class T, class U>
+    struct StaticIsBase;
+
+    template<class T, class U>
+    struct StaticIsBase<Base<T>, Derived<U>>
+    {
+        static_assert(IsBase<Base<T>, Derived<U>>::value, "Must be a base");
     };
 }
 #endif

@@ -80,17 +80,17 @@ namespace ct
         PROPERTY(prop, &getExplicitThisProperty, &setExplicitThisProperty)
     REFLECT_END;
 
-    REFLECT_BEGIN(Base)
+    REFLECT_BEGIN(::Base)
         PUBLIC_ACCESS(base_x)
         PUBLIC_ACCESS(base_y)
         PUBLIC_ACCESS(base_z)
     REFLECT_END;
 
-    REFLECT_DERIVED(DerivedA, Base)
+    REFLECT_DERIVED(DerivedA, ::Base)
         PUBLIC_ACCESS(derived_a)
     REFLECT_END;
 
-    REFLECT_DERIVED(DerivedB, Base)
+    REFLECT_DERIVED(DerivedB, ::Base)
         PUBLIC_ACCESS(derived_b)
     REFLECT_END;
 

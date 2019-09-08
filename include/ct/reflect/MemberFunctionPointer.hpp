@@ -6,6 +6,8 @@
 #include "../bind.hpp"
 #include "../flags.hpp"
 #include "../types.hpp"
+#include "../static_asserts.hpp"
+
 #include "pointer_traits.hpp"
 
 namespace ct
@@ -51,7 +53,7 @@ namespace ct
 
         constexpr MemberFunction(R (B::*ptr)(ARGS...) const) : m_ptr(ptr)
         {
-            static_assert(std::is_base_of<B, T>::value, "Must derive");
+            static_assert(IsBase<Base<B>, Derived<T>>::value, "Must derive");
         }
 
         R invoke(const T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }
@@ -78,7 +80,7 @@ namespace ct
 
         constexpr MemberFunction(R (T::*ptr)(ARGS...)) : m_ptr(ptr)
         {
-            static_assert(std::is_base_of<B, T>::value, "Must derive");
+            static_assert(IsBase<Base<B>, Derived<T>>::value, "Must derive");
         }
 
         R invoke(T& obj, ARGS&&... args) const { return (obj.*m_ptr)(std::forward<ARGS>(args)...); }

@@ -63,7 +63,7 @@ struct DerivedC : virtual public DerivedA, virtual public DerivedB
 
 struct Wrapper
 {
-    REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START(Wrapper)
         REFLECT_INTERNAL_MEMBER(float, val)
     REFLECT_INTERNAL_END;
 };
@@ -119,7 +119,7 @@ struct PointerOwner
 struct Virtual
 {
     virtual ~Virtual() {}
-    REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START(Virtual)
         MEMBER_FUNCTION(foo)
     REFLECT_INTERNAL_END;
     virtual void foo() {}
@@ -166,17 +166,17 @@ struct WeirdWeakOwnerShip
 
 struct InternallyReflected
 {
-    REFLECT_INTERNAL_START
+    REFLECT_INTERNAL_START(InternallyReflected)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
     REFLECT_INTERNAL_END;
 };
 
-namespace cereal
+/*namespace cereal
 {
     template <class AR>
     void serialize(AR&, ReflectedStruct*)
     {
     }
-}
+}*/

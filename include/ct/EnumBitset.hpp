@@ -36,7 +36,7 @@ namespace ct
         constexpr operator uint64_t() const { return toBitset(); }
         constexpr uint8_t bitIndex() const { return bit_index; }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
         static constexpr uint64_t value = 1 << VALUE;
 #else
         static constexpr E value = E(uint64_t(1) << VALUE);
