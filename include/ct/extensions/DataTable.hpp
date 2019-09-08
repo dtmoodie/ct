@@ -185,21 +185,6 @@ namespace ct
             assert(out != nullptr);
             return *static_cast<const DataTableStorage<T>*>(out);
         }
-
-        template <class U, template <class...> class STORAGE_POLICY>
-        template <class T>
-        DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr)
-        {
-            void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
-            assert(out != nullptr);
-            return *static_cast<DataTableStorage<T>*>(out);
-        }
-
-        template <class U, template <class...> class STORAGE_POLICY>
-        size_t DataTable<U, STORAGE_POLICY>::size() const
-        {
-            return Super::template get<0>().size();
-        }
     }
 }
 #include "datatable/print.hpp"
