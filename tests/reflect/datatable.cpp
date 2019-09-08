@@ -10,18 +10,19 @@ using namespace ct;
 
 struct TimeIt
 {
-    TimeIt() { start = std::chrono::high_resolution_clock::now(); }
+    TimeIt(double& out) : m_out(out) { start = std::chrono::high_resolution_clock::now(); }
     ~TimeIt()
     {
-        const auto delta = (std::chrono::high_resolution_clock::now() - start);
-        std::cout << delta.count();
-        std::cout << std::endl;
+        auto delta = (std::chrono::high_resolution_clock::now() - start);
+        const auto secs = std::chrono::duration_cast<std::chrono::seconds>(delta);
+        delta = delta - secs;
+        const auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(delta);
+        m_out = secs.count();
+        m_out += nsec.count() * 1e-6;
     }
-    std::chrono::high_resolution_clock::duration delta() const
-    {
-        return (std::chrono::high_resolution_clock::now() - start);
-    }
+
     decltype(std::chrono::high_resolution_clock::now()) start;
+    double& m_out;
 };
 
 struct DynStruct
@@ -54,30 +55,30 @@ bool fclose(float f1, float f2, float eps = 0.00001F)
     return std::abs(f1 - f2) < eps;
 }
 
-TEST(datatable, write)
+template <class T>
+ct::ext::DataTable<T> createAndFillTable(size_t elems)
 {
+    auto val = TestData<T>::init();
     ct::ext::DataTable<TestB> table;
-    // Fill table
-    TestB val{1, 2, 3};
+    table.reserve(elems);
     for (size_t i = 0; i < 20; ++i)
     {
         table.push_back(val);
         mul(val);
     }
+    return table;
+}
+
+TEST(datatable, write)
+{
+    ct::ext::DataTable<TestB> table = createAndFillTable<TestB>(20);
     EXPECT_EQ(table.size(), 20);
 }
 
 TEST(datatable, read)
 {
-    ct::ext::DataTable<TestB> table;
-    // Fill table
-    TestB val{1, 2, 3};
-    for (size_t i = 0; i < 20; ++i)
-    {
-        table.push_back(val);
-        mul(val);
-    }
-    val = TestB{1, 2, 3};
+    ct::ext::DataTable<TestB> table = createAndFillTable<TestB>(20);
+    TestB val = TestData<TestB>::init();
     for (size_t i = 0; i < 20; ++i)
     {
         auto read = table.access(i);
@@ -88,15 +89,8 @@ TEST(datatable, read)
 
 TEST(datatable, read_element)
 {
-    ct::ext::DataTable<TestB> table;
-    // Fill table
-    TestB val{1, 2, 3};
-    table.reserve(20);
-    for (size_t i = 0; i < 20; ++i)
-    {
-        table.push_back(val);
-        mul(val);
-    }
+    ct::ext::DataTable<TestB> table = createAndFillTable<TestB>(20);
+    TestB val = TestData<TestB>::init();
 
     auto begin_x = table.begin(&TestB::x);
     auto begin_y = table.begin(&TestB::y);
@@ -108,21 +102,21 @@ TEST(datatable, read_element)
     EXPECT_EQ(end_y - begin_y, 20);
     EXPECT_EQ(end_z - begin_z, 20);
 
-    val = TestB{1, 2, 3};
+    val = TestData<TestB>::init();
     for (auto x : table.view(&TestB::x))
     {
         EXPECT_EQ(x, val.x);
         mul(val);
     }
 
-    val = TestB{1, 2, 3};
+    val = TestData<TestB>::init();
     for (auto y : table.view(&TestB::y))
     {
         EXPECT_EQ(y, val.y);
         mul(val);
     }
 
-    val = TestB{1, 2, 3};
+    val = TestData<TestB>::init();
     for (auto z : table.view(&TestB::z))
     {
         EXPECT_EQ(z, val.z);
@@ -130,12 +124,162 @@ TEST(datatable, read_element)
     }
 }
 
+TEST(datatable, ctr_from_vec)
+{
+    std::vector<TestB> vec;
+    auto val = TestData<TestB>::init();
+    for (size_t i = 0; i < 20; ++i)
+    {
+        vec.push_back(val);
+        mul(val);
+    }
+
+    ct::ext::DataTable<TestB> table(vec);
+    EXPECT_EQ(table.size(), 20);
+    for (size_t i = 0; i < 20; ++i)
+    {
+        EXPECT_EQ(table.access(i), vec[i]);
+    }
+}
+
+TEST(datatable, push)
+{
+    std::vector<TestB> vec;
+    auto val = TestData<TestB>::init();
+    for (size_t i = 0; i < 20; ++i)
+    {
+        vec.push_back(val);
+        mul(val);
+    }
+
+    ct::ext::DataTable<TestB> table;
+    for (const auto& v : vec)
+    {
+        table.push_back(v);
+    }
+    EXPECT_EQ(table.size(), 20);
+    for (size_t i = 0; i < 20; ++i)
+    {
+        EXPECT_EQ(table.access(i), vec[i]);
+    }
+}
+
+struct DataTablePerformance : ::testing::TestWithParam<size_t>
+{
+    using T = TestB;
+
+    void fillVec()
+    {
+        const size_t size = 1ULL << GetParam();
+        TimeIt time(vec_fill_time);
+        vec_of_structs.reserve(size);
+        auto val = TestData<TestB>::init();
+        for (size_t i = 0; i < size; ++i)
+        {
+            vec_of_structs.push_back(val);
+            mul(val);
+        }
+    }
+
+    void fillTable()
+    {
+        const size_t size = 1ULL << GetParam();
+        TimeIt time(table_fill_time);
+        table.reserve(vec_of_structs.size());
+        auto val = TestData<TestB>::init();
+        for (size_t i = 0; i < size; ++i)
+        {
+            table.push_back(val);
+            mul(val);
+        }
+    }
+
+    void testEquality()
+    {
+        for (size_t i = 0; i < vec_of_structs.size(); ++i)
+        {
+            EXPECT_EQ(table.access(i), vec_of_structs[i]);
+        }
+    }
+
+    void testFill()
+    {
+        fillVec();
+        fillTable();
+        // It takes longer to fill a table than a vec since it's 3 allocations intead of 1
+        EXPECT_GE(table_fill_time, vec_fill_time);
+        testEquality();
+    }
+
+    void testSearch()
+    {
+        fillVec();
+        fillTable();
+        const size_t size = 1ULL << GetParam();
+        auto idx = size_t(size * (float(std::rand()) / (float(RAND_MAX) * 2)) + 0.5F);
+        auto val = TestData<TestB>::init();
+        for (size_t i = 0; i < idx; ++i)
+        {
+            mul(val);
+        }
+        auto ptr = Reflect<T>::getPtr(Indexer<1>());
+        double vec_search_time = 0;
+        {
+            TimeIt timer(vec_search_time);
+            size_t i = 0;
+            for (; i < size; ++i)
+            {
+                if (fclose(ptr.get(vec_of_structs[i]), ptr.get(val)))
+                {
+                    break;
+                }
+            }
+            EXPECT_EQ(i, idx) << " did not find expected value in vec of structs";
+        }
+        double table_search_time = 0;
+        {
+            TimeIt timer(table_search_time);
+            size_t i = 0;
+            auto view = table.view(ptr.m_ptr);
+            for (const auto& v : view)
+            {
+                if (fclose(v, ptr.get(val)))
+                {
+                    break;
+                }
+                ++i;
+            }
+            EXPECT_EQ(i, idx) << " value not found in table";
+        }
+        EXPECT_GE(vec_search_time, table_search_time)
+            << " vec of structs was faster while searching for a value at index " << idx;
+    }
+
+  private:
+    std::vector<TestB> vec_of_structs;
+    ct::ext::DataTable<TestB> table;
+    double table_fill_time;
+    double vec_fill_time;
+};
+
+TEST_P(DataTablePerformance, fill_performance)
+{
+    testFill();
+}
+
+TEST_P(DataTablePerformance, search_performance)
+{
+    testSearch();
+}
+
+INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(3, 6, 10));
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 
-    for (size_t i = 20; i < 18; i += 4)
+    /*for (size_t i = 20; i < 18; i += 4)
     {
         // compare performance to vector of structs
         std::vector<TestB> vec_of_structs;
@@ -213,7 +357,7 @@ int main(int argc, char** argv)
             d3 = time.delta();
         }
         std::cout << "Iterator Speedup                   " << float(d1.count()) / float(d3.count()) << std::endl;
-    }
+    }*/
 
     {
         std::vector<float> embeddings;
