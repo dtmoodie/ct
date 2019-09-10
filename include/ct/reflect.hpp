@@ -28,7 +28,7 @@ namespace ct
     {
         static const bool SPECIALIZED = false;
         using BaseTypes = VariadicTypedef<>;
-        static constexpr auto getName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
+        static CT_CONSTEXPR_NAME auto getName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
     };
 
     // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
