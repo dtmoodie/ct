@@ -31,7 +31,7 @@ namespace ct
     };
 
     template <class T, int R, int C>
-    struct Reflect<cv::Matx<T, R, C>>
+    struct ReflectImpl<cv::Matx<T, R, C>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
@@ -45,9 +45,9 @@ namespace ct
         static size_t getSize(const DataType&) { return C * R; }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::getShape, nullptr)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &Reflect<DataType>::getSize, nullptr)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &ReflectImpl<DataType>::getShape, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &ReflectImpl<DataType>::getSize, nullptr)
             STATIC_FUNCTION(eye, &DataType::eye)
             STATIC_FUNCTION(zeros, &DataType::zeros)
             STATIC_FUNCTION(ones, &DataType::ones)
@@ -55,14 +55,14 @@ namespace ct
             STATIC_FUNCTION(randn, &DataType::randn)
             MEMBER_FUNCTION(row)
             MEMBER_FUNCTION(col)
-            STATIC_FUNCTION(rows, &Reflect<DataType>::rows)
-            STATIC_FUNCTION(rows, &Reflect<DataType>::cols)
+            STATIC_FUNCTION(rows, &ReflectImpl<DataType>::rows)
+            STATIC_FUNCTION(rows, &ReflectImpl<DataType>::cols)
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T>
-    struct Reflect<cv::Mat_<T>>
+    struct ReflectImpl<cv::Mat_<T>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
@@ -86,9 +86,9 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY(shape, &Reflect<DataType>::getShape, &Reflect<DataType>::reshape)
-            PROPERTY(size, &Reflect<DataType>::getSize)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY(shape, &ReflectImpl<DataType>::getShape, &ReflectImpl<DataType>::reshape)
+            PROPERTY(size, &ReflectImpl<DataType>::getSize)
             MEMBER_FUNCTION(elemSize)
             MEMBER_FUNCTION(elemSize1)
             MEMBER_FUNCTION(type)
@@ -99,7 +99,7 @@ namespace ct
     };
 
     template <class T, int R>
-    struct Reflect<cv::Vec<T, R>> : public Reflect<cv::Matx<T, R, 1>>
+    struct ReflectImpl<cv::Vec<T, R>> : public ReflectImpl<cv::Matx<T, R, 1>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
@@ -107,7 +107,7 @@ namespace ct
     };
 
     template <class T>
-    struct Reflect<cv::Scalar_<T>> : public Reflect<cv::Vec<T, 4>>
+    struct ReflectImpl<cv::Scalar_<T>> : public ReflectImpl<cv::Vec<T, 4>>
     {
     };
 
@@ -184,6 +184,7 @@ namespace ct
     DECL_NAME(cv::Rect2f);
     DECL_NAME(cv::Size);
     DECL_NAME(cv::Scalar);
+    // It makes no sense why the compiler wants cv::Vec<double, 4> instead of cv::Scalar_<double>.....
     using CvScalarVec = cv::Vec<double, 4>;
     DECL_NAME(CvScalarVec, cv::Scalar);
 }

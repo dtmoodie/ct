@@ -7,7 +7,7 @@
 namespace ct
 {
     template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
-    struct Reflect<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
+    struct ReflectImpl<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
@@ -25,8 +25,8 @@ namespace ct
         static TArrayView<T> getDataMutable(DataType& mat) { return {mat.data(), ROWS * COLS}; }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &ReflectImpl<DataType>::shape)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, colStride)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rowStride)
@@ -37,7 +37,7 @@ namespace ct
     };
 
     template <class T, int OPTS, int MAX_ROWS, int MAX_COLS>
-    struct Reflect<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
+    struct ReflectImpl<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
@@ -61,8 +61,8 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY(shape, &Reflect<DataType>::shape, &Reflect<DataType>::reshape)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY(shape, &ReflectImpl<DataType>::shape, &ReflectImpl<DataType>::reshape)
             PROPERTY(size)
             PROPERTY(colStride)
             PROPERTY(rowStride)
