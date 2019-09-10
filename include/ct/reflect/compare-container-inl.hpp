@@ -11,7 +11,7 @@ namespace ct
     template <class T, class Comparator>
     bool compare(const TArrayView<T>& lhs, const TArrayView<T>& rhs, const Comparator& cmp)
     {
-        if (lhs.size != rhs.size)
+        if (!cmp.test("size", lhs.size(), rhs.size()))
         {
             return false;
         }
@@ -28,7 +28,7 @@ namespace ct
     template <class T, class A, class B, class Comparator>
     bool compare(const std::vector<T, A>& lhs, const std::vector<T, B>& rhs, const Comparator& cmp)
     {
-        if (lhs.size() != rhs.size())
+        if (!cmp.test("size", lhs.size(), rhs.size()))
         {
             return false;
         }
@@ -46,7 +46,7 @@ namespace ct
     template <class T, class Comparator>
     bool compare(const std::vector<T>& lhs, const std::vector<T>& rhs, const Comparator& cmp)
     {
-        if (lhs.size() != rhs.size())
+        if (!cmp.test("size", lhs.size(), rhs.size()))
         {
             return false;
         }
@@ -64,7 +64,7 @@ namespace ct
     template <class K, class V, class Comparator>
     bool compare(const std::map<K, V>& lhs, const std::map<K, V>& rhs, const Comparator& cmp)
     {
-        if (lhs.size() != rhs.size())
+        if (!cmp.test("size", lhs.size(), rhs.size()))
         {
             return false;
         }

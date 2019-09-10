@@ -26,7 +26,6 @@ namespace ct
     template <class T, class VISITED, class ENABLE>
     struct Reflect
     {
-        static const bool SPECIALIZED = false;
         using BaseTypes = VariadicTypedef<>;
         static CT_CONSTEXPR_NAME auto getName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
     };
@@ -35,7 +34,6 @@ namespace ct
     template <class T>
     struct ReflectImpl
     {
-        constexpr static const bool SPECIALIZED = false;
     };
 
     struct EmptyImplementation
