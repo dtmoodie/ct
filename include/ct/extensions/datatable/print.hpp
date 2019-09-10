@@ -101,13 +101,6 @@ namespace ct
 namespace std
 {
     template<class T>
-    ostream& operator << (ostream& os, const ct::ext::DataTable<T>& table)
-    {
-        ct::ext::printTable<T>(os, table);
-        return os;
-    }
-
-    template<class T>
     ostream& operator << (ostream& os, const ct::ext::IDataTable<T>& table)
     {
         ct::ext::printTable<T>(os, table);

@@ -1,6 +1,7 @@
 #ifndef CT_EXT_DATA_TABLE_BASE_HPP
 #define CT_EXT_DATA_TABLE_BASE_HPP
 #include "IDataTable.hpp"
+#include <ct/reflect.hpp>
 
 namespace ct
 {
@@ -182,8 +183,6 @@ namespace ct
                 resizeSubarrayImpl(offset, size, --idx);
             }
 
-            // storage
-            // std::tuple<DataTableStorage<Args>...> m_data;
             std::array<size_t, sizeof...(Args)> m_field_offsets;
         };
     }

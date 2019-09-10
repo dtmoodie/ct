@@ -80,7 +80,11 @@ namespace ct
             size_t size() const override;
         };
 
+
+        ///////////////////////////////////////////////////////////////////
         // IMPLEMENTATION
+        ///////////////////////////////////////////////////////////////////
+
         template <class U, template <class...> class STORAGE_POLICY>
         void DataTable<U, STORAGE_POLICY>::push_back(const U& data)
         {
@@ -185,6 +189,15 @@ namespace ct
             const void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
             assert(out != nullptr);
             return *static_cast<const DataTableStorage<T>*>(out);
+        }
+
+        template <class U, template <class...> class STORAGE_POLICY>
+        template <class T>
+        DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr)
+        {
+            void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
+            assert(out != nullptr);
+            return *static_cast<DataTableStorage<T>*>(out);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>

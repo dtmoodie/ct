@@ -110,15 +110,21 @@ namespace ct
                 begin(ptr), stride(step){}
 
             DataTableArrayIterator(DataTableArrayIterator<void> other):
-                begin{other.begin}, stride{other.stride * sizeof(T)}
+                begin{static_cast<T*>(other.begin)}, stride{other.stride / sizeof(T)}
             {
 
             }
 
             TArrayView<T> array(size_t idx) const
             {
-                return {begin + idx * stride, stride};
+                return {&begin[idx * stride], stride};
             }
+
+            TArrayView<T> operator[](size_t idx) const
+            {
+                return array(idx);
+            }
+
 
             T* begin;
             size_t stride;
@@ -128,14 +134,19 @@ namespace ct
         struct DataTableArrayIterator<const T>: DataTableArrayIteratorConstBase<T, DataTableArrayIterator<const T>>
         {
             DataTableArrayIterator(const T* ptr, size_t step):
-                begin(ptr), stride(step){}
+                begin(ptr), stride(step / sizeof(T)){}
 
             DataTableArrayIterator(DataTableArrayIterator<const void> itr):
                 begin(static_cast<const T*>(itr.begin)), stride(itr.stride / sizeof(T)){}
 
             TArrayView<const T> array(size_t idx) const
             {
-                return {begin + idx * stride, stride};
+                return {&begin[idx * stride], stride};
+            }
+
+            TArrayView<const T> operator[](size_t idx) const
+            {
+                return array(idx);
             }
 
             const T* begin;

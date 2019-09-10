@@ -1,6 +1,10 @@
 #ifndef CT_EXT_DATA_TABLE_STORAGE_HPP
 #define CT_EXT_DATA_TABLE_STORAGE_HPP
+#include "DataTableArrayIterator.hpp"
+
 #include <ct/types/TArrayView.hpp>
+#include <ct/types.hpp>
+
 #include <tuple>
 #include <vector>
 
@@ -94,6 +98,7 @@ namespace ct
         struct DefaultStoragePolicy
         {
             std::tuple<DataTableStorage<Ts>...> m_data;
+
             template <index_t I>
             auto get() -> decltype(std::get<I>(m_data))
             {
@@ -104,6 +109,10 @@ namespace ct
             auto get() const -> decltype(std::get<I>(m_data))
             {
                 return std::get<I>(m_data);
+            }
+            DefaultStoragePolicy()
+            {
+                static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value, "Expect to be returning a reference");
             }
         };
     }

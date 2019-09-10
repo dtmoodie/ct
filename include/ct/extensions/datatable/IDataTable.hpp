@@ -2,6 +2,8 @@
 #define CT_EXT_IDATA_TABLE_HPP
 #include "DataTableArrayIterator.hpp"
 
+#include <ct/reflect.hpp>
+
 namespace ct
 {
     namespace ext
@@ -107,23 +109,23 @@ namespace ct
 
             virtual size_t size() const = 0;
 
-            void populateData(DTYPE out, size_t idx) { populateDataRecurse(out, idx, Reflect<DTYPE>::end()); }
+            void populateData(DTYPE& out, size_t idx) { populateDataRecurse(out, idx, Reflect<DTYPE>::end()); }
           private:
             virtual DataTableArrayIterator<void> ptr(size_t offset, size_t idx) = 0;
             virtual DataTableArrayIterator<const void> ptr(size_t offset, size_t idx) const = 0;
 
             template <index_t I>
-            void populateData(DTYPE out, size_t row, Indexer<I> idx)
+            void populateData(DTYPE& out, size_t row, Indexer<I> idx)
             {
                 auto ptr = Reflect<DTYPE>::getPtr(idx);
                 auto data = begin(ptr.m_ptr);
                 ptr.set(out, data[row]);
             }
 
-            void populateDataRecurse(DTYPE out, size_t row, Indexer<0> idx) { populateData(out, row, idx); }
+            void populateDataRecurse(DTYPE& out, size_t row, Indexer<0> idx) { populateData(out, row, idx); }
 
             template <index_t I>
-            void populateDataRecurse(DTYPE out, size_t row, Indexer<I> idx)
+            void populateDataRecurse(DTYPE& out, size_t row, Indexer<I> idx)
             {
                 populateData(out, row, idx);
                 populateDataRecurse(out, row, --idx);
