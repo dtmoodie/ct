@@ -23,21 +23,19 @@
     HasFoo<DoesNotHave>::value == 0;
 */
 
-#define DEFINE_HAS_STATIC_FUNCTION(TRAITS_NAME, FUNC_NAME, SIGNATURE)                                                  \
-    template <typename U>                                                                                              \
-    class TRAITS_NAME                                                                                                  \
-    {                                                                                                                  \
-      private:                                                                                                         \
-        template <typename V, V>                                                                                       \
-        struct helper;                                                                                                 \
-        template <typename V>                                                                                          \
-        static std::uint8_t check(helper<SIGNATURE, &V::FUNC_NAME>*);                                                  \
-        template <typename V>                                                                                          \
-        static std::uint16_t check(...);                                                                               \
-                                                                                                                       \
-      public:                                                                                                          \
-        static const bool value = sizeof(check<U>(0)) == sizeof(std::uint8_t);                                         \
-    }
+#define DEFINE_HAS_STATIC_FUNCTION(TRAITS_NAME, FUNC_NAME, RET, ...)                                                   \
+    template <typename U, class ENABLE = void, class ARGS = ct::VariadicTypedef<__VA_ARGS__>>                                                                         \
+    struct TRAITS_NAME: std::false_type {}; \
+    template<typename U, class ... ARGS> \
+    struct TRAITS_NAME<U, ct::Valid<decltype(U::FUNC_NAME(std::declval<ARGS>()...))>, ct::VariadicTypedef<ARGS...>>: \
+        std::is_same<RET, decltype(U::FUNC_NAME(std::declval<ARGS>()...))>{}
+
+#define DEFINE_HAS_MEMBER_FUNCTION(TRAITS_NAME, FUNC_NAME, RET, ...)                                                   \
+    template <typename U, class ENABLE = void, class ARGS = ct::VariadicTypedef<__VA_ARGS__>>                                                                         \
+    struct TRAITS_NAME: std::false_type {}; \
+    template<typename U, class ... ARGS> \
+    struct TRAITS_NAME<U, ct::Valid<decltype(std::declval<U>().FUNC_NAME(std::declval<ARGS>()...))>, ct::VariadicTypedef<ARGS...>>: \
+        std::is_same<RET, decltype(std::declval<U>().FUNC_NAME(std::declval<ARGS>()...))>{}
 
 namespace ct
 {
@@ -82,7 +80,13 @@ namespace ct
     template<class T, class U>
     struct IsBase<Base<T>, Derived<U>>: std::is_base_of<T, U>{};
 
-    DEFINE_HAS_STATIC_FUNCTION(Has_name, getName, ct::StringView (*)());
+    template<class ... T>
+    struct Validator: TypeIs<void>{};
+
+    template<class ... T>
+    using Valid = typename Validator<T...>::type;
+
+    DEFINE_HAS_STATIC_FUNCTION(Has_name, getName, ct::StringView);
 
     template <class T>
     struct StreamWritable
