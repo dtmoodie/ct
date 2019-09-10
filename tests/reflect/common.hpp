@@ -43,6 +43,27 @@ void mul(T& obj)
     mulImpl(obj, ct::Reflect<T>::end());
 }
 
+template<class T>
+void incImpl(T& obj, ct::Indexer<0> idx)
+{
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    accessor.set(obj) += 1;
+}
+
+template<class T, ct::index_t I>
+void incImpl(T& obj, ct::Indexer<I> idx)
+{
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    accessor.set(obj) += 1;
+    incImpl(obj, --idx);
+}
+
+template<class T>
+void inc(T& obj)
+{
+    incImpl(obj, ct::Reflect<T>::end());
+}
+
 struct DebugEqual
 {
     template <class T>

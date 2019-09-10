@@ -8,6 +8,31 @@
 
 using namespace ct;
 
+namespace ct
+{
+template<class T, class A>
+bool operator ==(const ct::TArrayView<T>& view, const std::vector<T, A>& vec)
+{
+    if(view.size() != vec.size())
+    {
+        return false;
+    }
+    if(view.data() == vec.data())
+    {
+        return true;
+    }
+    for(size_t i = 0; i < view.size(); ++i)
+    {
+        if(view[i] != vec[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+}
+
+
 struct TimeIt
 {
     TimeIt(double& out) : m_out(out) { start = std::chrono::high_resolution_clock::now(); }
@@ -64,7 +89,7 @@ ct::ext::DataTable<T> createAndFillTable(size_t elems)
     for (size_t i = 0; i < 20; ++i)
     {
         table.push_back(val);
-        mul(val);
+        inc(val);
     }
     return table;
 }
@@ -83,7 +108,7 @@ TEST(datatable, read)
     {
         auto read = table.access(i);
         EXPECT_EQ(val, read);
-        mul(val);
+        inc(val);
     }
 }
 
@@ -106,21 +131,21 @@ TEST(datatable, read_element)
     for (auto x : table.view(&TestB::x))
     {
         EXPECT_EQ(x, val.x);
-        mul(val);
+        inc(val);
     }
 
     val = TestData<TestB>::init();
     for (auto y : table.view(&TestB::y))
     {
         EXPECT_EQ(y, val.y);
-        mul(val);
+        inc(val);
     }
 
     val = TestData<TestB>::init();
     for (auto z : table.view(&TestB::z))
     {
         EXPECT_EQ(z, val.z);
-        mul(val);
+        inc(val);
     }
 }
 
@@ -131,7 +156,7 @@ TEST(datatable, ctr_from_vec)
     for (size_t i = 0; i < 20; ++i)
     {
         vec.push_back(val);
-        mul(val);
+        inc(val);
     }
 
     ct::ext::DataTable<TestB> table(vec);
@@ -149,7 +174,7 @@ TEST(datatable, push)
     for (size_t i = 0; i < 20; ++i)
     {
         vec.push_back(val);
-        mul(val);
+        inc(val);
     }
 
     ct::ext::DataTable<TestB> table;
@@ -164,20 +189,113 @@ TEST(datatable, push)
     }
 }
 
+
+TEST(datatable, dyn_array_init)
+{
+    std::vector<float> embeddings;
+    embeddings.resize(20);
+    for (auto& x : embeddings)
+    {
+        x = float(std::rand()) / float(RAND_MAX);
+    }
+    {
+        ext::DataTable<DynStruct> table;
+        table.reserve(10);
+
+        DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
+        table.push_back(tmp);
+        auto val = table[0];
+        for (size_t i = 0; i < val.embeddings.size(); ++i)
+        {
+            EXPECT_TRUE(fclose(val.embeddings[ssize_t(i)], embeddings[i]));
+        }
+        auto emb = table.access(&DynStruct::embeddings, 0);
+        EXPECT_EQ(val.embeddings.data(), emb.data());
+        EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 20);
+    }
+}
+
+TEST(datatable, dyn_array_reserve_init)
+{
+    std::vector<float> embeddings;
+    embeddings.resize(20);
+    for (auto& x : embeddings)
+    {
+        x = float(std::rand()) / float(RAND_MAX);
+    }
+    {
+        ext::DataTable<DynStruct> table;
+        table.resizeSubarray(&DynStruct::embeddings, 20);
+        table.reserve(10);
+
+        DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
+        table.push_back(tmp);
+        auto val = table[0];
+        for (size_t i = 0; i < val.embeddings.size(); ++i)
+        {
+            EXPECT_TRUE(fclose(val.embeddings[ssize_t(i)], embeddings[i]));
+        }
+        auto emb = table.access(&DynStruct::embeddings, 0);
+        EXPECT_EQ(val.embeddings.data(), emb.data());
+        EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 20);
+    }
+}
+
+TEST(datatable, array_view)
+{
+    std::vector<float> embeddings;
+    embeddings.resize(20);
+    for (auto& x : embeddings)
+    {
+        x = float(std::rand()) / float(RAND_MAX);
+    }
+    {
+        ext::DataTable<DerivedDynStruct> table;
+        DerivedDynStruct tmp;
+        tmp.embeddings = ct::TArrayView<float>(embeddings.data(), 20);
+        for (int i = 0; i < 20; ++i)
+        {
+            tmp.x = i;
+            tmp.y = i * 2;
+            tmp.w = i * 3;
+            tmp.h = i * 4;
+            tmp.conf = 0.9F;
+            for (auto& x : embeddings)
+            {
+                x = float(std::rand()) / float(RAND_MAX);
+            }
+            table.push_back(tmp);
+        }
+        tableViewer(table);
+
+        DynStruct elem;
+        static_cast<ext::IDataTable<DerivedDynStruct>&>(table).populateData(elem, 0);
+        EXPECT_EQ(embeddings.size(), elem.embeddings.size());
+        static_cast<ext::IDataTable<DerivedDynStruct>&>(table).populateData(elem, 19);
+        EXPECT_EQ(elem.embeddings, embeddings);
+
+    }
+}
+
+
+
+
 struct DataTablePerformance : ::testing::TestWithParam<size_t>
 {
-    using T = TestB;
+    using TestType = TestB;
 
     void fillVec()
     {
         const size_t size = 1ULL << GetParam();
         TimeIt time(vec_fill_time);
         vec_of_structs.reserve(size);
-        auto val = TestData<TestB>::init();
+        auto val = TestData<TestType>::init();
         for (size_t i = 0; i < size; ++i)
         {
             vec_of_structs.push_back(val);
-            mul(val);
+            inc(val);
         }
     }
 
@@ -186,11 +304,11 @@ struct DataTablePerformance : ::testing::TestWithParam<size_t>
         const size_t size = 1ULL << GetParam();
         TimeIt time(table_fill_time);
         table.reserve(vec_of_structs.size());
-        auto val = TestData<TestB>::init();
+        auto val = TestData<TestType>::init();
         for (size_t i = 0; i < size; ++i)
         {
             table.push_back(val);
-            mul(val);
+            inc(val);
         }
     }
 
@@ -207,7 +325,6 @@ struct DataTablePerformance : ::testing::TestWithParam<size_t>
         fillVec();
         fillTable();
         // It takes longer to fill a table than a vec since it's 3 allocations intead of 1
-        EXPECT_GE(table_fill_time, vec_fill_time);
         testEquality();
     }
 
@@ -217,62 +334,78 @@ struct DataTablePerformance : ::testing::TestWithParam<size_t>
         fillTable();
         const size_t size = 1ULL << GetParam();
         auto idx = size_t(size * (float(std::rand()) / (float(RAND_MAX) * 2)) + 0.5F);
-        auto val = TestData<TestB>::init();
+        auto val = TestData<TestType>::init();
+        ASSERT_LE(idx, size);
         for (size_t i = 0; i < idx; ++i)
         {
-            mul(val);
+            inc(val);
         }
-        auto ptr = Reflect<T>::getPtr(Indexer<1>());
+        // For several of the test types, the 0th element is intiialized as zero
+        auto ptr = Reflect<TestType>::getPtr(Indexer<1>());
         double vec_search_time = 0;
         {
             TimeIt timer(vec_search_time);
             size_t i = 0;
+            const auto search_val = ptr.get(val);
             for (; i < size; ++i)
             {
-                if (fclose(ptr.get(vec_of_structs[i]), ptr.get(val)))
+                if (fclose(ptr.get(vec_of_structs[i]), search_val))
                 {
                     break;
                 }
             }
-            EXPECT_EQ(i, idx) << " did not find expected value in vec of structs";
+            if(i == size)
+            {
+                std::cout << table[idx];
+            }
+            ASSERT_NE(i, size) << " did not find expected value in vec of structs";
+            if(i != idx)
+            {
+                EXPECT_EQ(vec_of_structs[idx], val);
+            }
         }
         double table_search_time = 0;
         {
             TimeIt timer(table_search_time);
             size_t i = 0;
             auto view = table.view(ptr.m_ptr);
+            const auto search_val = ptr.get(val);
             for (const auto& v : view)
             {
-                if (fclose(v, ptr.get(val)))
+                if (fclose(v, search_val))
                 {
                     break;
                 }
                 ++i;
             }
-            EXPECT_EQ(i, idx) << " value not found in table";
+            if(i == size)
+            {
+                std::cout << table[idx];
+            }
+            ASSERT_NE(i, size) << " did not find expected value in the table";
+            if(i != idx)
+            {
+                EXPECT_EQ(table[idx], val);
+            }
         }
         EXPECT_GE(vec_search_time, table_search_time)
             << " vec of structs was faster while searching for a value at index " << idx;
     }
 
   private:
-    std::vector<TestB> vec_of_structs;
-    ct::ext::DataTable<TestB> table;
+    std::vector<TestType> vec_of_structs;
+    ct::ext::DataTable<TestType> table;
     double table_fill_time;
     double vec_fill_time;
 };
 
-TEST_P(DataTablePerformance, fill_performance)
-{
-    testFill();
-}
 
 TEST_P(DataTablePerformance, search_performance)
 {
     testSearch();
 }
 
-INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(3, 6, 10));
+INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(18, 22, 26));
 
 int main(int argc, char** argv)
 {
@@ -359,56 +492,4 @@ int main(int argc, char** argv)
         std::cout << "Iterator Speedup                   " << float(d1.count()) / float(d3.count()) << std::endl;
     }*/
 
-    {
-        std::vector<float> embeddings;
-        embeddings.resize(20);
-        for (auto& x : embeddings)
-        {
-            x = float(std::rand()) / float(RAND_MAX);
-        }
-        {
-            ext::DataTable<DynStruct> table;
-            table.resizeSubarray(&DynStruct::embeddings, 20);
-            table.reserve(10);
-
-            DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
-            table.push_back(tmp);
-            auto val = table[0];
-            for (size_t i = 0; i < val.embeddings.size(); ++i)
-            {
-                if (!fclose(val.embeddings[ssize_t(i)], embeddings[i]))
-                {
-                    std::cout << "Embeddings not copied correctly" << std::endl;
-                    return -1;
-                }
-            }
-            auto emb = table.access(&DynStruct::embeddings, 0);
-            if (val.embeddings.data() != emb.data())
-            {
-                std::cout << "Retrieved embeddings pointing to the wrong thing" << std::endl;
-                return -1;
-            }
-            assert(table.storage(&DynStruct::x).size() == 1);
-            assert(table.storage(&DynStruct::embeddings).size() == 20);
-        }
-        {
-            ext::DataTable<DerivedDynStruct> table;
-            DerivedDynStruct tmp;
-            tmp.embeddings = ct::TArrayView<float>(embeddings.data(), 20);
-            for (int i = 0; i < 20; ++i)
-            {
-                tmp.x = i;
-                tmp.y = i * 2;
-                tmp.w = i * 3;
-                tmp.h = i * 4;
-                tmp.conf = 0.9F;
-                for (auto& x : embeddings)
-                {
-                    x = float(std::rand()) / float(RAND_MAX);
-                }
-                table.push_back(tmp);
-            }
-            tableViewer(table);
-        }
-    }
 }
