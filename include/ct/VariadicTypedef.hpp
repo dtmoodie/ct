@@ -1,6 +1,7 @@
 #ifndef CT_VARIADIC_TYPEDEF_HPP
 #define CT_VARIADIC_TYPEDEF_HPP
 #include <utility>
+#include <cstddef>
 
 namespace ct
 {
@@ -51,6 +52,11 @@ namespace ct
         static constexpr VariadicTypedefIterator<Args...> begin()
         {
             return {};
+        }
+
+        static constexpr size_t size()
+        {
+            return sizeof...(Args);
         }
 
         using tuple_type = std::tuple<Args...>;
@@ -257,20 +263,5 @@ namespace ct
         using type = typename InsertUniqueMultiple<VariadicTypedef<T1...>, T2>::type;
     };
 
-    template <class T>
-    struct LenVariadicTypedef;
-
-    template <class... T>
-    struct LenVariadicTypedef<ct::VariadicTypedef<T...>>
-    {
-        constexpr static const auto value = sizeof...(T);
-    };
-
-    template <class T>
-    struct PrintVariadicTypedef;
-    template <class... T>
-    struct[[deprecated]] PrintVariadicTypedef<ct::VariadicTypedef<T...>>{
-
-    };
 }
 #endif // CT_VARIADIC_TYPEDEF_HPP
