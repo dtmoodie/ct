@@ -42,13 +42,18 @@ namespace ct
         using type = typename InferSetterType<SET_PTR>::type;
     };
 
-    template <class T, class E>
-    struct IsReflected : public std::false_type
+    template <class T, class E = void>
+    struct InternallyReflected : std::false_type
     {
     };
 
     template <class T>
-    struct IsReflected<T, Valid<decltype(T::NUM_FIELDS)>> : std::true_type
+    struct InternallyReflected<T, Valid<decltype(T::NUM_FIELDS)>> : std::true_type
+    {
+    };
+
+    template <class T, class E>
+    struct IsReflected : InternallyReflected<T>
     {
     };
 
