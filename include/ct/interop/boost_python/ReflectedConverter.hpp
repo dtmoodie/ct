@@ -3,8 +3,8 @@
 #include "PythonConverter.hpp"
 
 #include <ct/reflect.hpp>
-#include <ct/type_traits.hpp>
 #include <ct/reflect_traits.hpp>
+#include <ct/type_traits.hpp>
 
 namespace ct
 {
@@ -126,7 +126,7 @@ namespace ct
             -> ct::EnableIfIsWritable<T, I>
         {
             using type_t = typename std::decay<SetValue_t<T, I>>::type;
-            type_t extracted_val{};
+            type_t extracted_val;
             if (convertFromPython(value, extracted_val))
             {
                 auto accessor = ct::Reflect<T>::getPtr(idx);
@@ -229,7 +229,7 @@ namespace ct
         template <class T, class BP>
         EnableIf<ct::IsDefaultConstructible<T>::value && ct::GlobWritable<T>::num >= 1> addInit(BP& bpobj)
         {
-            //ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
+            // ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
             using Signature_t = typename FunctionSignatureBuilder<boost::python::object,
                                                                   ct::GlobWritable<T>::num - 1>::VariadicTypedef_t;
             using Creator_t = CreateDataObject<T, Signature_t>;

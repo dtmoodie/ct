@@ -42,14 +42,14 @@ void mul(T& obj)
     mulImpl(obj, ct::Reflect<T>::end());
 }
 
-template<class T>
+template <class T>
 void incImpl(T& obj, ct::Indexer<0> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
     accessor.set(obj) += 1;
 }
 
-template<class T, ct::index_t I>
+template <class T, ct::index_t I>
 void incImpl(T& obj, ct::Indexer<I> idx)
 {
     auto accessor = ct::Reflect<T>::getPtr(idx);
@@ -57,7 +57,7 @@ void incImpl(T& obj, ct::Indexer<I> idx)
     incImpl(obj, --idx);
 }
 
-template<class T>
+template <class T>
 void inc(T& obj)
 {
     incImpl(obj, ct::Reflect<T>::end());
@@ -191,7 +191,7 @@ struct TestData<MultipleInheritance>
     }
 };
 
-TEST_DATA(ExplicitThisProperty, {});
+TEST_DATA(ExplicitThisProperty, {0.0F});
 template <>
 struct TestData<DerivedA>
 {
@@ -235,7 +235,7 @@ struct TestData<DerivedC>
     }
 };
 TEST_DATA(Virtual, {});
-TEST_DATA(Templated<double>, {});
+TEST_DATA(Templated<double>, {0.0, 1.0, 2.0});
 
 #ifdef HAVE_OPENCV
 TEST_DATA(cv::Vec2f, {2, 3});
@@ -259,9 +259,13 @@ TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
 using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       Inherited,
                                       Composite,
-                                      TestA, TestB, TestC,
+                                      TestA,
+                                      TestB,
+                                      TestC,
                                       TestVec,
-                                      DerivedA, DerivedB, DerivedC,
+                                      DerivedA,
+                                      DerivedB,
+                                      DerivedC,
                                       PrivateMutableAccess,
                                       InternallyReflected,
                                       PrivateGetAndSet,
@@ -299,4 +303,3 @@ struct ToTestTypes<ct::VariadicTypedef<Ts...>>
 {
     using type = ::testing::Types<Ts...>;
 };
-
