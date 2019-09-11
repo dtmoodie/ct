@@ -254,7 +254,7 @@ namespace ct
         bool pythonSet(T& obj, const boost::python::object& val)
         {
             using type = typename std::decay<SetValue_t<T, I>>::type;
-            type extracted_value{};
+            type extracted_value;
             if (convertFromPython(val, extracted_value))
             {
                 auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>{});
