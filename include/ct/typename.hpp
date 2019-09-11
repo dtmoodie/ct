@@ -15,13 +15,13 @@ namespace ct
     {
         constexpr StringView parseClassNameGCC(const StringView name)
         {
-            return name.slice(name.rfind('=') + 2, name.size() - 1);
+            return name.slice(ssize_t(name.rfind('=') + 2), ssize_t(name.size() - 1));
         }
 
-        constexpr StringView parseClassNameMSVCHelper(const StringView name, size_t struct_pos, size_t class_pos)
+        constexpr StringView parseClassNameMSVCHelper(const StringView name, size_t struct_pos, size_t /*TODO class_pos*/)
         {
             return name
-                .slice((struct_pos != StringView::npos ? struct_pos + 7 : name.find("C<") + 2), name.rfind('>') - 1)
+                .slice((struct_pos != StringView::npos ? ssize_t(struct_pos + 7) : ssize_t(name.find("C<") + 2)), ssize_t(name.rfind('>') - 1))
                 .strip();
         }
 
@@ -143,7 +143,6 @@ namespace ct
     template <class K, class V>
     struct GetName<std::pair<K, V>>
     {
-// TODO constexpr generation
 #ifdef CT_HAVE_CONSTEXPR_NAME
         static constexpr const auto prefix = makeCTS("std::pair<");
         static constexpr const auto prefix_len = prefix.size();

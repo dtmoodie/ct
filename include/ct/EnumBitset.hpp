@@ -85,7 +85,7 @@ namespace ct
 
         bool test(STORAGE bitset) const
         {
-            for (int i = 0; i < 8 * sizeof(STORAGE); ++i)
+            for (size_t i = 0; i < 8 * sizeof(STORAGE); ++i)
             {
                 const STORAGE bit = (static_cast<STORAGE>(1) << i);
                 if (bitset & bit && !(m_data & bit))

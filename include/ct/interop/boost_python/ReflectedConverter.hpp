@@ -4,6 +4,8 @@
 
 #include <ct/reflect.hpp>
 #include <ct/type_traits.hpp>
+#include <ct/reflect_traits.hpp>
+
 namespace ct
 {
     template <class T, index_t PRIORITY = 10, class ENABLE = void>
@@ -12,7 +14,7 @@ namespace ct
     };
 
     template <class T>
-    struct PythonConverter<T, 3, ct::EnableIfReflected<T>> : public ReflectedConverter<T>
+    struct PythonConverter<T, 3, EnableIfReflected<T>> : public ReflectedConverter<T>
     {
 
     }; // PythonConverter<T, 2, ct::EnableIfReflected<T>>
@@ -298,7 +300,7 @@ namespace ct
         template <class T>
         boost::python::object getItem(const T& obj, const index_t i)
         {
-            if (i >= GlobWritable<T>::num)
+            if (size_t(i) >= GlobWritable<T>::num)
             {
                 std::stringstream ss;
                 ss << i << " out of valid range of 0 -> " << GlobWritable<T>::num;
@@ -342,7 +344,7 @@ namespace ct
         template <class T>
         bool setItem(T& obj, const index_t i, const boost::python::object& val)
         {
-            if (i >= GlobWritable<T>::num)
+            if (size_t(i) >= GlobWritable<T>::num)
             {
                 std::stringstream ss;
                 ss << i << " out of valid range of 0 -> " << GlobWritable<T>::num;
@@ -455,7 +457,7 @@ namespace ct
         }
 
         template <class T, Flag_t FLAGS, class MDATA, class... PTR>
-        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<0> idx)
+        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<0>)
         {
             auto ptr = ptrs.template getPtr<0>();
             using type = typename decltype(ptr)::Ret_t;
@@ -463,7 +465,7 @@ namespace ct
         }
 
         template <index_t I, class T, Flag_t FLAGS, class MDATA, class... PTR>
-        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<I> idx)
+        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<I>)
         {
             auto ptr = ptrs.template getPtr<I>();
             using type = typename decltype(ptr)::Ret_t;
