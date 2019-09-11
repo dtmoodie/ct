@@ -6,7 +6,6 @@
 #include <ct/types/opencv.hpp>
 #endif
 
-
 #ifdef HAVE_EIGEN
 #include <ct/types/eigen.hpp>
 #endif

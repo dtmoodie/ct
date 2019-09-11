@@ -3,6 +3,10 @@
 #include <ct/reflect.hpp>
 #include <ct/reflect/print.hpp>
 
+#ifdef HAVE_EIGEN
+#include <ct/types/eigen.hpp>
+#endif
+
 #include <iostream>
 
 template <class T, ct::index_t START, ct::index_t END, ct::index_t COUNT>
@@ -33,6 +37,44 @@ void checkInvokable(PTR)
 
 int main()
 {
+    static_assert(ct::IsReflected<ReflectedStruct>::value, "");
+    static_assert(ct::IsReflected<Inherited>::value, "");
+    static_assert(ct::IsReflected<Composite>::value, "");
+    static_assert(ct::IsReflected<TestA>::value, "");
+    static_assert(std::is_same<void, ct::Valid<decltype(TestA::create)>>::value, "");
+
+    static_assert(ct::IsReflected<TestB>::value, "");
+    static_assert(ct::IsReflected<TestC>::value, "");
+    static_assert(ct::IsReflected<::Base>::value, "");
+    static_assert(ct::IsReflected<DerivedA>::value, "");
+    static_assert(ct::IsReflected<DerivedB>::value, "");
+    static_assert(ct::IsReflected<DerivedC>::value, "");
+    static_assert(ct::IsReflected<TestVec>::value, "");
+    static_assert(ct::IsReflected<PrivateMutableAccess>::value, "");
+    static_assert(ct::IsReflected<MultipleInheritance>::value, "");
+    static_assert(ct::IsReflected<PrivateGetAndSet>::value, "");
+    static_assert(ct::IsReflected<PointerOwner>::value, "");
+    static_assert(ct::IsReflected<Virtual>::value, "");
+    static_assert(ct::IsReflected<Templated<double>>::value, "");
+    static_assert(ct::IsReflected<ExplicitThisProperty>::value, "");
+    static_assert(ct::IsReflected<InternallyReflected>::value, "");
+#ifdef HAVE_EIGEN
+    static_assert(ct::IsReflected<Eigen::MatrixXf>::value, "");
+#endif
+
+    static_assert(!ct::IsReflected<int>::value, "");
+    static_assert(!ct::IsReflected<char>::value, "");
+    static_assert(!ct::IsReflected<float>::value, "");
+    static_assert(!ct::IsReflected<double>::value, "");
+    static_assert(!ct::IsReflected<short>::value, "");
+    static_assert(!ct::IsReflected<unsigned int>::value, "");
+    static_assert(!ct::IsReflected<unsigned short>::value, "");
+    static_assert(!ct::IsReflected<int[4]>::value, "");
+    static_assert(!ct::IsReflected<char[4]>::value, "");
+    static_assert(!ct::IsReflected<double[4]>::value, "");
+    static_assert(!ct::IsReflected<unsigned short[4]>::value, "");
+    static_assert(!ct::IsReflected<unsigned char[4]>::value, "");
+
     static_assert(ct::Has_name<ct::ReflectImpl<ReflectedStruct>>::value, "asdf");
 
     checkFieldRange<ReflectedStruct, 0, 4, 4>();

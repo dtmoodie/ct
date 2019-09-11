@@ -29,6 +29,10 @@ if(HAVE_PYTHON)
         ct
     )
 
+    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+        target_compile_options(test_ct_python PRIVATE -Werror -Wall -Wextra)
+    endif()
+
     if(OpenCV_FOUND)
         target_link_libraries(test_ct_python ${OpenCV_LIBS})
     endif()

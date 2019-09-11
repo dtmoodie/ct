@@ -118,12 +118,15 @@ struct PointerOwner
 
 struct Virtual
 {
-    virtual ~Virtual() {}
+    virtual ~Virtual();
     REFLECT_INTERNAL_START(Virtual)
         MEMBER_FUNCTION(foo)
     REFLECT_INTERNAL_END;
-    virtual void foo() {}
+    virtual void foo();
 };
+
+Virtual::~Virtual() {}
+void Virtual::foo() {}
 
 template <class DType>
 struct Templated
@@ -173,10 +176,3 @@ struct InternallyReflected
     REFLECT_INTERNAL_END;
 };
 
-/*namespace cereal
-{
-    template <class AR>
-    void serialize(AR&, ReflectedStruct*)
-    {
-    }
-}*/
