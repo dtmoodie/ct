@@ -11,10 +11,25 @@ namespace ct
         struct DataTableBase;
 
         template <class U, template <class...> class STORAGE_POLICY, class... Args>
-        struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>> : STORAGE_POLICY<Args...>, IDataTable<U>
+        struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>> : STORAGE_POLICY<Args...>, IDataTableImpl<U, DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>>
         {
             using Storage = STORAGE_POLICY<Args...>;
             DataTableBase() { fillOffsets(Reflect<U>::end()); }
+
+            template<class V>
+            void populateDataRecurse(V& data, const size_t row, const ct::Indexer<0> idx)
+            {
+                const auto accessor = Reflect<V>::getPtr(idx);
+                accessor.set(data, Storage::template get<0>()[row]);
+            }
+
+            template <class V, index_t I>
+            void populateDataRecurse(V& data, const size_t row, const ct::Indexer<I> idx)
+            {
+                const auto accessor = Reflect<V>::getPtr(idx);
+                accessor.set(data, Storage::template get<I>()[row]);
+                populateDataRecurse(data, row, --idx);
+            }
 
           protected:
             void reserveImpl(const size_t size, const ct::Indexer<0>) { Storage::template get<0>().reserve(size); }
@@ -24,20 +39,6 @@ namespace ct
             {
                 Storage::template get<I>().reserve(size);
                 reserveImpl(size, --idx);
-            }
-
-            void populateData(U& data, const ct::Indexer<0> idx, const size_t row)
-            {
-                const auto accessor = Reflect<U>::getPtr(idx);
-                accessor.set(data, Storage::template get<0>()[row]);
-            }
-
-            template <index_t I>
-            void populateData(U& data, const ct::Indexer<I> idx, const size_t row)
-            {
-                const auto accessor = Reflect<U>::getPtr(idx);
-                accessor.set(data, Storage::template get<I>()[row]);
-                populateData(data, --idx, row);
             }
 
             void push(const U& data, const ct::Indexer<0> idx)

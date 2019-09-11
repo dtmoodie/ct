@@ -70,7 +70,8 @@ struct DerivedDynStruct : public DynStruct
 
 // We intentionally use a IDataTable of the base struct here to ensure
 // We can still interact with a table of the derived type
-void tableViewer(const ext::IDataTable<DynStruct>& table)
+template<class T>
+void tableViewer(const ext::IDataTable<T>& table)
 {
     std::cout << table << std::endl;
 }
@@ -268,129 +269,31 @@ TEST(datatable, array_view)
             }
             table.push_back(tmp);
         }
-        tableViewer(table);
+        tableViewer<DynStruct>(table);
+        tableViewer<DerivedDynStruct>(table);
 
         DynStruct elem;
         static_cast<ext::IDataTable<DerivedDynStruct>&>(table).populateData(elem, 0);
         EXPECT_EQ(embeddings.size(), elem.embeddings.size());
         static_cast<ext::IDataTable<DerivedDynStruct>&>(table).populateData(elem, 19);
         EXPECT_EQ(elem.embeddings, embeddings);
-
     }
 }
-
-
 
 
 struct DataTablePerformance : ::testing::TestWithParam<size_t>
 {
     using TestType = TestB;
 
-    void fillVec()
-    {
-        const size_t size = 1ULL << GetParam();
-        TimeIt time(vec_fill_time);
-        vec_of_structs.reserve(size);
-        auto val = TestData<TestType>::init();
-        for (size_t i = 0; i < size; ++i)
-        {
-            vec_of_structs.push_back(val);
-            inc(val);
-        }
-    }
+    void fillVec();
 
-    void fillTable()
-    {
-        const size_t size = 1ULL << GetParam();
-        TimeIt time(table_fill_time);
-        table.reserve(vec_of_structs.size());
-        auto val = TestData<TestType>::init();
-        for (size_t i = 0; i < size; ++i)
-        {
-            table.push_back(val);
-            inc(val);
-        }
-    }
+    void fillTable();
 
-    void testEquality()
-    {
-        for (size_t i = 0; i < vec_of_structs.size(); ++i)
-        {
-            EXPECT_EQ(table.access(i), vec_of_structs[i]);
-        }
-    }
+    void testEquality();
 
-    void testFill()
-    {
-        fillVec();
-        fillTable();
-        // It takes longer to fill a table than a vec since it's 3 allocations intead of 1
-        testEquality();
-    }
+    void testFill();
 
-    void testSearch()
-    {
-        fillVec();
-        fillTable();
-        const size_t size = 1ULL << GetParam();
-        auto idx = size_t(size * (float(std::rand()) / (float(RAND_MAX) * 2)) + 0.5F);
-        auto val = TestData<TestType>::init();
-        ASSERT_LE(idx, size);
-        for (size_t i = 0; i < idx; ++i)
-        {
-            inc(val);
-        }
-        // For several of the test types, the 0th element is intiialized as zero
-        auto ptr = Reflect<TestType>::getPtr(Indexer<1>());
-        double vec_search_time = 0;
-        {
-            TimeIt timer(vec_search_time);
-            size_t i = 0;
-            const auto search_val = ptr.get(val);
-            for (; i < size; ++i)
-            {
-                if (fclose(ptr.get(vec_of_structs[i]), search_val))
-                {
-                    break;
-                }
-            }
-            if(i == size)
-            {
-                std::cout << table[idx];
-            }
-            ASSERT_NE(i, size) << " did not find expected value in vec of structs";
-            if(i != idx)
-            {
-                EXPECT_EQ(vec_of_structs[idx], val);
-            }
-        }
-        double table_search_time = 0;
-        {
-            TimeIt timer(table_search_time);
-            size_t i = 0;
-            auto view = table.view(ptr.m_ptr);
-            const auto search_val = ptr.get(val);
-            for (const auto& v : view)
-            {
-                if (fclose(v, search_val))
-                {
-                    break;
-                }
-                ++i;
-            }
-            if(i == size)
-            {
-                std::cout << table[idx];
-            }
-            ASSERT_NE(i, size) << " did not find expected value in the table";
-            if(i != idx)
-            {
-                EXPECT_EQ(table[idx], val);
-            }
-        }
-        EXPECT_GE(vec_search_time, table_search_time)
-            << " vec of structs was faster while searching for a value at index " << idx;
-    }
+    void testSearch();
 
   private:
     std::vector<TestType> vec_of_structs;
@@ -398,6 +301,113 @@ struct DataTablePerformance : ::testing::TestWithParam<size_t>
     double table_fill_time;
     double vec_fill_time;
 };
+
+void DataTablePerformance::fillVec()
+{
+    const size_t size = 1ULL << GetParam();
+    TimeIt time(vec_fill_time);
+    vec_of_structs.reserve(size);
+    auto val = TestData<TestType>::init();
+    for (size_t i = 0; i < size; ++i)
+    {
+        vec_of_structs.push_back(val);
+        inc(val);
+    }
+}
+
+void DataTablePerformance::fillTable()
+{
+    const size_t size = 1ULL << GetParam();
+    TimeIt time(table_fill_time);
+    table.reserve(vec_of_structs.size());
+    auto val = TestData<TestType>::init();
+    for (size_t i = 0; i < size; ++i)
+    {
+        table.push_back(val);
+        inc(val);
+    }
+}
+
+void DataTablePerformance::testEquality()
+{
+    EXPECT_EQ(table.size(), vec_of_structs.size());
+    for (size_t i = 0; i < vec_of_structs.size(); ++i)
+    {
+        EXPECT_EQ(table.access(i), vec_of_structs[i]);
+    }
+}
+
+void DataTablePerformance::testFill()
+{
+    fillVec();
+    fillTable();
+    // It takes longer to fill a table than a vec since it's 3 allocations intead of 1
+    testEquality();
+}
+
+void DataTablePerformance::testSearch()
+{
+    fillVec();
+    fillTable();
+    const size_t size = 1ULL << GetParam();
+    auto idx = size_t(size * (float(std::rand()) / (float(RAND_MAX) * 2)) + 0.5F);
+    auto val = TestData<TestType>::init();
+    ASSERT_LE(idx, size);
+    for (size_t i = 0; i < idx; ++i)
+    {
+        inc(val);
+    }
+    // For several of the test types, the 0th element is intiialized as zero
+    auto ptr = Reflect<TestType>::getPtr(Indexer<1>());
+    double vec_search_time = 0;
+    {
+        TimeIt timer(vec_search_time);
+        size_t i = 0;
+        const auto search_val = ptr.get(val);
+        for (; i < size; ++i)
+        {
+            if (fclose(ptr.get(vec_of_structs[i]), search_val))
+            {
+                break;
+            }
+        }
+        if(i == size)
+        {
+            std::cout << table[idx];
+        }
+        ASSERT_NE(i, size) << " did not find expected value in vec of structs";
+        if(i != idx)
+        {
+            EXPECT_EQ(vec_of_structs[idx], val);
+        }
+    }
+    double table_search_time = 0;
+    {
+        TimeIt timer(table_search_time);
+        size_t i = 0;
+        auto view = table.view(ptr.m_ptr);
+        const auto search_val = ptr.get(val);
+        for (const auto& v : view)
+        {
+            if (fclose(v, search_val))
+            {
+                break;
+            }
+            ++i;
+        }
+        if(i == size)
+        {
+            std::cout << table[idx];
+        }
+        ASSERT_NE(i, size) << " did not find expected value in the table";
+        if(i != idx)
+        {
+            EXPECT_EQ(table[idx], val);
+        }
+    }
+    EXPECT_GE(vec_search_time, table_search_time)
+        << " vec of structs was faster while searching for a value at index " << idx;
+}
 
 
 TEST_P(DataTablePerformance, search_performance)

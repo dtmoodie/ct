@@ -110,6 +110,7 @@ namespace ct
             {
                 return std::get<I>(m_data);
             }
+
             DefaultStoragePolicy()
             {
                 static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value, "Expect to be returning a reference");

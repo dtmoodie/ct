@@ -1,6 +1,7 @@
 #ifndef CT_EXT_DATA_TABLE_PRINT_HPP
 #define CT_EXT_DATA_TABLE_PRINT_HPP
 #include "IDataTable.hpp"
+
 namespace ct
 {
     namespace ext

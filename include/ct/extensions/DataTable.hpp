@@ -159,7 +159,7 @@ namespace ct
         U DataTable<U, STORAGE_POLICY>::access(const size_t idx)
         {
             U out;
-            this->populateData(out, Reflect<U>::end(), idx);
+            this->populateDataRecurse(out, idx, ct::Reflect<U>::end());
             return out;
         }
 
