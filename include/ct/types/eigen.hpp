@@ -72,6 +72,29 @@ namespace ct
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
+    template<typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    struct ReflectImpl<Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
+    {
+        static constexpr int SPECIALIZED = true;
+        using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+
+        static TArrayView<const T> getData(const DataType& arr)
+        {
+            return {arr.data(), static_cast<size_t>(arr.rows() * arr.cols())};
+        }
+
+        static TArrayView<T> getDataMutable(DataType& arr)
+        {
+            return {arr.data(), static_cast<size_t>(arr.rows() * arr.cols())};
+        }
+
+        REFLECT_STUB
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+        REFLECT_INTERNAL_END;
+        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+    }; 
+
     DECL_NAME(Eigen::MatrixXf);
     DECL_NAME(Eigen::Matrix2f);
     DECL_NAME(Eigen::Matrix3f);
