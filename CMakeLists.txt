@@ -69,7 +69,7 @@ if(NOT TARGET ct)
                 add_definitions(-DHAVE_CEREAL)
             endif()
         else()
-            include_directories(${cereal_INCLUDE_DIR})
+            include_directories(SYSTEM ${cereal_INCLUDE_DIR})
             set(cereal_FOUND ON)
         endif()
 
