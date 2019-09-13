@@ -1,6 +1,7 @@
 #ifndef CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
 #define CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
 #include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <ct/types.hpp>
 
 namespace ct
@@ -25,6 +26,27 @@ namespace ct
         static void registerToPython(const char*);
         static bool convertFromPython(const boost::python::object& obj, T& val);
         static boost::python::object convertToPython(const T& result);
+    };
+
+    template<class T, class A>
+    struct PythonConverter<std::vector<T, A>, 4, void>
+    {
+        static void registerToPython(const char* name)
+        {
+            boost::python::class_<std::vector<T, A>> vec(name, boost::python::no_init);
+            vec.def(boost::python::vector_indexing_suite<std::vector<T, A>>());
+        }
+
+        static bool convertFromPython(const boost::python::object&, std::vector<T, A>&)
+        {
+            // TODO
+            return false;
+        }
+
+        static boost::python::object convertToPython(const std::vector<T, A>& result)
+        {
+            return boost::python::object(result);
+        }
     };
 
     template <index_t PRIORITY>
@@ -93,6 +115,58 @@ namespace ct
         }
     }
 
+    template<class T>
+    void registerToPythonCreateNamespace(std::string name)
+    {
+        namespace bp = boost::python;
+        auto pos = name.find("::");
+        const bool have_namespace = pos != std::string::npos;
+        auto bracketed_pos = name.find("<");
+        // This is false if for example we have vector<std::string> since the namespace std is within the template arg
+        const bool namespace_in_template_arg = bracketed_pos < pos;
+        if(have_namespace && !namespace_in_template_arg)
+        {
+            auto namespace_name = name.substr(0, pos);
+            bp::scope current_scope;
+            bp::object submodule;
+            {
+                std::string current_scope_name;
+                convertFromPython(current_scope.attr("__name__"), current_scope_name);
+                if(current_scope_name.find(namespace_name) == current_scope_name.size() - namespace_name.size())
+                {
+                    submodule = current_scope;
+                }else
+                {
+                    std::string scope_name = current_scope_name + "." + namespace_name;
+                    auto mod = PyImport_AddModule(scope_name.c_str());
+                    if(mod == nullptr)
+                    {
+                        PyObject *ptype, *pvalue, *ptraceback;
+                        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+                        PyObject_Print(pvalue, stdout, 0);
+                        return;
+                    }
+                    submodule = bp::object(bp::handle<>(bp::borrowed(mod)));
+                }
+
+                bp::scope scope(submodule);
+                auto substr = name.substr(pos + 2);
+                registerToPythonCreateNamespace<T>(substr);
+            }
+            current_scope.attr(namespace_name.c_str()) = submodule;
+
+            return;
+        }
+        eraseAll(name, ':');
+        replaceAll(name, '<', '_');
+        replaceAll(name, '>', '_');
+        eraseAll(name, ',');
+        eraseAll(name, ' ');
+        eraseAll(name, '-');
+
+        PythonConverter<T>::registerToPython(name.c_str());
+    }
+
     template <class T>
     void registerToPython()
     {
@@ -103,15 +177,8 @@ namespace ct
         }
         registered = true;
 
-        std::string name = ct::Reflect<T>:: getName().toString();
-        eraseAll(name, ':');
-        replaceAll(name, '<', '_');
-        replaceAll(name, '>', '_');
-        eraseAll(name, ',');
-        eraseAll(name, ' ');
-        eraseAll(name, '-');
-
-        PythonConverter<T>::registerToPython(name.c_str());
+        std::string name = ct::Reflect<T>::getName().toString();
+        registerToPythonCreateNamespace<T>(name);
     }
 }
 

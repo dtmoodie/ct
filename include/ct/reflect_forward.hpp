@@ -26,7 +26,7 @@ namespace ct
     template <class IMPL, class ENABLE = void>
     struct BaseSelector;
 
-    template <class T>
+    template <class T, class E = void>
     struct IsReflected;
 
     template <class T, index_t I>

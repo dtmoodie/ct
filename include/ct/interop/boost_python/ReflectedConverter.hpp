@@ -3,7 +3,9 @@
 #include "PythonConverter.hpp"
 
 #include <ct/reflect.hpp>
+#include <ct/reflect_traits.hpp>
 #include <ct/type_traits.hpp>
+
 namespace ct
 {
     template <class T, index_t PRIORITY = 10, class ENABLE = void>
@@ -12,7 +14,7 @@ namespace ct
     };
 
     template <class T>
-    struct PythonConverter<T, 3, ct::EnableIfReflected<T>> : public ReflectedConverter<T>
+    struct PythonConverter<T, 3, EnableIfReflected<T>> : public ReflectedConverter<T>
     {
 
     }; // PythonConverter<T, 2, ct::EnableIfReflected<T>>
@@ -124,7 +126,7 @@ namespace ct
             -> ct::EnableIfIsWritable<T, I>
         {
             using type_t = typename std::decay<SetValue_t<T, I>>::type;
-            type_t extracted_val{};
+            type_t extracted_val;
             if (convertFromPython(value, extracted_val))
             {
                 auto accessor = ct::Reflect<T>::getPtr(idx);
@@ -227,7 +229,7 @@ namespace ct
         template <class T, class BP>
         EnableIf<ct::IsDefaultConstructible<T>::value && ct::GlobWritable<T>::num >= 1> addInit(BP& bpobj)
         {
-            ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
+            // ct::PrintVariadicTypedef<typename ct::GlobWritable<T>::types>{};
             using Signature_t = typename FunctionSignatureBuilder<boost::python::object,
                                                                   ct::GlobWritable<T>::num - 1>::VariadicTypedef_t;
             using Creator_t = CreateDataObject<T, Signature_t>;
@@ -252,7 +254,7 @@ namespace ct
         bool pythonSet(T& obj, const boost::python::object& val)
         {
             using type = typename std::decay<SetValue_t<T, I>>::type;
-            type extracted_value{};
+            type extracted_value;
             if (convertFromPython(val, extracted_value))
             {
                 auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>{});
@@ -298,7 +300,7 @@ namespace ct
         template <class T>
         boost::python::object getItem(const T& obj, const index_t i)
         {
-            if (i >= GlobWritable<T>::num)
+            if (size_t(i) >= GlobWritable<T>::num)
             {
                 std::stringstream ss;
                 ss << i << " out of valid range of 0 -> " << GlobWritable<T>::num;
@@ -342,7 +344,7 @@ namespace ct
         template <class T>
         bool setItem(T& obj, const index_t i, const boost::python::object& val)
         {
-            if (i >= GlobWritable<T>::num)
+            if (size_t(i) >= GlobWritable<T>::num)
             {
                 std::stringstream ss;
                 ss << i << " out of valid range of 0 -> " << GlobWritable<T>::num;
@@ -443,19 +445,19 @@ namespace ct
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<!(flags<PTR>() & Flags::READABLE)>
+        auto registerPropertyReturn(PTR) -> EnableIf<(flags<PTR>() & Flags::READABLE) == 0>
         {
         }
 
         template <class PTR>
-        auto registerPropertyReturn(PTR) -> EnableIf<flags<PTR>() & Flags::READABLE>
+        auto registerPropertyReturn(PTR) -> EnableIf<(flags<PTR>() & Flags::READABLE) != 0>
         {
             using type = typename GetType<PTR>::type;
             ct::registerToPython<decay_t<type>>();
         }
 
         template <class T, Flag_t FLAGS, class MDATA, class... PTR>
-        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<0> idx)
+        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<0>)
         {
             auto ptr = ptrs.template getPtr<0>();
             using type = typename decltype(ptr)::Ret_t;
@@ -463,7 +465,7 @@ namespace ct
         }
 
         template <index_t I, class T, Flag_t FLAGS, class MDATA, class... PTR>
-        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<I> idx)
+        auto registerMemberFunctionReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptrs, Indexer<I>)
         {
             auto ptr = ptrs.template getPtr<I>();
             using type = typename decltype(ptr)::Ret_t;

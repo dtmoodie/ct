@@ -30,7 +30,7 @@ namespace ct
         constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
         static constexpr T value = VALUE;
 #else
         static constexpr E value = E(VALUE);
@@ -180,7 +180,7 @@ namespace ct
     //////////////////////////////////////////
     /// ~
     template <class E>
-    constexpr EnableIf<std::is_base_of<EnumTag, E>::value, E> operator~(E e)
+    constexpr EnableIf<IsBase<Base<EnumTag>, Derived<E>>::value, E> operator~(E e)
     {
         return E(~e.value);
     }

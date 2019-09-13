@@ -6,7 +6,6 @@
 #include <ct/types/opencv.hpp>
 #endif
 
-
 #ifdef HAVE_EIGEN
 #include <ct/types/eigen.hpp>
 #endif
@@ -41,6 +40,27 @@ template <class T>
 void mul(T& obj)
 {
     mulImpl(obj, ct::Reflect<T>::end());
+}
+
+template <class T>
+void incImpl(T& obj, ct::Indexer<0> idx)
+{
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    accessor.set(obj) += 1;
+}
+
+template <class T, ct::index_t I>
+void incImpl(T& obj, ct::Indexer<I> idx)
+{
+    auto accessor = ct::Reflect<T>::getPtr(idx);
+    accessor.set(obj) += 1;
+    incImpl(obj, --idx);
+}
+
+template <class T>
+void inc(T& obj)
+{
+    incImpl(obj, ct::Reflect<T>::end());
 }
 
 struct DebugEqual
@@ -171,7 +191,34 @@ struct TestData<MultipleInheritance>
     }
 };
 
-TEST_DATA(ExplicitThisProperty, {});
+TEST_DATA(ExplicitThisProperty, {0.0F});
+template <>
+struct TestData<DerivedA>
+{
+    static DerivedA init()
+    {
+        DerivedA derived;
+        derived.base_x = 0;
+        derived.base_y = 1;
+        derived.base_z = 2;
+        derived.derived_a = 3;
+        return derived;
+    }
+};
+template <>
+struct TestData<DerivedB>
+{
+    static DerivedB init()
+    {
+        DerivedB derived;
+        derived.base_x = 0;
+        derived.base_y = 1;
+        derived.base_z = 2;
+        derived.derived_b = 4;
+        return derived;
+    }
+};
+
 template <>
 struct TestData<DerivedC>
 {
@@ -184,10 +231,11 @@ struct TestData<DerivedC>
         derived.derived_a = 3;
         derived.derived_b = 4;
         derived.derived_c = 5;
+        return derived;
     }
 };
 TEST_DATA(Virtual, {});
-TEST_DATA(Templated<double>, {});
+TEST_DATA(Templated<double>, {0.0, 1.0, 2.0});
 
 #ifdef HAVE_OPENCV
 TEST_DATA(cv::Vec2f, {2, 3});
@@ -215,9 +263,15 @@ using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       TestB,
                                       TestC,
                                       TestVec,
+                                      DerivedA,
+                                      DerivedB,
+                                      DerivedC,
                                       PrivateMutableAccess,
                                       InternallyReflected,
                                       PrivateGetAndSet,
+                                      MultipleInheritance,
+                                      ExplicitThisProperty,
+                                      Virtual,
                                       std::vector<ReflectedStruct>,
                                       std::map<std::string, Inherited>
 #ifdef HAVE_OPENCV
@@ -249,11 +303,3 @@ struct ToTestTypes<ct::VariadicTypedef<Ts...>>
 {
     using type = ::testing::Types<Ts...>;
 };
-
-namespace ct
-{
-#ifdef HAVE_OPENCV
-    DECL_NAME(cv::Rect, Rect);
-    DECL_NAME(cv::Rect2f, Rectf);
-#endif
-}

@@ -10,6 +10,7 @@
         #define CTCONSTEXPR const
     #else
         #define CTCONSTEXPR constexpr
+        #define CT_CONSTEXPR_NAME
     #endif
 
 #else
@@ -30,8 +31,7 @@
             // There is a known bug where PRETTY_FUNCTION is not constexpr between 5.4 and 8.3
             #if __GNUC__ >= 5 && __GNUC__ < 8
                 #define CT_CONSTEXPR_NAME CTCONSTEXPR
-                #define CT_HAVE_CONSTEXPR_NAME
-
+                //#define CT_HAVE_CONSTEXPR_NAME
             #else
                 #define CT_CONSTEXPR_NAME
             #endif
@@ -43,9 +43,11 @@
     #endif // _MSC_VER
 
 #endif // __CUDA_ACC__
+
 #ifndef CT_FUNCTION_NAME
 #define CT_FUNCTION_NAME ""
 #endif
+
 #ifndef CT_CONSTEXPR_NAME
 #define CT_CONSTEXPR_NAME
 #endif
@@ -70,7 +72,6 @@
 #define CT_DEVICE_INLINE __inline__
 #endif
 #endif
-
 
 // clang-format on
 

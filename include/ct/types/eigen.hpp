@@ -7,7 +7,7 @@
 namespace ct
 {
     template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
-    struct Reflect<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
+    struct ReflectImpl<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
@@ -25,8 +25,8 @@ namespace ct
         static TArrayView<T> getDataMutable(DataType& mat) { return {mat.data(), ROWS * COLS}; }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &Reflect<DataType>::shape)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &ReflectImpl<DataType>::shape)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, colStride)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rowStride)
@@ -37,7 +37,7 @@ namespace ct
     };
 
     template <class T, int OPTS, int MAX_ROWS, int MAX_COLS>
-    struct Reflect<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
+    struct ReflectImpl<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
@@ -61,8 +61,8 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &Reflect<DataType>::getData, &Reflect<DataType>::getDataMutable)
-            PROPERTY(shape, &Reflect<DataType>::shape, &Reflect<DataType>::reshape)
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+            PROPERTY(shape, &ReflectImpl<DataType>::shape, &ReflectImpl<DataType>::reshape)
             PROPERTY(size)
             PROPERTY(colStride)
             PROPERTY(rowStride)
@@ -71,20 +71,54 @@ namespace ct
         REFLECT_INTERNAL_END;
         static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
+
+    template<typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    struct ReflectImpl<Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
+    {
+        static constexpr int SPECIALIZED = true;
+        using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
+        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+
+        static TArrayView<const T> getData(const DataType& arr)
+        {
+            return {arr.data(), static_cast<size_t>(arr.rows() * arr.cols())};
+        }
+
+        static TArrayView<T> getDataMutable(DataType& arr)
+        {
+            return {arr.data(), static_cast<size_t>(arr.rows() * arr.cols())};
+        }
+
+        REFLECT_STUB
+            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
+        REFLECT_INTERNAL_END;
+        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+    }; 
+
+    DECL_NAME(Eigen::MatrixXf);
+    DECL_NAME(Eigen::Matrix2f);
+    DECL_NAME(Eigen::Matrix3f);
+    DECL_NAME(Eigen::Matrix4f);
+
+    DECL_NAME(Eigen::MatrixXd);
+    DECL_NAME(Eigen::Matrix2d);
+    DECL_NAME(Eigen::Matrix3d);
+    DECL_NAME(Eigen::Matrix4d);
+
 } // namespace ct
 
 #ifdef _MSC_VER
 #include <ct/reflect/cerealize.hpp>
 namespace ct
 {
-	namespace cereal
-	{
+    namespace cereal
+    {
         template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
         struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
             : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
         {
         };
-	}
+    }
 }
 
 #endif

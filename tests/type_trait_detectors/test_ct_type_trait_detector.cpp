@@ -23,4 +23,5 @@ int main()
     static_assert(ct::StreamWritable<float>::value == true, "StreamWritable<float>");
 
     static_assert(ct::StreamWritable<NonWritable>::value == false, "StreamWritable<NonWritable>");
+
 }

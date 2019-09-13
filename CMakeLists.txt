@@ -7,16 +7,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 file(GLOB_RECURSE hdr "include/*.hpp")
 
-MACRO(SUBDIRLIST result curdir)
-    FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-    SET(dirlist "")
-    FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-        LIST(APPEND dirlist ${child})
-    ENDIF()
-    ENDFOREACH()
-    SET(${result} ${dirlist})
-ENDMACRO()
+include(cmake/subdir_list.cmake)
+
 
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)
@@ -27,16 +19,8 @@ if(NOT TARGET ct)
     include_directories(include)
     add_library(ct INTERFACE)
 
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
-        if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
-            target_compile_features(ct
-                INTERFACE cxx_return_type_deduction
-            )
-        else()
-            target_compile_options(ct INTERFACE "-std=c++1y")
-        endif()
-    endif()
+    include("${CMAKE_CURRENT_LIST_DIR}/cmake/platform.cmake")
+    setTargetPlatformFlags(ct)
 
     target_include_directories(ct
         INTERFACE
@@ -49,6 +33,7 @@ if(NOT TARGET ct)
     export(TARGETS ct
         FILE ct-targets.cmake
     )
+
     install(TARGETS ct 
           EXPORT ct
           DESTINATION lib
@@ -84,7 +69,7 @@ if(NOT TARGET ct)
                 add_definitions(-DHAVE_CEREAL)
             endif()
         else()
-            include_directories(${cereal_INCLUDE_DIR})
+            include_directories(SYSTEM ${cereal_INCLUDE_DIR})
             set(cereal_FOUND ON)
         endif()
 

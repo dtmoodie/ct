@@ -28,7 +28,7 @@ void registerType(ct::VariadicTypedefIterator<T>)
 }
 
 template <class T, class... ARGS>
-void registerType(ct::VariadicTypedefIterator<T, ARGS...> itr)
+auto registerType(ct::VariadicTypedefIterator<T, ARGS...> itr) -> ct::EnableIf<sizeof...(ARGS) >= 1>
 {
     ct::registerToPython<T>();
     registerType(++itr);

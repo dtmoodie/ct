@@ -2,7 +2,7 @@
 #define CT_REFLECT_TRAITS_HPP
 #include "enum.hpp"
 #include "reflect.hpp"
-
+#include "type_traits.hpp"
 namespace ct
 {
 
@@ -42,10 +42,24 @@ namespace ct
         using type = typename InferSetterType<SET_PTR>::type;
     };
 
-    template <class T>
-    struct IsReflected
+    template <class T, class E = void>
+    struct InternallyReflected : std::false_type
     {
-        constexpr static const bool value = Reflect<T>::SPECIALIZED;
+    };
+
+    template <class T>
+    struct InternallyReflected<T, Valid<decltype(T::NUM_FIELDS)>> : std::true_type
+    {
+    };
+
+    template <class T, class E>
+    struct IsReflected : InternallyReflected<T>
+    {
+    };
+
+    template <class T>
+    struct IsReflected<T, Valid<decltype(ReflectImpl<T>::SPECIALIZED)>> : std::true_type
+    {
     };
 
     template <class T, class U = void>
@@ -267,7 +281,7 @@ namespace ct
     struct GlobMemberObjects
     {
         using types = typename GlobMemberObjectsHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
-        constexpr static const auto num = LenVariadicTypedef<types>::value;
+        constexpr static const auto num = types::size();
     };
 
     template <class T, index_t I, class ENABLE = EnableIfIsWritable<T, I>>
@@ -301,7 +315,7 @@ namespace ct
     struct GlobWritable
     {
         using types = typename GlobWritableHelper<T, Reflect<T>::NUM_FIELDS - 1, void>::types;
-        constexpr static const auto num = LenVariadicTypedef<types>::value;
+        constexpr static const auto num = types::size();
     };
 
     template <index_t I, class T>
