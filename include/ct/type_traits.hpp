@@ -176,9 +176,10 @@ namespace ct
 
     template <class T>
     using decay_t = typename std::decay<T>::type;
-
+#ifndef NVCC
     template <class T>
     using remove_reference_t = typename std::remove_reference<T>::type;
+#endif
 
     template <class T>
     using remove_cv_t = typename std::remove_cv<T>::type;
