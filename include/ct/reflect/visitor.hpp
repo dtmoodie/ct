@@ -233,7 +233,7 @@ namespace ct
                         Indexer<I> idx,
                         ARGS&&... args) -> EnableIf<OPTS::visitMemberObject(static_cast<decltype(ptrs)*>(nullptr))>
         {
-            static_cast<DERIVED*>(this)->template visitMemberObject(obj, path, ptrs, idx, std::forward<ARGS>(args)...);
+            static_cast<DERIVED*>(this)->visitMemberObject(obj, path, ptrs, idx, std::forward<ARGS>(args)...);
         }
 
         template <class T, index_t I, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA, class... ARGS>
