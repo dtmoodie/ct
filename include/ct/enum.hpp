@@ -287,18 +287,24 @@ namespace ct
         }                                                                                                              \
         REFLECT_STUB
 
-#define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    CT_INLINE_VAR ct::EnumValue<EnumType, EnumValueType, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME = {};                \
-    static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
+#define ENUM_VALUE_(NAME, VALUE, N)                                                                                    \
+    CT_INLINE_VAR                                                                                                      \
+    ct::EnumValue<EnumType, EnumValueType, VALUE, N> NAME = {};                                                        \
+    static constexpr ct::EnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, N>> getPtr(ct::Indexer<N>)            \
     {                                                                                                                  \
-        return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                                                 \
+        return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, N>>(#NAME);                             \
     }
 
-#define ENUM(NAME)                                                                                                     \
-    static constexpr auto getPtr(ct::Indexer<__COUNTER__ - REFLECT_COUNT_START> idx)                                   \
+#define ENUM_VALUE(NAME, VALUE) ENUM_VALUE_(NAME, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START))
+
+#define ENUM_(NAME, N)                                                                                                 \
+    static constexpr ct::EnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>> getPtr(       \
+        ct::Indexer<N>)                                                                                                \
     {                                                                                                                  \
-        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME); \
+        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>>(#NAME);         \
     }
+
+#define ENUM(NAME) ENUM_(NAME, __COUNTER__ - REFLECT_COUNT_START)
 
 #define ENUM_END                                                                                                       \
     static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
