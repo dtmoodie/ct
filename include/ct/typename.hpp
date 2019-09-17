@@ -1,6 +1,8 @@
 #ifndef CT_TYPENAME_HPP
 #define CT_TYPENAME_HPP
+#ifdef CT_HAVE_CONSTEXPR_NAME
 #include "CompileTimeString.hpp"
+#endif
 #include "StringView.hpp"
 #include "config.hpp"
 #include "macros.hpp"

@@ -5,7 +5,7 @@
 
 // clang-format off
 #ifdef __CUDA_ARCH__
-#include <cuda_runtime_api.h>
+    #include <cuda_runtime_api.h>
     #if CUDART_VERSION == 6500
         #define CTCONSTEXPR const
     #else
@@ -65,6 +65,9 @@
 #ifdef __CUDA_ARCH__
 #include <cuda_runtime_api.h>
 #define CT_DEVICE_INLINE __host__ __device__ __inline__
+#ifdef CT_HAVE_CONSTEXPR_NAME
+#undef CT_HAVE_CONSTEXPR_NAME
+#endif
 #else
 #ifdef _MSC_VER
 #define CT_DEVICE_INLINE inline
