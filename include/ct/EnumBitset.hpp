@@ -302,9 +302,10 @@ namespace ct
                                   static_cast<uint16_t>(VALUE),                                                        \
                                   static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)>                            \
         NAME = {};                                                                                                     \
-    static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
+    static constexpr ct::EnumField<ct::BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), NAME.index>> getPtr(        \
+        ct::Indexer<NAME.index>)                                                                                       \
     {                                                                                                                  \
-        return ct::makeEnumField<ct::BitsetIndex<EnumType, static_cast<uint8_t>(VALUE), NAME.index>>(#NAME);           \
+        return ct::makeEnumField<ct::BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), NAME.index>>(#NAME);          \
     }
 
 #else // ifndef __NVCC__

@@ -123,12 +123,6 @@ namespace ct
         return r0 | r1;
     }
 
-    template <class T, class U>
-    cv::Rect_<T> rectAs(const cv::Rect_<U>& r)
-    {
-        return r;
-    }
-
     REFLECT_TEMPLATED_START(cv::Rect_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
@@ -142,13 +136,6 @@ namespace ct
         MEMBER_FUNCTION(contains)
         MEMBER_FUNCTION(intersection, &intersection<Args...>)
         MEMBER_FUNCTION(union, &rectUnion<Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, long, &rectAs<long, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, float, &rectAs<float, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, double, &rectAs<double, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, uint8, &rectAs<uint8_t, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, char, &rectAs<int8_t, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, short, &rectAs<short, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, ushort, &rectAs<unsigned short, Args...>)
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Point_)
