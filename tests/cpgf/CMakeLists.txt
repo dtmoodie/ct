@@ -2,19 +2,19 @@ find_package(cpgf QUIET)
 
 if(cpgf_FOUND)
     find_package(OpenCV QUIET COMPONENTS core)
+
+    
+    add_executable(test_ct_cpgf main.cpp)
+    target_include_directories(test_ct_cpgf ${cpgf_INCLUDE_DIRS})
+    target_link_libraries(test_ct_cpgf ${cpgf_LIBRARY})
     if(OpenCV_FOUND)
-        add_definitions(-DHAVE_OPENCV)
-        include_directories(${OpenCV_INCLUDE_DIRS})
+        target_compile_definitions(test_ct_cpgf HAVE_OPENCV)
+        target_include_directories(test_ct_cpgf SYSTEM PRIVATE ${OpenCV_INCLUDE_DIRS})
     endif()
 
     find_package(Eigen3 QUIET)
     if(Eigen3_FOUND)
-        include_directories(${Eigen3_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
-        add_definitions(-DHAVE_EIGEN3)
+        target_include_directories(test_ct_cpgf SYSTEM PRIVATE ${Eigen3_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+        target_compile_definitions(test_ct_cpgf HAVE_EIGEN3)
     endif()
-
-
-    include_directories(${cpgf_INCLUDE_DIRS})
-    add_executable(test_ct_cpgf main.cpp)
-    target_link_libraries(test_ct_cpgf ${cpgf_LIBRARY})
 endif()

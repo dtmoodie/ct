@@ -2,6 +2,7 @@ file(GLOB hdr "*.hpp")
 
 add_executable(test_ct_static_checks ${hdr} static_checks.cpp)
 target_link_libraries(test_ct_static_checks ct gtest gtest_main)
+target_include_directories(test_ct_static_checks SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_static_checks PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_static_checks test_ct_static_checks)
 
@@ -20,11 +21,13 @@ endif()
 
 add_executable(test_ct_reflect_access ${hdr} access.cpp)
 target_link_libraries(test_ct_reflect_access ct gtest gtest_main)
+target_include_directories(test_ct_reflect_access SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_reflect_access PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_reflect_access test_ct_reflect_access)
 
 add_executable(test_ct_reflect_print ${hdr} print.cpp)
 target_link_libraries(test_ct_reflect_print ct gtest gtest_main)
+target_include_directories(test_ct_reflect_print SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_reflect_print PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_reflect_print test_ct_reflect_print)
 
@@ -34,6 +37,7 @@ endif()
 
 add_executable(test_ct_reflect_compare ${hdr} compare.cpp)
 target_link_libraries(test_ct_reflect_compare ct gtest gtest_main)
+target_include_directories(test_ct_reflect_compare SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_reflect_compare PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_reflect_compare test_ct_reflect_compare)
 
@@ -44,6 +48,7 @@ endif()
 if(cereal_FOUND)
     add_executable(test_ct_reflect_cerealize ${hdr} cerealize.cpp)
     target_link_libraries(test_ct_reflect_cerealize ct gtest gtest_main)
+    target_include_directories(test_ct_reflect_cerealize SYSTEM PRIVATE ${GTEST_INCLUDE})
     set_target_properties(test_ct_reflect_cerealize PROPERTIES FOLDER Tests/ct)
     add_test(test_ct_reflect_cerealize test_ct_reflect_cerealize)
     if(TARGET cereal)
@@ -56,16 +61,19 @@ endif()
 
 add_executable(test_ct_reflect_hash ${hdr} hash.cpp)
 target_link_libraries(test_ct_reflect_hash ct gtest gtest_main)
+target_include_directories(test_ct_reflect_hash SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_reflect_hash PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_reflect_hash test_ct_reflect_hash)
 
 add_executable(test_ct_data_table ${hdr} datatable.cpp)
 target_link_libraries(test_ct_data_table ct gtest gtest_main)
+target_include_directories(test_ct_data_table SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_data_table PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_data_table test_ct_data_table)
 
 add_executable(test_ct_get_name ${hdr} get_name.cpp)
 target_link_libraries(test_ct_get_name ct gtest gtest_main)
+target_include_directories(test_ct_get_name SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_get_name PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_get_name test_ct_get_name)
 
