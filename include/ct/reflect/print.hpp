@@ -334,6 +334,19 @@ namespace ct
         printEnums<T>(ios, ct::Reflect<T>::end());
     }
 
+    template <class T>
+    std::ostream& printEnum(std::ostream& os, T v)
+    {
+        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), std::is_base_of<ct::BitsetTag, T>::value))
+        {
+            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
+            {
+                os << "Invalid value";
+            }
+        }
+        return os;
+    }
+
 } // namespace ct
 
 #include <cstdint>
@@ -489,16 +502,11 @@ namespace std
     template <class T>
     ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
     {
-        if (!printEnumHelper(os, v, ct::Reflect<T>::end(), std::is_base_of<ct::BitsetTag, T>::value))
-        {
-            if (!printEnumHelper(os, v, ct::Reflect<T>::end(), true))
-            {
-                os << "Invalid value";
-            }
-        }
-        return os;
+        return ct::printEnum(os, v);
     }
 }
+
+#include <sstream>
 
 namespace ct
 {
@@ -525,5 +533,14 @@ namespace ct
     // Only really useful on clang
     template <class... TS>
     struct[[deprecated]] CompilerPrintTypes{};
+
+    template<class T>
+    ct::EnableIfIsEnum<T, std::string> toString(T val)
+    {
+        std::stringstream ss;
+        ct::printEnum(ss, val);
+        return std::move(ss).str();
+    }
 }
+
 #endif
