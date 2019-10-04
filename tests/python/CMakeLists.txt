@@ -27,6 +27,8 @@ if(HAVE_PYTHON)
         debug;${Boost_PYTHON_LIBRARY_DEBUG}
         ${PYTHON_LIBRARY}
         ct
+        gtest
+        gtest_main
     )
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
