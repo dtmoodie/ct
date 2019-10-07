@@ -12,10 +12,10 @@ using ssize_t = SSIZE_T;
 
 namespace ct
 {
-    template<class T>
+    template <class T>
     struct CharTable;
 
-    template<>
+    template <>
     struct CharTable<char>
     {
         static constexpr const char space = ' ';
@@ -23,7 +23,6 @@ namespace ct
         static constexpr const char last_non_whitespace = 126;
         static constexpr const char newline = '\n';
     };
-
 
     template <class T = char>
     struct BasicStringView
@@ -37,7 +36,7 @@ namespace ct
 
         constexpr BasicStringView(const T* data, size_t n);
         constexpr BasicStringView(const T* data);
-        constexpr BasicStringView() = default;
+        constexpr BasicStringView() {}
 
         constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
 
@@ -291,15 +290,19 @@ namespace ct
     template <class T>
     constexpr size_t BasicStringView<T>::find(BasicStringView substring, size_t n, size_t pos) const
     {
-        return substring.size() < size() ? (substr(pos, substring.size()) == substring ? (n == 0 ? pos : find(substring, n - 1, pos + 1))
-                                        : ((pos + substring.size()) == m_size ? npos : find(substring, n, pos + 1))) : npos;
+        return substring.size() < size()
+                   ? (substr(pos, substring.size()) == substring
+                          ? (n == 0 ? pos : find(substring, n - 1, pos + 1))
+                          : ((pos + substring.size()) == m_size ? npos : find(substring, n, pos + 1)))
+                   : npos;
     }
 
     template <class T>
     constexpr size_t BasicStringView<T>::findInRange(T lower, T upper, size_t n, size_t pos) const
     {
-        return m_data[pos] >= lower && m_data[pos] < upper ? (n == 0 ? pos : findInRange(lower, upper, n - 1, pos + 1))
-                                                           : (pos == m_size ? npos : findInRange(lower, upper, n, pos + 1));
+        return m_data[pos] >= lower && m_data[pos] < upper
+                   ? (n == 0 ? pos : findInRange(lower, upper, n - 1, pos + 1))
+                   : (pos == m_size ? npos : findInRange(lower, upper, n, pos + 1));
     }
 
     template <class T>
@@ -320,8 +323,9 @@ namespace ct
     constexpr size_t BasicStringView<T>::rfindImpl(BasicStringView substring, size_t n, size_t pos) const
     {
         return (pos == 0 ? ((substr(pos, substring.size()) == substring) ? (n == 0 ? pos : npos) : npos)
-                         : ((substr(pos, substring.size()) == substring) ? (n == 0 ? pos : rfindImpl(substring, n - 1, pos - 1))
-                                                     : rfindImpl(substring, n, pos - 1)));
+                         : ((substr(pos, substring.size()) == substring)
+                                ? (n == 0 ? pos : rfindImpl(substring, n - 1, pos - 1))
+                                : rfindImpl(substring, n, pos - 1)));
     }
 
     template <class T>
@@ -340,23 +344,24 @@ namespace ct
     constexpr size_t BasicStringView<T>::rfindInRangeImpl(T lower, T upper, size_t n, size_t pos) const
     {
         return (pos == 0 ? ((m_data[pos] >= lower && m_data[pos] < upper) ? (n == 0 ? pos : npos) : npos)
-                         : ((m_data[pos] >= lower && m_data[pos] < upper) ? (n == 0 ? pos : rfindInRangeImpl(lower, upper, n - 1, pos - 1))
-                                                     : rfindInRangeImpl(lower, upper, n, pos - 1)));
+                         : ((m_data[pos] >= lower && m_data[pos] < upper)
+                                ? (n == 0 ? pos : rfindInRangeImpl(lower, upper, n - 1, pos - 1))
+                                : rfindInRangeImpl(lower, upper, n, pos - 1)));
     }
 
-    template<class T>
+    template <class T>
     constexpr size_t BasicStringView<T>::rfindInRange(T lower, T upper, size_t n) const
     {
         return rfindInRangeImpl(lower, upper, n, m_size);
     }
 
-    template<class T>
+    template <class T>
     constexpr size_t BasicStringView<T>::findLastChar() const
     {
         return rfindInRange(CharTable<T>::first_non_whitespace, CharTable<T>::last_non_whitespace + 1);
     }
 
-    template<class T>
+    template <class T>
     constexpr BasicStringView<T> BasicStringView<T>::strip() const
     {
         return slice(findFirstChar(), findLastChar() + 1);
@@ -369,11 +374,11 @@ namespace ct
                                                                : count(character, pos + 1, cnt));
     }
 
-	template <class T>
+    template <class T>
     constexpr const T* BasicStringView<T>::cStr() const
-	{
+    {
         return m_data;
-	}
+    }
 
     template <class T>
     BasicStringView<T>::operator std::basic_string<T>() const
