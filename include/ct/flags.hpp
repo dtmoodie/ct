@@ -2,6 +2,7 @@
 #define CT_FLAGS_HPP
 #include "EnumBitset.hpp"
 #include "enum.hpp"
+#include "reflect_macros.hpp"
 #include "types.hpp"
 
 namespace ct

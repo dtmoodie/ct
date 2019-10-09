@@ -1,7 +1,10 @@
 #ifndef CT_REFLECT_MACROS_HPP
 #define CT_REFLECT_MACROS_HPP
 #include "macros.hpp"
-#include "reflect/metadata.hpp"
+/*#include "reflect/MemberFunctionPointer.hpp"
+#include "reflect/MemberObjectPointer.hpp"
+#include "reflect/MemberPropertyPointer.hpp"
+#include "reflect/metadata.hpp"*/
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
@@ -216,4 +219,119 @@
 #define REFLECT_END
 
 #endif
+
+#ifndef __NVCC__
+
+#define ENUM_START(NAME, TYPE)                                                                                         \
+    struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
+    {                                                                                                                  \
+        using EnumValueType = TYPE;                                                                                    \
+        using EnumType = NAME;                                                                                         \
+        constexpr NAME() {}                                                                                            \
+        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
+        template <TYPE V, uint16_t I>                                                                                  \
+        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
+        {                                                                                                              \
+        }                                                                                                              \
+        REFLECT_STUB
+
+#define ENUM_VALUE_(NAME, VALUE, N)                                                                                    \
+    CT_INLINE_VAR                                                                                                      \
+    ct::EnumValue<EnumType, EnumValueType, VALUE, N> NAME = {};                                                        \
+    static constexpr ct::EnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, N>> getPtr(ct::Indexer<N>)            \
+    {                                                                                                                  \
+        return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, N>>(#NAME);                             \
+    }
+
+#define ENUM_VALUE(NAME, VALUE) ENUM_VALUE_(NAME, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START))
+
+#define ENUM_(NAME, N)                                                                                                 \
+    static constexpr ct::EnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>> getPtr(       \
+        ct::Indexer<N>)                                                                                                \
+    {                                                                                                                  \
+        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>>(#NAME);         \
+    }
+
+#define ENUM(NAME) ENUM_(NAME, __COUNTER__ - REFLECT_COUNT_START)
+
+#define ENUM_END                                                                                                       \
+    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
+    }
+
+#else // defined(__NVCC__)
+
+#define ENUM_START(NAME, TYPE)                                                                                         \
+    struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
+    {                                                                                                                  \
+        using EnumValueType = TYPE;                                                                                    \
+        using EnumType = NAME;                                                                                         \
+        constexpr NAME() {}                                                                                            \
+        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
+        template <TYPE V, uint16_t I>                                                                                  \
+        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
+        {                                                                                                              \
+        }                                                                                                              \
+        REFLECT_STUB
+
+#define ENUM_VALUE(NAME, VALUE) static constexpr const EnumValueType NAME = VALUE;
+
+#define ENUM(NAME)
+
+#define ENUM_END                                                                                                       \
+    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
+    }
+#endif
+
+#ifndef __NVCC__
+
+#define BITSET_START(NAME)                                                                                             \
+    struct NAME : ct::EnumBitset<NAME>                                                                                 \
+    {                                                                                                                  \
+        using EnumValueType = uint64_t;                                                                                \
+        using EnumType = NAME;                                                                                         \
+        template <uint16_t V, uint16_t I>                                                                              \
+        using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
+        constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
+        template <uint16_t V, uint16_t I>                                                                              \
+        constexpr NAME(ct::BitsetIndex<NAME, V, I> v) : ct::EnumBitset<NAME>(v.toBitset())                             \
+        {                                                                                                              \
+        }                                                                                                              \
+        template <uint16_t V, uint16_t I>                                                                              \
+        NAME& operator=(ct::BitsetIndex<NAME, V, I> v)                                                                 \
+        {                                                                                                              \
+            ct::EnumBitset<NAME>::operator=(v);                                                                        \
+            return *this;                                                                                              \
+        }                                                                                                              \
+        REFLECT_STUB
+
+#define ENUM_BITVALUE(NAME, VALUE)                                                                                     \
+    CT_INLINE_VAR ct::BitsetIndex<EnumType,                                                                            \
+                                  static_cast<uint16_t>(VALUE),                                                        \
+                                  static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)>                            \
+        NAME = {};                                                                                                     \
+    static constexpr ct::EnumField<ct::BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), NAME.index>> getPtr(        \
+        ct::Indexer<NAME.index>)                                                                                       \
+    {                                                                                                                  \
+        return ct::makeEnumField<ct::BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), NAME.index>>(#NAME);          \
+    }
+
+#else // ifndef __NVCC__
+
+#define BITSET_START(NAME)                                                                                             \
+    struct NAME : ct::EnumBitset<NAME>                                                                                 \
+    {                                                                                                                  \
+        using EnumValueType = uint64_t;                                                                                \
+        using EnumType = NAME;                                                                                         \
+        template <uint8_t V, uint16_t I>                                                                               \
+        using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
+        constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
+        template <uint8_t V, uint16_t I>                                                                               \
+        constexpr NAME(ct::BitsetIndex<NAME, V, I> v) : ct::EnumBitset<NAME>(v.toBitset())                             \
+        {                                                                                                              \
+        }                                                                                                              \
+        REFLECT_STUB
+
+#define ENUM_BITVALUE(NAME, VALUE) static constexpr const EnumValueType NAME = static_cast<uint64_t>(1) << VALUE;
+#endif // ifndef __NVCC__
+
 #endif // CT_REFLECT_MACROS_HPP
