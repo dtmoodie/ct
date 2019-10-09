@@ -10,12 +10,12 @@
 
 namespace ct
 {
-    template <class VISITED>
-    struct Reflect<cv::Mat, VISITED, void>
+    template <>
+    struct ReflectImpl<cv::Mat>
     {
         static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getName() { return "cv::Mat"; }
 
         REFLECT_STUB
             PUBLIC_ACCESS(rows)
@@ -25,9 +25,8 @@ namespace ct
             MEMBER_FUNCTION(type)
             MEMBER_FUNCTION(depth)
             MEMBER_FUNCTION(channels)
-            MEMBER_FUNCTION(step1)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int R, int C>
@@ -58,7 +57,7 @@ namespace ct
             STATIC_FUNCTION(rows, &ReflectImpl<DataType>::rows)
             STATIC_FUNCTION(rows, &ReflectImpl<DataType>::cols)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T>
@@ -95,7 +94,7 @@ namespace ct
             MEMBER_FUNCTION(depth)
             MEMBER_FUNCTION(channels)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int R>
