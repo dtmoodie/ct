@@ -69,6 +69,7 @@ EXPECTED_NAME(cv::Point2f);
 EXPECTED_NAME(cv::Point);
 EXPECTED_NAME(cv::Point3f);
 EXPECTED_NAME(cv::Scalar);
+EXPECTED_NAME(cv::Mat);
 EXPECTED_NAME(cv::Mat_<float>);
 // clang-format off
 EXPECTED_NAME(cv::Mat_<cv::Vec<float, 3> >);
