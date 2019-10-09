@@ -33,7 +33,7 @@ namespace ct
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, cols)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rows)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int OPTS, int MAX_ROWS, int MAX_COLS>
@@ -69,10 +69,10 @@ namespace ct
             PROPERTY(cols)
             PROPERTY(rows)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
-    template<typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    template <typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
     struct ReflectImpl<Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
     {
         static constexpr int SPECIALIZED = true;
@@ -92,8 +92,8 @@ namespace ct
         REFLECT_STUB
             PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
-    }; 
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
+    };
 
     DECL_NAME(Eigen::MatrixXf);
     DECL_NAME(Eigen::Matrix2f);
