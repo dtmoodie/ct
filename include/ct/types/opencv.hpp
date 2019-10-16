@@ -131,10 +131,12 @@ namespace ct
         MEMBER_FUNCTION(topLeft, &DataType::tl)
         MEMBER_FUNCTION(bottomRight, &DataType::br)
         MEMBER_FUNCTION(area)
-        MEMBER_FUNCTION(empty)
         MEMBER_FUNCTION(contains)
         MEMBER_FUNCTION(intersection, &intersection<Args...>)
         MEMBER_FUNCTION(union, &rectUnion<Args...>)
+#if ((CV_VERSION_MAJOR == 3 && CV_VERSION_MINOR > 2) || CV_VERSION_MAJOR > 3)
+        MEMBER_FUNCTION(empty)
+#endif
     REFLECT_END;
 
     REFLECT_TEMPLATED_START(cv::Point_)
@@ -159,7 +161,9 @@ namespace ct
         PUBLIC_ACCESS(width)
         PUBLIC_ACCESS(height)
         MEMBER_FUNCTION(area)
+#if ((CV_VERSION_MAJOR == 3 && CV_VERSION_MINOR > 2) || CV_VERSION_MAJOR > 3)
         MEMBER_FUNCTION(empty)
+#endif
     REFLECT_END;
 
     DECL_NAME(cv::Point2f);
@@ -173,6 +177,6 @@ namespace ct
     // It makes no sense why the compiler wants cv::Vec<double, 4> instead of cv::Scalar_<double>.....
     using CvScalarVec = cv::Vec<double, 4>;
     DECL_NAME(CvScalarVec, cv::Scalar);
-}
+} // namespace ct
 
 #endif // CT_TYPES_HPP
