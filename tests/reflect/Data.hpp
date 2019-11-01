@@ -89,6 +89,7 @@ struct PrivateMutableAccess
     PrivateMutableAccess(float v = 0) : m_private_property(v) {}
     const float& getX() const { return m_private_property; }
     float& mutateX() { return m_private_property; }
+
   private:
     float m_private_property;
 };
@@ -104,6 +105,7 @@ struct PrivateGetAndSet
     PrivateGetAndSet(float v = 0.0) : x(v) {}
     const float& getX() const { return x; }
     void setX(const float val) { x = val; }
+
   private:
     float x;
 };
@@ -169,10 +171,11 @@ struct WeirdWeakOwnerShip
 
 struct InternallyReflected
 {
+    float sqNorm() const { return x * x + y * y + z * z; }
     REFLECT_INTERNAL_START(InternallyReflected)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
+        MEMBER_FUNCTION(sqNorm, static_cast<float (InternallyReflected::*)() const>(&InternallyReflected::sqNorm))
     REFLECT_INTERNAL_END;
 };
-
