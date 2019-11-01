@@ -167,15 +167,30 @@ struct WeirdWeakOwnerShip
     std::vector<PointerOwner> pointer_owners;
 };
 
-// Doesn't work with C++11 :/
+// The following two functions can be used to disambiguate a function, hopefully
+template <class T, class R, class... ARGS>
+constexpr R (T::*selectConstMemberFunctionPointer(R (T::*ptr)(ARGS...) const))(ARGS...) const
+{
+    return ptr;
+}
+
+template <class T, class R, class... ARGS>
+constexpr R (T::*selectMemberFunctionPointer(R (T::*ptr)(ARGS...)))(ARGS...)
+{
+    return ptr;
+}
 
 struct InternallyReflected
 {
-    float sqNorm() const { return x * x + y * y + z * z; }
+    float foo() const { return 0; }
+    float foo(float v) const { return v; }
+
     REFLECT_INTERNAL_START(InternallyReflected)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
-        MEMBER_FUNCTION(sqNorm, static_cast<float (InternallyReflected::*)() const>(&InternallyReflected::sqNorm))
+        MEMBER_FUNCTION(foo, selectConstMemberFunctionPointer<InternallyReflected, float>(&InternallyReflected::foo))
+        MEMBER_FUNCTION(foo,
+                        selectConstMemberFunctionPointer<InternallyReflected, float, float>(&InternallyReflected::foo))
     REFLECT_INTERNAL_END;
 };
