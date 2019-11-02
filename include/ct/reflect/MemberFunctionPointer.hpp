@@ -5,8 +5,8 @@
 #include "../VariadicTypedef.hpp"
 #include "../bind.hpp"
 #include "../flags.hpp"
-#include "../types.hpp"
 #include "../static_asserts.hpp"
+#include "../types.hpp"
 
 #include "pointer_traits.hpp"
 
@@ -196,7 +196,7 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
-        constexpr StringView  getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -242,7 +242,7 @@ namespace ct
             return std::get<I>(m_ptrs).bind(obj);
         }
 
-        constexpr StringView  getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -313,7 +313,7 @@ namespace ct
         }
 
         METADATA getMetadata() const { return m_metadata; }
-        constexpr StringView  getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -345,7 +345,7 @@ namespace ct
         {
             return std::get<I>(m_ptrs).invoke(std::forward<ARGS>(args)...);
         }
-        constexpr StringView  getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
         template <index_t I>
         constexpr auto getPtr() const -> decltype(std::get<I>(m_ptrs))
         {
@@ -380,6 +380,24 @@ namespace ct
     {
         return StaticFunctions<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
-}
+    // The following two functions can be used to disambiguate a function, hopefully
+    template <class T, class R, class... ARGS>
+    constexpr R (T::*selectConstMemberFunctionPointer(R (T::*ptr)(ARGS...) const))(ARGS...) const
+    {
+        return ptr;
+    }
+
+    template <class T, class R, class... ARGS>
+    constexpr R (T::*selectMemberFunctionPointer(R (T::*ptr)(ARGS...)))(ARGS...)
+    {
+        return ptr;
+    }
+
+    template <class T, class R, class... ARGS>
+    constexpr R (*selectFunctionPointer(R (*ptr)(ARGS...)))(ARGS...)
+    {
+        return ptr;
+    }
+} // namespace ct
 
 #endif // CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
