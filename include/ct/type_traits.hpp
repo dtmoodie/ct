@@ -107,6 +107,12 @@ namespace ct
     template <class... T>
     using Valid = typename Validator<T...>::type;
 
+    template <class... T>
+    using EnableIfValid = EnableIf<std::is_same<Valid<T...>, void>::value>;
+
+    template <class... T>
+    using DisableIfValid = EnableIf<!std::is_same<Valid<T...>, void>::value>;
+
     DEFINE_HAS_STATIC_FUNCTION(Has_name, getName, ct::StringView);
 
     template <class T, class E = void>
@@ -222,5 +228,5 @@ namespace ct
       public:
         static const bool value = sizeof(test<T>(0)) == sizeof(yes);
     };
-}
+} // namespace ct
 #endif // CT_TYPE_TRAITS_HPP

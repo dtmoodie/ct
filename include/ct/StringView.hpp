@@ -1,8 +1,8 @@
 #ifndef CT_STRING_VIEW_HPP
 #define CT_STRING_VIEW_HPP
-#include <array>
 #include <cstddef>
 #include <ostream>
+#include <stdexcept>
 #include <type_traits>
 
 #if defined(_MSC_VER)
@@ -108,7 +108,7 @@ namespace ct
         constexpr size_t findDeliminator(const char* str, size_t len, char del);
 
         constexpr size_t findLast(const char* str, size_t len, char Del);
-    }
+    } // namespace detail
 
     template <class T>
     inline std::ostream& operator<<(std::ostream& os, const BasicStringView<T>& view)
@@ -185,20 +185,18 @@ namespace ct
 
     constexpr int stoiImplRange(const char* str, const char* end, int value = 0, bool negative = false)
     {
-        return str != end
-                   ? isDigit(*str) ? stoiImplRange(str + 1, end, (*str - '0') + value * 10, negative)
-                                   : *str == '-' ? stoiImplRange(str + 1, end, value, true)
-                                                 : throw std::runtime_error("compile-time-error: not a digit")
-                   : negative ? -value : value;
+        return str != end ? isDigit(*str) ? stoiImplRange(str + 1, end, (*str - '0') + value * 10, negative)
+                                          : *str == '-' ? stoiImplRange(str + 1, end, value, true)
+                                                        : throw std::runtime_error("compile-time-error: not a digit")
+                          : negative ? -value : value;
     }
 
     constexpr int stoiImpl(const char* str, int value = 0, bool negative = false)
     {
-        return *str
-                   ? isDigit(*str) ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
-                                   : *str == '-' ? stoiImpl(str + 1, value, true)
-                                                 : throw std::runtime_error("compile-time-error: not a digit")
-                   : value;
+        return *str ? isDigit(*str) ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
+                                    : *str == '-' ? stoiImpl(str + 1, value, true)
+                                                  : throw std::runtime_error("compile-time-error: not a digit")
+                    : value;
     }
 
     constexpr int stoi(const char* str) { return stoiImpl(str); }
@@ -236,7 +234,7 @@ namespace ct
         {
             return str[len] == Del ? len : len == 0 ? 0 : findLast(str, len - 1, Del);
         }
-    }
+    } // namespace detail
 
     template <class T>
     BasicStringView<T>::BasicStringView(const std::basic_string<T>& str) : m_data(str.c_str()), m_size(str.size())
@@ -370,8 +368,9 @@ namespace ct
     template <class T>
     constexpr size_t BasicStringView<T>::count(T character, size_t pos, size_t cnt) const
     {
-        return pos == m_size ? cnt : (m_data[pos] == character ? count(character, pos + 1, cnt + 1)
-                                                               : count(character, pos + 1, cnt));
+        return pos == m_size
+                   ? cnt
+                   : (m_data[pos] == character ? count(character, pos + 1, cnt + 1) : count(character, pos + 1, cnt));
     }
 
     template <class T>

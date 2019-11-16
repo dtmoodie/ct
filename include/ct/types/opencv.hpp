@@ -13,7 +13,6 @@ namespace ct
     template <>
     struct ReflectImpl<cv::Mat>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
         static constexpr StringView getName() { return "cv::Mat"; }
 
@@ -32,7 +31,6 @@ namespace ct
     template <class T, int R, int C>
     struct ReflectImpl<cv::Matx<T, R, C>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static constexpr int rows() { return R; }
@@ -63,7 +61,6 @@ namespace ct
     template <class T>
     struct ReflectImpl<cv::Mat_<T>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
@@ -100,7 +97,6 @@ namespace ct
     template <class T, int R>
     struct ReflectImpl<cv::Vec<T, R>> : public ReflectImpl<cv::Matx<T, R, 1>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
     };
@@ -122,7 +118,7 @@ namespace ct
         return r0 | r1;
     }
 
-    REFLECT_TEMPLATED_START(cv::Rect_)
+    REFLECT_TEMPLATED_BEGIN(cv::Rect_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(width)
@@ -139,7 +135,7 @@ namespace ct
 #endif
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Point_)
+    REFLECT_TEMPLATED_BEGIN(cv::Point_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         MEMBER_FUNCTION(dot)
@@ -148,7 +144,7 @@ namespace ct
         MEMBER_FUNCTION(inside)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Point3_)
+    REFLECT_TEMPLATED_BEGIN(cv::Point3_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
@@ -157,7 +153,7 @@ namespace ct
         MEMBER_FUNCTION(cross)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Size_)
+    REFLECT_TEMPLATED_BEGIN(cv::Size_)
         PUBLIC_ACCESS(width)
         PUBLIC_ACCESS(height)
         MEMBER_FUNCTION(area)

@@ -29,14 +29,15 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-BITSET_START(Bitset)
-    ENUM_BITVALUE(v0, 0)
-    ENUM_BITVALUE(v1, 1)
-    ENUM_BITVALUE(v2, 2)
-    ENUM_BITVALUE(v3, 3)
-    ENUM_BITVALUE(v4, 4)
-    ENUM_BITVALUE(v5, 5)
-ENUM_END;
+BITSET_BEGIN(Bitset)
+ENUM_BITVALUE(v0, 0)
+ENUM_BITVALUE(v1, 1)
+ENUM_BITVALUE(v2, 2)
+ENUM_BITVALUE(v3, 3)
+ENUM_BITVALUE(v4, 4)
+ENUM_BITVALUE(v5, 5)
+ENUM_END
+;
 
 template <uint64_t V>
 void bitsetFoo(const std::string& expected)
