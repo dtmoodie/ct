@@ -64,11 +64,9 @@ struct DerivedC : virtual public DerivedA, virtual public DerivedB
 struct Wrapper
 {
     REFLECT_INTERNAL_BEGIN(Wrapper)
-    REFLECT_INTERNAL_MEMBER(float, val)
-REFLECT_INTERNAL_END
-;
-}
-;
+        REFLECT_INTERNAL_MEMBER(float, val)
+    REFLECT_INTERNAL_END;
+};
 
 struct TestB
 {
@@ -124,12 +122,10 @@ struct Virtual
 {
     virtual ~Virtual();
     REFLECT_INTERNAL_BEGIN(Virtual)
-    MEMBER_FUNCTION(foo)
-REFLECT_INTERNAL_END
-;
-virtual void foo();
-}
-;
+        MEMBER_FUNCTION(foo)
+    REFLECT_INTERNAL_END;
+    virtual void foo();
+};
 
 Virtual::~Virtual() {}
 void Virtual::foo() {}
@@ -177,13 +173,12 @@ struct InternallyReflected
     float foo(float v) const { return v; }
 
     REFLECT_INTERNAL_BEGIN(InternallyReflected)
-    REFLECT_INTERNAL_MEMBER(float, x)
-    REFLECT_INTERNAL_MEMBER(float, y)
-    REFLECT_INTERNAL_MEMBER(float, z)
-    MEMBER_FUNCTION(foo, ct::selectConstMemberFunctionPointer<InternallyReflected, float>(&InternallyReflected::foo))
-    MEMBER_FUNCTION(foo,
-                    ct::selectConstMemberFunctionPointer<InternallyReflected, float, float>(&InternallyReflected::foo))
-REFLECT_INTERNAL_END
-;
-}
-;
+        REFLECT_INTERNAL_MEMBER(float, x)
+        REFLECT_INTERNAL_MEMBER(float, y)
+        REFLECT_INTERNAL_MEMBER(float, z)
+        MEMBER_FUNCTION(foo,
+                        ct::selectConstMemberFunctionPointer<InternallyReflected, float>(&InternallyReflected::foo))
+        MEMBER_FUNCTION(
+            foo, ct::selectConstMemberFunctionPointer<InternallyReflected, float, float>(&InternallyReflected::foo))
+    REFLECT_INTERNAL_END;
+};
