@@ -10,15 +10,20 @@
     TYPE NAME;                                                                                                         \
                                                                                                                        \
   public:                                                                                                              \
-    PUBLIC_ACCESS(NAME)
+    constexpr static ct::MemberObjectPointer<TYPE DataType::*, ct::Flags::READABLE | ct::Flags::WRITABLE> getPtr(      \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
+    {                                                                                                                  \
+        return ct::makeMemberObjectPointer(#NAME, &DataType::NAME);                                                    \
+    }
 
 #define REFLECT_INTERNAL_MEMBER_3(TYPE, NAME, INIT)                                                                    \
     TYPE NAME = INIT;                                                                                                  \
                                                                                                                        \
   private:                                                                                                             \
     static inline TYPE init_##NAME() { return INIT; }                                                                  \
+                                                                                                                       \
   public:                                                                                                              \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
             #NAME, &DataType::NAME, ct::makeInitializer(&DataType::init_##NAME, #INIT));                               \
@@ -29,8 +34,9 @@
                                                                                                                        \
   private:                                                                                                             \
     static inline TYPE init_##NAME() { return INIT; }                                                                  \
+                                                                                                                       \
   public:                                                                                                              \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(                                                                            \
             #NAME, &DataType::NAME, ct::makePack(ct::makeInitializer(&DataType::init_##NAME, #INIT), METADATA));       \
@@ -43,16 +49,13 @@
 #define REFLECT_INTERNAL_MEMBER(...) CT_PP_OVERLOAD(REFLECT_INTERNAL_MEMBER_, __VA_ARGS__)(__VA_ARGS__)
 #endif
 
-#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_START = __COUNTER__ + 1;
-
-#ifndef __NVCC__
+#define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_BEGIN = __COUNTER__ + 1;
 
 #define REFLECT_BEGIN(TYPE)                                                                                            \
     template <>                                                                                                        \
     struct ReflectImpl<TYPE>                                                                                           \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
-        static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr ct::StringView getName() { return #TYPE; }                                                    \
         REFLECT_STUB
 
@@ -62,20 +65,18 @@
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
-        static constexpr const bool SPECIALIZED = true;                                                                \
         static constexpr ct::StringView getName() { return #TYPE; }                                                    \
         REFLECT_STUB
 
-#define REFLECT_TEMPLATED_START(TYPE)                                                                                  \
+#define REFLECT_TEMPLATED_BEGIN(TYPE)                                                                                  \
     template <class... Args>                                                                                           \
     struct ReflectImpl<TYPE<Args...>>                                                                                  \
     {                                                                                                                  \
         using DataType = TYPE<Args...>;                                                                                \
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
-        static constexpr const bool SPECIALIZED = true;                                                                \
         REFLECT_STUB
 
-#define REFLECT_INTERNAL_START(TYPE)                                                                                   \
+#define REFLECT_INTERNAL_BEGIN(TYPE)                                                                                   \
     REFLECT_STUB                                                                                                       \
         using DataType = TYPE;                                                                                         \
         static constexpr ct::StringView getName() { return #TYPE; }
@@ -90,31 +91,32 @@
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;
 
 #define PUBLIC_ACCESS(NAME)                                                                                            \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+        ->decltype(ct::makeMemberObjectPointer(#NAME, &DataType::NAME))                                                \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(#NAME, &DataType::NAME);                                                    \
     }
 
 #define PUBLIC_ACCESS_WITH_METADATA(NAME, METADATA)                                                                    \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberObjectPointer(#NAME, &DataType::NAME, METADATA);                                          \
     }
 
 #define PROPERTY_1(NAME)                                                                                               \
-    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, &DataType::NAME, nullptr);                                         \
     }
 
 #define PROPERTY_2(NAME, GETTER)                                                                                       \
-    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, GETTER, nullptr);                                                  \
     }
 
 #define PROPERTY_3(NAME, GETTER, SETTER)                                                                               \
-    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                   \
     }
@@ -126,19 +128,19 @@
 #endif
 
 #define PROPERTY_WITH_FLAG_1(FLAG, NAME)                                                                               \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, &DataType::NAME, nullptr);                                   \
     }
 
 #define PROPERTY_WITH_FLAG_2(FLAG, NAME, GETTER)                                                                       \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, nullptr);                                            \
     }
 
 #define PROPERTY_WITH_FLAG_3(FLAG, NAME, GETTER, SETTER)                                                               \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
@@ -152,13 +154,13 @@
 #endif
 
 #define MEMBER_FUNCTION_1(NAME)                                                                                        \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType>(#NAME, &DataType::NAME);                                       \
     }
 
 #define MEMBER_FUNCTION_N(NAME, ...)                                                                                   \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
@@ -179,50 +181,33 @@
 #endif
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
 #define STATIC_FUNCTION(NAME, ...)                                                                                     \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeStaticFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
 
 #define STATIC_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_START>)                                 \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
 
-#define REFLECT_INTERNAL_END static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START
+#define REFLECT_INTERNAL_END static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_BEGIN
 
 #define REFLECT_END                                                                                                    \
     REFLECT_INTERNAL_END                                                                                               \
     ;                                                                                                                  \
     }
 
-#else
-
-#define REFLECT_BEGIN(TYPE)
-#define REFLECT_DERIVED(TYPE, ...)
-#define REFLECT_TEMPLATED_START(TYPE)
-#define REFLECT_INTERNAL_START
-#define REFLECT_INTERNAL_DERIVED(...)
-#define PUBLIC_ACCESS(NAME)
-#define PROPERTY(NAME, GETTER, SETTER)
-#define PROPERTY_WITH_FLAG(FLAG, NAME, GETTER, SETTER)
-#define MEMBER_FUNCTION(NAME, ...)
-#define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)
-#define REFLECT_INTERNAL_END ;
-#define REFLECT_END
-
-#endif
-
 #ifndef __NVCC__
 
-#define ENUM_START(NAME, TYPE)                                                                                         \
+#define ENUM_BEGIN(NAME, TYPE)                                                                                         \
     struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
     {                                                                                                                  \
         using EnumValueType = TYPE;                                                                                    \
@@ -243,7 +228,7 @@
         return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, N>>(#NAME);                             \
     }
 
-#define ENUM_VALUE(NAME, VALUE) ENUM_VALUE_(NAME, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START))
+#define ENUM_VALUE(NAME, VALUE) ENUM_VALUE_(NAME, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_BEGIN))
 
 #define ENUM_(NAME, N)                                                                                                 \
     static constexpr ct::EnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>> getPtr(       \
@@ -252,15 +237,15 @@
         return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, N>>(#NAME);         \
     }
 
-#define ENUM(NAME) ENUM_(NAME, __COUNTER__ - REFLECT_COUNT_START)
+#define ENUM(NAME) ENUM_(NAME, __COUNTER__ - REFLECT_COUNT_BEGIN)
 
 #define ENUM_END                                                                                                       \
-    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
+    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_BEGIN;                                 \
     }
 
 #else // defined(__NVCC__)
 
-#define ENUM_START(NAME, TYPE)                                                                                         \
+#define ENUM_BEGIN(NAME, TYPE)                                                                                         \
     struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
     {                                                                                                                  \
         using EnumValueType = TYPE;                                                                                    \
@@ -278,13 +263,13 @@
 #define ENUM(NAME)
 
 #define ENUM_END                                                                                                       \
-    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
+    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_BEGIN;                                 \
     }
 #endif
 
 #ifndef __NVCC__
 
-#define BITSET_START(NAME)                                                                                             \
+#define BITSET_BEGIN(NAME)                                                                                             \
     struct NAME : ct::EnumBitset<NAME>                                                                                 \
     {                                                                                                                  \
         using EnumValueType = uint64_t;                                                                                \
@@ -305,10 +290,9 @@
         REFLECT_STUB
 
 #define ENUM_BITVALUE(NAME, VALUE)                                                                                     \
-    CT_INLINE_VAR ct::BitsetIndex<EnumType,                                                                            \
-                                  static_cast<uint16_t>(VALUE),                                                        \
-                                  static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)>                            \
-        NAME = {};                                                                                                     \
+    CT_INLINE_VAR ct::                                                                                                 \
+        BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_BEGIN)>  \
+            NAME = {};                                                                                                 \
     static constexpr ct::EnumField<ct::BitsetIndex<EnumType, static_cast<uint16_t>(VALUE), NAME.index>> getPtr(        \
         ct::Indexer<NAME.index>)                                                                                       \
     {                                                                                                                  \
@@ -317,7 +301,7 @@
 
 #else // ifndef __NVCC__
 
-#define BITSET_START(NAME)                                                                                             \
+#define BITSET_BEGIN(NAME)                                                                                             \
     struct NAME : ct::EnumBitset<NAME>                                                                                 \
     {                                                                                                                  \
         using EnumValueType = uint64_t;                                                                                \

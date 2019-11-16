@@ -58,7 +58,7 @@ namespace ct
     };
 
     template <class T>
-    struct IsReflected<T, Valid<decltype(ReflectImpl<T>::SPECIALIZED)>> : std::true_type
+    struct IsReflected<T, Valid<decltype(ReflectImpl<T>::NUM_FIELDS)>> : std::true_type
     {
     };
 

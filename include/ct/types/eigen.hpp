@@ -9,7 +9,6 @@ namespace ct
     template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
     struct ReflectImpl<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -39,7 +38,6 @@ namespace ct
     template <class T, int OPTS, int MAX_ROWS, int MAX_COLS>
     struct ReflectImpl<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -75,7 +73,6 @@ namespace ct
     template <typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
     struct ReflectImpl<Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -118,8 +115,8 @@ namespace ct
             : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
         {
         };
-    }
-}
+    } // namespace cereal
+} // namespace ct
 
 #endif
 

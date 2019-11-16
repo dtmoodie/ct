@@ -7,14 +7,14 @@
 
 struct MyClass
 {
-    ENUM_START(MyEnum, uint32_t)
+    ENUM_BEGIN(MyEnum, uint32_t)
         ENUM_VALUE(kVALUE0, 1)
         ENUM_VALUE(kVALUE1, 2)
         ENUM_VALUE(kVALUE2, 3)
         ENUM_VALUE(kVALUE3, 4)
     ENUM_END;
 
-    ENUM_START(SecondEnum, uint8_t)
+    ENUM_BEGIN(SecondEnum, uint8_t)
         ENUM_VALUE(kBGR, 0)
         ENUM_VALUE(kRGB, kBGR + 1)
         ENUM_VALUE(kHSV, kRGB + 1)
@@ -22,13 +22,13 @@ struct MyClass
         ENUM_VALUE(kHSL, kYUV + 1)
     ENUM_END;
 
-    BITSET_START(BitwiseEnum)
+    BITSET_BEGIN(BitwiseEnum)
         ENUM_BITVALUE(kVALUE0, 0)
         ENUM_BITVALUE(kVALUE1, 1)
         ENUM_BITVALUE(kVALUE2, 2)
     ENUM_END;
 
-    ENUM_START(MixedBitwise, uint64_t)
+    ENUM_BEGIN(MixedBitwise, uint64_t)
         ENUM_VALUE(kVALUE0, 1)
         ENUM_VALUE(kVALUE1, 2)
         ENUM_VALUE(kVALUE2, 3)
@@ -63,7 +63,6 @@ namespace ct
     template <>
     struct ReflectImpl<MyClass::StandardEnum>
     {
-        static constexpr const bool SPECIALIZED = true;
         static constexpr auto getPtr(ct::Indexer<0>)
         {
             return ct::makeEnumField<ct::EnumValue<MyClass::StandardEnum, uint32_t, MyClass::StandardEnum::k0, 0>>(
@@ -91,5 +90,5 @@ namespace ct
         ENUM(kASDF)
         ENUM(k1234)
     REFLECT_END;
-}
+} // namespace ct
 #endif

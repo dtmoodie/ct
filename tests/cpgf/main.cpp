@@ -1,6 +1,6 @@
-#include <ct/interop/cpgf.hpp>
 #include "../reflect/common.hpp"
 #include "cpgf/goutmain.h"
+#include <ct/interop/cpgf.hpp>
 #ifdef HAVE_OPENCV
 #include <ct/types/opencv.hpp>
 #endif
@@ -17,19 +17,18 @@ namespace ct
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAXROWS, MAXCOLS>;
         using Base = VariadicTypedef<void>;
 
-        static constexpr int SPECIALIZED = true;
         static constexpr index_t I0 = 0;
-        static constexpr const index_t REFLECT_COUNT_START = __COUNTER__;
+        static constexpr const index_t REFLECT_COUNT_BEGIN = __COUNTER__;
 
-        static constexpr const char* getName(){return "Eigen::Matrix<T, ROWS, COLS, OPTS, MAXROWS, MAXCOLS>";}
+        static constexpr const char* getName() { return "Eigen::Matrix<T, ROWS, COLS, OPTS, MAXROWS, MAXCOLS>"; }
 
         MEMBER_FUNCTION(data,
-                        static_cast<const T*(DataType::*)()const>(&DataType::data),
-                        static_cast<T*(DataType::*)()>(&DataType::data))
+                        static_cast<const T* (DataType::*)() const>(&DataType::data),
+                        static_cast<T* (DataType::*)()>(&DataType::data))
         MEMBER_FUNCTION(rows)
         MEMBER_FUNCTION(cols)
-    REFLECT_END;
-
+REFLECT_END
+;
 }
 
 G_AUTO_RUN_BEFORE_MAIN()
@@ -51,16 +50,15 @@ G_AUTO_RUN_BEFORE_MAIN()
 #ifdef HAVE_EIGEN3
     ct::registerReflectedClass<Eigen::Matrix2f>("Eigen::Matrix2f");
 #endif
-
 }
 
-template<class T>
+template <class T>
 void test()
 {
     using namespace cpgf;
     auto type = createMetaType<T>();
     auto cls = findMetaClass(type);
-    if(cls)
+    if (cls)
     {
         std::cout << cls << std::endl;
     }

@@ -10,28 +10,27 @@ using namespace ct;
 
 namespace ct
 {
-template<class T, class A>
-bool operator ==(const ct::TArrayView<T>& view, const std::vector<T, A>& vec)
-{
-    if(view.size() != vec.size())
+    template <class T, class A>
+    bool operator==(const ct::TArrayView<T>& view, const std::vector<T, A>& vec)
     {
-        return false;
-    }
-    if(view.data() == vec.data())
-    {
-        return true;
-    }
-    for(size_t i = 0; i < view.size(); ++i)
-    {
-        if(view[i] != vec[i])
+        if (view.size() != vec.size())
         {
             return false;
         }
+        if (view.data() == vec.data())
+        {
+            return true;
+        }
+        for (size_t i = 0; i < view.size(); ++i)
+        {
+            if (view[i] != vec[i])
+            {
+                return false;
+            }
+        }
+        return true;
     }
-    return true;
-}
-}
-
+} // namespace ct
 
 struct TimeIt
 {
@@ -52,7 +51,7 @@ struct TimeIt
 
 struct DynStruct
 {
-    REFLECT_INTERNAL_START(DynStruct)
+    REFLECT_INTERNAL_BEGIN(DynStruct)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, w)
@@ -70,7 +69,7 @@ struct DerivedDynStruct : public DynStruct
 
 // We intentionally use a IDataTable of the base struct here to ensure
 // We can still interact with a table of the derived type
-template<class T>
+template <class T>
 void tableViewer(const ext::IDataTable<T>& table)
 {
     std::cout << table << std::endl;
@@ -190,7 +189,6 @@ TEST(datatable, push)
     }
 }
 
-
 TEST(datatable, dyn_array_init)
 {
     std::vector<float> embeddings;
@@ -279,7 +277,6 @@ TEST(datatable, array_view)
         EXPECT_EQ(elem.embeddings, embeddings);
     }
 }
-
 
 struct DataTablePerformance : ::testing::TestWithParam<size_t>
 {
@@ -371,12 +368,12 @@ void DataTablePerformance::testSearch()
                 break;
             }
         }
-        if(i == size)
+        if (i == size)
         {
             std::cout << table[idx];
         }
         ASSERT_NE(i, size) << " did not find expected value in vec of structs";
-        if(i != idx)
+        if (i != idx)
         {
             EXPECT_EQ(vec_of_structs[idx], val);
         }
@@ -395,12 +392,12 @@ void DataTablePerformance::testSearch()
             }
             ++i;
         }
-        if(i == size)
+        if (i == size)
         {
             std::cout << table[idx];
         }
         ASSERT_NE(i, size) << " did not find expected value in the table";
-        if(i != idx)
+        if (i != idx)
         {
             EXPECT_EQ(table[idx], val);
         }
@@ -409,97 +406,15 @@ void DataTablePerformance::testSearch()
         << " vec of structs was faster while searching for a value at index " << idx;
 }
 
-
 TEST_P(DataTablePerformance, search_performance)
 {
     testSearch();
 }
 
-INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(18, 22, 26));
+INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(10, 14, 18));
 
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
-
-    /*for (size_t i = 20; i < 18; i += 4)
-    {
-        // compare performance to vector of structs
-        std::vector<TestB> vec_of_structs;
-        const size_t size = 1ULL << i;
-        const auto search_value = float(1ULL << (i - 1));
-        std::cout << "Testing with " << size << " elements" << std::endl;
-        {
-            TimeIt time;
-            vec_of_structs.reserve(size);
-            for (size_t i = 0; i < size; ++i)
-            {
-                vec_of_structs.push_back({float(i), float(i * 2), float(i * 3)});
-            }
-            std::cout << "Filling vec of structs took ";
-        }
-
-        ct::ext::DataTable<TestB> table;
-        {
-            TimeIt time;
-            table.reserve(vec_of_structs.size());
-            for (const auto& vec : vec_of_structs)
-            {
-                table.push_back(vec);
-            }
-            std::cout << "Filling table took          ";
-            assert(table.storage(&TestB::x).size() == vec_of_structs.size());
-        }
-
-        std::chrono::high_resolution_clock::duration d1;
-        {
-            TimeIt time;
-            for (size_t i = 0; i < vec_of_structs.size(); ++i)
-            {
-                if (fclose(vec_of_structs[i].x, search_value))
-                {
-                    std::cout << "Found at " << i << std::endl;
-                    break;
-                }
-            }
-            std::cout << "Searching vec of structs took      ";
-
-            d1 = time.delta();
-        }
-
-        std::chrono::high_resolution_clock::duration d2;
-        {
-            TimeIt time;
-            for (size_t i = 0; i < vec_of_structs.size(); ++i)
-            {
-                if (fclose(table.access(&TestB::x, i), search_value))
-                {
-                    std::cout << "Found at " << i << std::endl;
-                    break;
-                }
-            }
-            std::cout << "Searching data table took          ";
-            d2 = time.delta();
-        }
-        std::cout << "Speedup                            " << float(d1.count()) / float(d2.count()) << std::endl;
-
-        std::chrono::high_resolution_clock::duration d3;
-        {
-            TimeIt time;
-            const auto begin = table.begin(&TestB::x);
-            const auto end = table.end(&TestB::x);
-            for (auto itr = begin; itr != end; ++itr)
-            {
-                if (fclose(*itr, search_value))
-                {
-                    std::cout << "Found at " << (itr - begin) << std::endl;
-                    break;
-                }
-            }
-            std::cout << "Iterator Searching data table took ";
-            d3 = time.delta();
-        }
-        std::cout << "Iterator Speedup                   " << float(d1.count()) / float(d3.count()) << std::endl;
-    }*/
-
 }
