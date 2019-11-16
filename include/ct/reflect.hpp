@@ -210,8 +210,6 @@ namespace ct
         }
 
         static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
-
-      private:
     };
 
     // We've already visited this class, so exclude the implementation

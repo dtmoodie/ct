@@ -30,72 +30,71 @@ namespace ct
     REFLECT_END;
 
     REFLECT_TEMPLATED_BEGIN(Templated)
-    PUBLIC_ACCESS(x)
-    PUBLIC_ACCESS(y)
-    PUBLIC_ACCESS(z)
-REFLECT_END
-;
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-REFLECT_BEGIN(TestB)
-    PUBLIC_ACCESS(x)
-    PUBLIC_ACCESS(y)
-    PUBLIC_ACCESS(z)
-REFLECT_END;
+    REFLECT_BEGIN(TestB)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-REFLECT_BEGIN(TestC)
-    PUBLIC_ACCESS(y)
-    PUBLIC_ACCESS(x)
-    PUBLIC_ACCESS(z)
-REFLECT_END;
+    REFLECT_BEGIN(TestC)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
 
-REFLECT_DERIVED(Inherited, ReflectedStruct)
-    PUBLIC_ACCESS(w)
-REFLECT_END;
+    REFLECT_DERIVED(Inherited, ReflectedStruct)
+        PUBLIC_ACCESS(w)
+    REFLECT_END;
 
-REFLECT_DERIVED(MultipleInheritance, ReflectedStruct, PrivateMutableAccess)
-    PUBLIC_ACCESS(asdf)
-REFLECT_END;
+    REFLECT_DERIVED(MultipleInheritance, ReflectedStruct, PrivateMutableAccess)
+        PUBLIC_ACCESS(asdf)
+    REFLECT_END;
 
-REFLECT_BEGIN(TestVec)
-    PUBLIC_ACCESS(vec)
-REFLECT_END;
+    REFLECT_BEGIN(TestVec)
+        PUBLIC_ACCESS(vec)
+    REFLECT_END;
 
-REFLECT_BEGIN(PrivateMutableAccess)
-    PROPERTY(private_mutable_property, &DataType::getX, &DataType::mutateX)
-REFLECT_END;
+    REFLECT_BEGIN(PrivateMutableAccess)
+        PROPERTY(private_mutable_property, &DataType::getX, &DataType::mutateX)
+    REFLECT_END;
 
-REFLECT_BEGIN(PrivateGetAndSet)
-    PROPERTY(private_get_and_set, &DataType::getX, &DataType::setX)
-REFLECT_END;
+    REFLECT_BEGIN(PrivateGetAndSet)
+        PROPERTY(private_get_and_set, &DataType::getX, &DataType::setX)
+    REFLECT_END;
 
-REFLECT_BEGIN(PointerOwner)
-    PUBLIC_ACCESS(ptr)
-REFLECT_END;
+    REFLECT_BEGIN(PointerOwner)
+        PUBLIC_ACCESS(ptr)
+    REFLECT_END;
 
-REFLECT_BEGIN(WeirdWeakOwnerShip)
-    PUBLIC_ACCESS(struct_vec)
-    PUBLIC_ACCESS(pointer_owners)
-REFLECT_END;
+    REFLECT_BEGIN(WeirdWeakOwnerShip)
+        PUBLIC_ACCESS(struct_vec)
+        PUBLIC_ACCESS(pointer_owners)
+    REFLECT_END;
 
-REFLECT_BEGIN(ExplicitThisProperty)
-    PROPERTY(prop, &getExplicitThisProperty, &setExplicitThisProperty)
-REFLECT_END;
+    REFLECT_BEGIN(ExplicitThisProperty)
+        PROPERTY(prop, &getExplicitThisProperty, &setExplicitThisProperty)
+    REFLECT_END;
 
-REFLECT_BEGIN(::Base)
-    PUBLIC_ACCESS(base_x)
-    PUBLIC_ACCESS(base_y)
-    PUBLIC_ACCESS(base_z)
-REFLECT_END;
+    REFLECT_BEGIN(::Base)
+        PUBLIC_ACCESS(base_x)
+        PUBLIC_ACCESS(base_y)
+        PUBLIC_ACCESS(base_z)
+    REFLECT_END;
 
-REFLECT_DERIVED(DerivedA, ::Base)
-    PUBLIC_ACCESS(derived_a)
-REFLECT_END;
+    REFLECT_DERIVED(DerivedA, ::Base)
+        PUBLIC_ACCESS(derived_a)
+    REFLECT_END;
 
-REFLECT_DERIVED(DerivedB, ::Base)
-    PUBLIC_ACCESS(derived_b)
-REFLECT_END;
+    REFLECT_DERIVED(DerivedB, ::Base)
+        PUBLIC_ACCESS(derived_b)
+    REFLECT_END;
 
-REFLECT_DERIVED(DerivedC, DerivedA, DerivedB)
-    PUBLIC_ACCESS(derived_c)
-REFLECT_END;
-}
+    REFLECT_DERIVED(DerivedC, DerivedA, DerivedB)
+        PUBLIC_ACCESS(derived_c)
+    REFLECT_END;
+} // namespace ct

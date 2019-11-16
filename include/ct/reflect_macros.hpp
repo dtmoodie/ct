@@ -1,10 +1,6 @@
 #ifndef CT_REFLECT_MACROS_HPP
 #define CT_REFLECT_MACROS_HPP
 #include "macros.hpp"
-/*#include "reflect/MemberFunctionPointer.hpp"
-#include "reflect/MemberObjectPointer.hpp"
-#include "reflect/MemberPropertyPointer.hpp"
-#include "reflect/metadata.hpp"*/
 
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \

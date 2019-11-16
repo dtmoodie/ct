@@ -1,4 +1,4 @@
-msvc 2017, gcc 5.4, gcc 7.3: [![Build status](https://ci.appveyor.com/api/projects/status/nuxy51ymuak4ab7x?svg=true)](https://ci.appveyor.com/project/dtmoodie/ct)
+msvc 2017, gcc 5.4, gcc 7.3: [![Build status](https://ci.appveyor.com/api/projects/status/nuxy51ymuak4ab7x/branch/master?svg=true)](https://ci.appveyor.com/project/dtmoodie/ct/branch/master)
 
 gcc 4.8: [![Build Status](https://travis-ci.org/dtmoodie/ct.svg?branch=master)](https://travis-ci.org/dtmoodie/ct)
 
@@ -14,7 +14,7 @@ An example of ct's awesome compile time capabilities can be seen with this quick
     
     struct MyStruct
     {
-        REFLECT_INTERNAL_BEGIN
+        REFLECT_INTERNAL_BEGIN(MyStruct)
           REFLECT_INTERNAL_MEMBER(float, member_a, 1.0)
           REFLECT_INTERNAL_MEMBER(float, member_b, 2.0)
           REFLECT_INTERNAL_MEMBER(float, member_c, 3.0)
@@ -61,7 +61,7 @@ Metadata can be added to each field
     using Description = ct::metadata::Description;
     struct MyStruct
     {
-        REFLECT_INTERNAL_BEGIN
+        REFLECT_INTERNAL_BEGIN(MyStruct)
             REFLECT_INTERNAL_MEMBER(float, member_a, 1.0, Description("Member a description"))
             REFLECT_INTERNAL_MEMBER(float, member_b, 2.0, Description("Member b description"))
             REFLECT_INTERNAL_MEMBER(float, member_c, 3.0, Description("Member c description"))
