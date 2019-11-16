@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <ostream>
 #include <stdexcept>
+#include <string>
 #include <type_traits>
 
 #if defined(_MSC_VER)
