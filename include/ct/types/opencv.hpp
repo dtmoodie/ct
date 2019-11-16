@@ -174,5 +174,4 @@ namespace ct
     using CvScalarVec = cv::Vec<double, 4>;
     DECL_NAME(CvScalarVec, cv::Scalar);
 } // namespace ct
-
-#endif // CT_TYPES_HPP
+#endif // CT_TYPES_OPENCV_HPP

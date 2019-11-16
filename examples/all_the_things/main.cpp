@@ -17,13 +17,11 @@ using Description = ct::Description;
 struct MyStruct
 {
     REFLECT_INTERNAL_BEGIN(MyStruct)
-    REFLECT_INTERNAL_MEMBER(float, member_a, 1.0, Description("Member a description"))
-    REFLECT_INTERNAL_MEMBER(float, member_b, 2.0, Description("Member b description"))
-    REFLECT_INTERNAL_MEMBER(float, member_c, 3.0, Description("Member c description"))
-REFLECT_INTERNAL_END
-;
-}
-;
+        REFLECT_INTERNAL_MEMBER(float, member_a, 1.0, Description("Member a description"))
+        REFLECT_INTERNAL_MEMBER(float, member_b, 2.0, Description("Member b description"))
+        REFLECT_INTERNAL_MEMBER(float, member_c, 3.0, Description("Member c description"))
+    REFLECT_INTERNAL_END;
+};
 
 int main(int ac, char** av)
 {
