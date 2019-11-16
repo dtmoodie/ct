@@ -3,6 +3,7 @@
 #include "../reflect.hpp"
 #include "TArrayView.hpp"
 #include <Eigen/Core>
+#include <array>
 
 namespace ct
 {
