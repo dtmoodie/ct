@@ -247,6 +247,7 @@ TEST_DATA(cv::Point3f, {0, 1, 2});
 TEST_DATA(cv::Scalar, {0, 1, 2, 3});
 TEST_DATA(cv::Mat_<float>, cv::Mat_<float>::eye(4, 4));
 TEST_DATA(cv::Mat_<cv::Vec3f>, cv::Mat_<cv::Vec3f>::ones(4, 4) * 3.14159);
+TEST_DATA(cv::Mat, cv::Mat_<float>::eye(4, 4));
 #endif
 
 #ifdef HAVE_EIGEN
@@ -283,6 +284,7 @@ using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       cv::Point,
                                       cv::Point3f,
                                       cv::Scalar,
+                                      cv::Mat,
                                       cv::Mat_<float>,
                                       cv::Mat_<cv::Vec3f>
 #endif

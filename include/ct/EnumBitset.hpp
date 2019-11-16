@@ -275,57 +275,6 @@ namespace ct
     }
 }
 
-#ifndef __NVCC__
-
-#define BITSET_START(NAME)                                                                                             \
-    struct NAME : ct::EnumBitset<NAME>                                                                                 \
-    {                                                                                                                  \
-        using EnumValueType = uint64_t;                                                                                \
-        using EnumType = NAME;                                                                                         \
-        template <uint16_t V, uint16_t I>                                                                              \
-        using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
-        constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
-        template <uint16_t V, uint16_t I>                                                                              \
-        constexpr NAME(ct::BitsetIndex<NAME, V, I> v) : ct::EnumBitset<NAME>(v.toBitset())                             \
-        {                                                                                                              \
-        }                                                                                                              \
-        template <uint16_t V, uint16_t I>                                                                              \
-        NAME& operator=(ct::BitsetIndex<NAME, V, I> v)                                                                 \
-        {                                                                                                              \
-            ct::EnumBitset<NAME>::operator=(v);                                                                        \
-            return *this;                                                                                              \
-        }                                                                                                              \
-        REFLECT_STUB
-
-#define ENUM_BITVALUE(NAME, VALUE)                                                                                     \
-    CT_INLINE_VAR ct::BitsetIndex<EnumType,                                                                            \
-                                  static_cast<uint16_t>(VALUE),                                                        \
-                                  static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)>                            \
-        NAME = {};                                                                                                     \
-    static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
-    {                                                                                                                  \
-        return ct::makeEnumField<ct::BitsetIndex<EnumType, static_cast<uint8_t>(VALUE), NAME.index>>(#NAME);           \
-    }
-
-#else // ifndef __NVCC__
-
-#define BITSET_START(NAME)                                                                                             \
-    struct NAME : ct::EnumBitset<NAME>                                                                                 \
-    {                                                                                                                  \
-        using EnumValueType = uint64_t;                                                                                \
-        using EnumType = NAME;                                                                                         \
-        template <uint8_t V, uint16_t I>                                                                               \
-        using EnumValue = ct::BitsetIndex<NAME, V, I>;                                                                 \
-        constexpr NAME(uint64_t v = 0) : ct::EnumBitset<NAME>(v) {}                                                    \
-        template <uint8_t V, uint16_t I>                                                                               \
-        constexpr NAME(ct::BitsetIndex<NAME, V, I> v) : ct::EnumBitset<NAME>(v.toBitset())                             \
-        {                                                                                                              \
-        }                                                                                                              \
-        REFLECT_STUB
-
-#define ENUM_BITVALUE(NAME, VALUE) static constexpr const EnumValueType NAME = static_cast<uint64_t>(1) << VALUE;
-#endif // ifndef __NVCC__
-
 namespace std
 {
     template <class T>

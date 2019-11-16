@@ -1,13 +1,14 @@
 //#include "enum.hpp"
+#include "enum.hpp"
 #include <ct/enum.hpp>
 #include <iostream>
-#include "enum.hpp"
-ENUM_START(Test, uint32_t)
+ENUM_BEGIN(Test, uint32_t)
 
 static constexpr const EnumValueType k0 = 0;
 static constexpr const EnumValueType k1 = 1;
 
-ENUM_END;
+ENUM_END
+;
 
 int main()
 {

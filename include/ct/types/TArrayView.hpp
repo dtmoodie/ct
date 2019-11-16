@@ -1,7 +1,7 @@
 #ifndef CT_ARRAY_VIEW_HPP
 #define CT_ARRAY_VIEW_HPP
-#include "../type_traits.hpp"
 #include "../config.hpp"
+#include "../type_traits.hpp"
 
 #include <cstdint>
 #include <iostream>
@@ -9,13 +9,13 @@
 namespace ct
 {
     template <class T = uint8_t, class U>
-     T* ptrCast(U* ptr)
+    T* ptrCast(U* ptr)
     {
         return static_cast<T*>(static_cast<void*>(ptr));
     }
 
     template <class T = uint8_t, class U>
-     const T* ptrCast(const U* ptr)
+    const T* ptrCast(const U* ptr)
     {
         return static_cast<const T*>(static_cast<const void*>(ptr));
     }
@@ -74,18 +74,18 @@ namespace ct
     template <class T, ssize_t N>
     struct TArrayView<const T, N> : public TArrayBaseConst<T, N, TArrayView<const T, N>>
     {
-         CT_DEVICE_INLINE TArrayView(const TArrayView<const void>&);
-         CT_DEVICE_INLINE TArrayView(TArrayView<const void>&&);
-         CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr);
+        CT_DEVICE_INLINE TArrayView(const TArrayView<const void>&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<const void>&&);
+        CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr);
 
-         CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
+        CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
 
-         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
-         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
+        CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
+        CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
 
-         CT_DEVICE_INLINE size_t size() const;
+        CT_DEVICE_INLINE size_t size() const;
 
-         CT_DEVICE_INLINE const T* data() const;
+        CT_DEVICE_INLINE const T* data() const;
 
       protected:
         const T* m_data;
@@ -367,12 +367,14 @@ namespace ct
     // TArrayView<const T, N>
 
     template <class T, ssize_t N>
-    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const TArrayView<const void>& other) : m_data(ptrCast<T>(other.data()))
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const TArrayView<const void>& other)
+        : m_data(ptrCast<T>(other.data()))
     {
     }
 
     template <class T, ssize_t N>
-    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<const void>&& other) : m_data(ptrCast<T>(other.data()))
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<const void>&& other)
+        : m_data(ptrCast<T>(other.data()))
     {
     }
 
@@ -527,7 +529,8 @@ namespace ct
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<T>& other) : m_data(other.data()), m_size(other.size())
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<T>& other)
+        : m_data(other.data()), m_size(other.size())
     {
     }
 
@@ -598,12 +601,14 @@ namespace ct
     // void specialization
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T>&& other) : m_data(other.data()), m_size(other.size() * sizeof(T))
+    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T>&& other)
+        : m_data(other.data()), m_size(other.size() * sizeof(T))
     {
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T>& other) : m_data(other.data()), m_size(other.size() * sizeof(T))
+    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T>& other)
+        : m_data(other.data()), m_size(other.size() * sizeof(T))
     {
     }
 
@@ -627,7 +632,10 @@ namespace ct
         return true;
     }
 
-    CT_DEVICE_INLINE bool TArrayView<void>::operator!=(const TArrayView<void>& other) const { return !(*this == other); }
+    CT_DEVICE_INLINE bool TArrayView<void>::operator!=(const TArrayView<void>& other) const
+    {
+        return !(*this == other);
+    }
 
     template <class T>
     CT_DEVICE_INLINE TArrayView<void>& TArrayView<void>::operator=(const TArrayView<T>& other)
@@ -677,7 +685,10 @@ namespace ct
         return true;
     }
 
-    CT_DEVICE_INLINE bool TArrayView<const void>::operator!=(const TArrayView<const void>& other) const { return !(*this == other); }
+    CT_DEVICE_INLINE bool TArrayView<const void>::operator!=(const TArrayView<const void>& other) const
+    {
+        return !(*this == other);
+    }
 
     CT_DEVICE_INLINE TArrayView<const void>& TArrayView<const void>::operator=(const TArrayView<const void>& other)
     {
@@ -715,7 +726,7 @@ namespace ct
     template <class T>
     TArrayView<T> makeArrayView(T* ptr, size_t size)
     {
-        return TArrayView<T>{ptr, size};
+        return TArrayView<T>(ptr, size);
     }
 
     template <class T>

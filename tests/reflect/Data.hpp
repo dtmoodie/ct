@@ -63,7 +63,7 @@ struct DerivedC : virtual public DerivedA, virtual public DerivedB
 
 struct Wrapper
 {
-    REFLECT_INTERNAL_START(Wrapper)
+    REFLECT_INTERNAL_BEGIN(Wrapper)
         REFLECT_INTERNAL_MEMBER(float, val)
     REFLECT_INTERNAL_END;
 };
@@ -89,6 +89,7 @@ struct PrivateMutableAccess
     PrivateMutableAccess(float v = 0) : m_private_property(v) {}
     const float& getX() const { return m_private_property; }
     float& mutateX() { return m_private_property; }
+
   private:
     float m_private_property;
 };
@@ -104,6 +105,7 @@ struct PrivateGetAndSet
     PrivateGetAndSet(float v = 0.0) : x(v) {}
     const float& getX() const { return x; }
     void setX(const float val) { x = val; }
+
   private:
     float x;
 };
@@ -119,7 +121,7 @@ struct PointerOwner
 struct Virtual
 {
     virtual ~Virtual();
-    REFLECT_INTERNAL_START(Virtual)
+    REFLECT_INTERNAL_BEGIN(Virtual)
         MEMBER_FUNCTION(foo)
     REFLECT_INTERNAL_END;
     virtual void foo();
@@ -165,14 +167,18 @@ struct WeirdWeakOwnerShip
     std::vector<PointerOwner> pointer_owners;
 };
 
-// Doesn't work with C++11 :/
-
 struct InternallyReflected
 {
-    REFLECT_INTERNAL_START(InternallyReflected)
+    float foo() const { return 0; }
+    float foo(float v) const { return v; }
+
+    REFLECT_INTERNAL_BEGIN(InternallyReflected)
         REFLECT_INTERNAL_MEMBER(float, x)
         REFLECT_INTERNAL_MEMBER(float, y)
         REFLECT_INTERNAL_MEMBER(float, z)
+        MEMBER_FUNCTION(foo,
+                        ct::selectConstMemberFunctionPointer<InternallyReflected, float>(&InternallyReflected::foo))
+        MEMBER_FUNCTION(
+            foo, ct::selectConstMemberFunctionPointer<InternallyReflected, float, float>(&InternallyReflected::foo))
     REFLECT_INTERNAL_END;
 };
-

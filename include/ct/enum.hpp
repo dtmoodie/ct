@@ -4,7 +4,6 @@
 #include "StringView.hpp"
 #include "config.hpp"
 #include "reflect_forward.hpp"
-#include "reflect_macros.hpp"
 #include "type_traits.hpp"
 
 #include <type_traits>
@@ -271,60 +270,4 @@ namespace ct
         return fromString<T>(str, ct::Reflect<T>::end(), case_sensitive);
     }
 }
-
-#ifndef __NVCC__
-
-#define ENUM_START(NAME, TYPE)                                                                                         \
-    struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
-    {                                                                                                                  \
-        using EnumValueType = TYPE;                                                                                    \
-        using EnumType = NAME;                                                                                         \
-        constexpr NAME() {}                                                                                            \
-        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
-        template <TYPE V, uint16_t I>                                                                                  \
-        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
-        {                                                                                                              \
-        }                                                                                                              \
-        REFLECT_STUB
-
-#define ENUM_VALUE(NAME, VALUE)                                                                                        \
-    CT_INLINE_VAR ct::EnumValue<EnumType, EnumValueType, VALUE, static_cast<uint16_t>(__COUNTER__ - REFLECT_COUNT_START)> NAME = {};                \
-    static constexpr auto getPtr(ct::Indexer<NAME.index>)                                                              \
-    {                                                                                                                  \
-        return ct::makeEnumField<ct::EnumValue<EnumType, EnumValueType, VALUE, NAME.index>>(#NAME);                                                 \
-    }
-
-#define ENUM(NAME)                                                                                                     \
-    static constexpr auto getPtr(ct::Indexer<__COUNTER__ - REFLECT_COUNT_START> idx)                                   \
-    {                                                                                                                  \
-        return ct::makeEnumField<ct::EnumValue<DataType, decltype(DataType::NAME), DataType::NAME, idx.index>>(#NAME); \
-    }
-
-#define ENUM_END                                                                                                       \
-    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
-    }
-
-#else // defined(__NVCC__)
-
-#define ENUM_START(NAME, TYPE)                                                                                         \
-    struct NAME : ct::EnumBase<NAME, TYPE>                                                                             \
-    {                                                                                                                  \
-        using EnumValueType = TYPE;                                                                                    \
-        using EnumType = NAME;                                                                                         \
-        constexpr NAME() {}                                                                                            \
-        constexpr NAME(TYPE v) : EnumBase<NAME, TYPE>(v) {}                                                            \
-        template <TYPE V, uint16_t I>                                                                                  \
-        constexpr NAME(ct::EnumValue<NAME, TYPE, V, I>) : EnumBase<NAME, TYPE>(V)                                      \
-        {                                                                                                              \
-        }                                                                                                              \
-        REFLECT_STUB
-
-#define ENUM_VALUE(NAME, VALUE) static constexpr const EnumValueType NAME = VALUE;
-
-#define ENUM(NAME)
-
-#define ENUM_END                                                                                                       \
-    static constexpr const ct::index_t NUM_FIELDS = __COUNTER__ - REFLECT_COUNT_START;                                 \
-    }
-#endif
 #endif // CT_ENUM_HPP

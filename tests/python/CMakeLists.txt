@@ -1,19 +1,19 @@
 include("../../cmake/boost_python.cmake")
 if(HAVE_PYTHON)
     find_package(Eigen3 QUIET)
+    add_library(test_ct_python SHARED main.cpp)
+
     if(Eigen3_FOUND)
-        include_directories(${EIGEN3_INCLUDE_DIRS})
-        include_directories(${EIGEN3_INCLUDE_DIR})
-        include_directories(${Eigen3_INCLUDE_DIRS})
-        include_directories(${Eigen_INCLUDE_DIRS})
-        add_definitions(-DHAVE_EIGEN)
+        target_include_directories(test_ct_python SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS})
+        target_include_directories(test_ct_python SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+        target_include_directories(test_ct_python SYSTEM PRIVATE ${Eigen3_INCLUDE_DIRS})
+        target_include_directories(test_ct_python SYSTEM PRIVATE ${Eigen_INCLUDE_DIRS})
+        target_compile_definitions(test_ct_python PRIVATE HAVE_EIGEN)
     endif()
     if(EIGEN3_INCLUDE_DIRS)
-        include_directories(${EIGEN3_INCLUDE_DIRS})
-        add_definitions(-DHAVE_EIGEN)
+        target_include_directories(test_ct_python SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS})
+        target_compile_definitions(test_ct_python PRIVATE HAVE_EIGEN)
     endif()
-
-    add_library(test_ct_python SHARED main.cpp)
 
     # travis seems to not be propagating these properties correctly :/
     setTargetPlatformFlags(test_ct_python)
@@ -27,6 +27,8 @@ if(HAVE_PYTHON)
         debug;${Boost_PYTHON_LIBRARY_DEBUG}
         ${PYTHON_LIBRARY}
         ct
+        gtest
+        gtest_main
     )
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

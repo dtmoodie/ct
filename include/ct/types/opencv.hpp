@@ -10,12 +10,11 @@
 
 namespace ct
 {
-    template <class VISITED>
-    struct Reflect<cv::Mat, VISITED, void>
+    template <>
+    struct ReflectImpl<cv::Mat>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getName() { return "cv::Mat"; }
 
         REFLECT_STUB
             PUBLIC_ACCESS(rows)
@@ -25,15 +24,13 @@ namespace ct
             MEMBER_FUNCTION(type)
             MEMBER_FUNCTION(depth)
             MEMBER_FUNCTION(channels)
-            MEMBER_FUNCTION(step1)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int R, int C>
     struct ReflectImpl<cv::Matx<T, R, C>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Matx<T, R, C>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static constexpr int rows() { return R; }
@@ -58,13 +55,12 @@ namespace ct
             STATIC_FUNCTION(rows, &ReflectImpl<DataType>::rows)
             STATIC_FUNCTION(rows, &ReflectImpl<DataType>::cols)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T>
     struct ReflectImpl<cv::Mat_<T>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Mat_<T>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
@@ -95,13 +91,12 @@ namespace ct
             MEMBER_FUNCTION(depth)
             MEMBER_FUNCTION(channels)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int R>
     struct ReflectImpl<cv::Vec<T, R>> : public ReflectImpl<cv::Matx<T, R, 1>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = cv::Vec<T, R>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
     };
@@ -123,13 +118,7 @@ namespace ct
         return r0 | r1;
     }
 
-    template <class T, class U>
-    cv::Rect_<T> rectAs(const cv::Rect_<U>& r)
-    {
-        return r;
-    }
-
-    REFLECT_TEMPLATED_START(cv::Rect_)
+    REFLECT_TEMPLATED_BEGIN(cv::Rect_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(width)
@@ -138,20 +127,15 @@ namespace ct
         MEMBER_FUNCTION(topLeft, &DataType::tl)
         MEMBER_FUNCTION(bottomRight, &DataType::br)
         MEMBER_FUNCTION(area)
-        MEMBER_FUNCTION(empty)
         MEMBER_FUNCTION(contains)
         MEMBER_FUNCTION(intersection, &intersection<Args...>)
         MEMBER_FUNCTION(union, &rectUnion<Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, long, &rectAs<long, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, float, &rectAs<float, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, double, &rectAs<double, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, uint8, &rectAs<uint8_t, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, char, &rectAs<int8_t, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, short, &rectAs<short, Args...>)
-        MEMBER_FUNCTION_WITH_FLAG(Flags::DO_NOT_PRINT, ushort, &rectAs<unsigned short, Args...>)
+#if ((CV_VERSION_MAJOR == 3 && CV_VERSION_MINOR > 2) || CV_VERSION_MAJOR > 3)
+        MEMBER_FUNCTION(empty)
+#endif
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Point_)
+    REFLECT_TEMPLATED_BEGIN(cv::Point_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         MEMBER_FUNCTION(dot)
@@ -160,7 +144,7 @@ namespace ct
         MEMBER_FUNCTION(inside)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Point3_)
+    REFLECT_TEMPLATED_BEGIN(cv::Point3_)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
@@ -169,11 +153,13 @@ namespace ct
         MEMBER_FUNCTION(cross)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(cv::Size_)
+    REFLECT_TEMPLATED_BEGIN(cv::Size_)
         PUBLIC_ACCESS(width)
         PUBLIC_ACCESS(height)
         MEMBER_FUNCTION(area)
+#if ((CV_VERSION_MAJOR == 3 && CV_VERSION_MINOR > 2) || CV_VERSION_MAJOR > 3)
         MEMBER_FUNCTION(empty)
+#endif
     REFLECT_END;
 
     DECL_NAME(cv::Point2f);
@@ -187,6 +173,5 @@ namespace ct
     // It makes no sense why the compiler wants cv::Vec<double, 4> instead of cv::Scalar_<double>.....
     using CvScalarVec = cv::Vec<double, 4>;
     DECL_NAME(CvScalarVec, cv::Scalar);
-}
-
-#endif // CT_TYPES_HPP
+} // namespace ct
+#endif // CT_TYPES_OPENCV_HPP

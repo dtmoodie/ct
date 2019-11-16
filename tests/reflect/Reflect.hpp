@@ -29,7 +29,7 @@ namespace ct
         STATIC_FUNCTION(create, &TestA::create)
     REFLECT_END;
 
-    REFLECT_TEMPLATED_START(Templated)
+    REFLECT_TEMPLATED_BEGIN(Templated)
         PUBLIC_ACCESS(x)
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
@@ -97,4 +97,4 @@ namespace ct
     REFLECT_DERIVED(DerivedC, DerivedA, DerivedB)
         PUBLIC_ACCESS(derived_c)
     REFLECT_END;
-}
+} // namespace ct

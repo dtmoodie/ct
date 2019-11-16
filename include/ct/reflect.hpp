@@ -1,16 +1,18 @@
 #ifndef CT_REFLECT_HPP
 #define CT_REFLECT_HPP
+#include "type_traits.hpp"
+
 #include "Indexer.hpp"
-#include "VariadicTypedef.hpp"
 #include "config.hpp"
 #include "hash.hpp"
 #include "macros.hpp"
+
 #include "reflect/MemberFunctionPointer.hpp"
 #include "reflect/MemberObjectPointer.hpp"
 #include "reflect/MemberPropertyPointer.hpp"
 #include "reflect_forward.hpp"
 #include "static_asserts.hpp"
-#include "type_traits.hpp"
+
 #include "typename.hpp"
 
 #include <cstdint>
@@ -178,7 +180,6 @@ namespace ct
         using ClassInheritanceList = typename Append<T, typename Bases_t::ClassInheritanceList>::type;
         using VisitationList = typename Bases_t::VisitationList;
 
-        static const bool SPECIALIZED = true;
         constexpr static const index_t NUM_FIELDS = IMPL::NUM_FIELDS + Bases_t::NUM_FIELDS;
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
         constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
@@ -209,7 +210,6 @@ namespace ct
         }
 
         static constexpr ct::Indexer<END_INDEX - 1> end() { return ct::Indexer<END_INDEX - 1>(); }
-      private:
     };
 
     // We've already visited this class, so exclude the implementation
@@ -223,7 +223,7 @@ namespace ct
 
     // Specialization for when ReflectImpl is specialized, IE a type has external reflection information
     template <class T, class VISITED>
-    struct Reflect<T, VISITED, EnableIf<ReflectImpl<T>::SPECIALIZED>>
+    struct Reflect<T, VISITED, EnableIfValid<decltype(ReflectImpl<T>::NUM_FIELDS)>>
         : public ImplementationFilter<T, ReflectImpl<T>, VISITED>
     {
         using ImplementationFilter_t = ImplementationFilter<T, ReflectImpl<T>, VISITED>;

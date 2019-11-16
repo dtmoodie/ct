@@ -3,13 +3,13 @@
 #include "../reflect.hpp"
 #include "TArrayView.hpp"
 #include <Eigen/Core>
+#include <array>
 
 namespace ct
 {
     template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
     struct ReflectImpl<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -33,13 +33,12 @@ namespace ct
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, cols)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rows)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T, int OPTS, int MAX_ROWS, int MAX_COLS>
     struct ReflectImpl<Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -69,13 +68,12 @@ namespace ct
             PROPERTY(cols)
             PROPERTY(rows)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
-    template<typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+    template <typename T, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
     struct ReflectImpl<Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>>
     {
-        static constexpr int SPECIALIZED = true;
         using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
 
@@ -92,8 +90,8 @@ namespace ct
         REFLECT_STUB
             PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
         REFLECT_INTERNAL_END;
-        static constexpr auto end() { return ct::Indexer<NUM_FIELDS - 1>(); }
-    }; 
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
+    };
 
     DECL_NAME(Eigen::MatrixXf);
     DECL_NAME(Eigen::Matrix2f);
@@ -118,8 +116,8 @@ namespace ct
             : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
         {
         };
-    }
-}
+    } // namespace cereal
+} // namespace ct
 
 #endif
 

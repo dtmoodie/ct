@@ -15,8 +15,6 @@ if(NOT TARGET ct)
     option(BUILD_EXAMPLES  "Build examples" ON)
     option(DEBUG_TEST_FAILURE "Debug test failure by printing the output of failed static_asserts at runtime" OFF)
 
-
-    include_directories(include)
     add_library(ct INTERFACE)
 
     include("${CMAKE_CURRENT_LIST_DIR}/cmake/platform.cmake")
@@ -28,6 +26,7 @@ if(NOT TARGET ct)
             $<INSTALL_INTERFACE:include>
     )
 
+    # this exists specifically for older version of FindCUDA.cmake which doesn't pull target includes correctly
     set(CT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
 
     export(TARGETS ct
@@ -47,12 +46,10 @@ if(NOT TARGET ct)
     if(BUILD_TESTS)
         ADD_SUBDIRECTORY (googletest)
         enable_testing()
-        include_directories(googletest/googletest/include)
+        set(GTEST_INCLUDE googletest/googletest/include)
 
         find_package(OpenCV QUIET COMPONENTS core)
         find_package(CUDA QUIET)
-        INCLUDE_DIRECTORIES(wip)
-        include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 
         if(DEBUG_TEST_FAILURE)
             add_definitions(-DDEBUG_CONSTEXPR_OUTPUT)

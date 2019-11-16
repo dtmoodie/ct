@@ -14,7 +14,7 @@ An example of ct's awesome compile time capabilities can be seen with this quick
     
     struct MyStruct
     {
-        REFLECT_INTERNAL_START(MyStruct)
+        REFLECT_INTERNAL_BEGIN(MyStruct)
           REFLECT_INTERNAL_MEMBER(float, member_a, 1.0)
           REFLECT_INTERNAL_MEMBER(float, member_b, 2.0)
           REFLECT_INTERNAL_MEMBER(float, member_c, 3.0)
@@ -61,7 +61,7 @@ Metadata can be added to each field
     using Description = ct::metadata::Description;
     struct MyStruct
     {
-        REFLECT_INTERNAL_START(MyStruct)
+        REFLECT_INTERNAL_BEGIN(MyStruct)
             REFLECT_INTERNAL_MEMBER(float, member_a, 1.0, Description("Member a description"))
             REFLECT_INTERNAL_MEMBER(float, member_b, 2.0, Description("Member b description"))
             REFLECT_INTERNAL_MEMBER(float, member_c, 3.0, Description("Member c description"))
@@ -127,7 +127,7 @@ Lastly properties with get and set methods are supported seamlessly the same as 
 
 Enums are supported as well as standard enums and bitset enums.
 
-    ENUM_START(MyEnum, uint32_t)
+    ENUM_BEGIN(MyEnum, uint32_t)
         ENUM_VALUE(kVALUE0, 0)
         ENUM_VALUE(kVALUE1, 1)
         ENUM_VALUE(kVALUE2, 2)
@@ -147,7 +147,7 @@ Will produce the following:
 Bitset enums are supported as follows:
 
 
-    BITSET_START(Bitset, int)
+    BITSET_BEGIN(Bitset, int)
         ENUM_VALUE(v0, 0)
         ENUM_VALUE(v1, 1)
         ENUM_VALUE(v2, 2)

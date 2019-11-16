@@ -19,14 +19,14 @@ namespace ct
         PUBLIC_ACCESS(alpha)
         PUBLIC_ACCESS(beta)
     REFLECT_END;
-}
+} // namespace ct
 
 // Internally reflected, reflection metadata embedded in type
 struct ProgramOptions
 {
     float field;
 
-    REFLECT_INTERNAL_START(ProgramOptions)
+    REFLECT_INTERNAL_BEGIN(ProgramOptions)
         REFLECT_INTERNAL_MEMBER(int, num_iterations, 10)
         REFLECT_INTERNAL_MEMBER(float, epsilon, 1e-3f)
         PUBLIC_ACCESS_WITH_METADATA(field, Description("Description of field"))

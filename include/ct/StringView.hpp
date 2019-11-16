@@ -1,8 +1,9 @@
 #ifndef CT_STRING_VIEW_HPP
 #define CT_STRING_VIEW_HPP
-#include <array>
 #include <cstddef>
 #include <ostream>
+#include <stdexcept>
+#include <string>
 #include <type_traits>
 
 #if defined(_MSC_VER)
@@ -12,10 +13,10 @@ using ssize_t = SSIZE_T;
 
 namespace ct
 {
-    template<class T>
+    template <class T>
     struct CharTable;
 
-    template<>
+    template <>
     struct CharTable<char>
     {
         static constexpr const char space = ' ';
@@ -23,7 +24,6 @@ namespace ct
         static constexpr const char last_non_whitespace = 126;
         static constexpr const char newline = '\n';
     };
-
 
     template <class T = char>
     struct BasicStringView
@@ -37,7 +37,7 @@ namespace ct
 
         constexpr BasicStringView(const T* data, size_t n);
         constexpr BasicStringView(const T* data);
-        constexpr BasicStringView() = default;
+        constexpr BasicStringView() {}
 
         constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
 
@@ -109,7 +109,7 @@ namespace ct
         constexpr size_t findDeliminator(const char* str, size_t len, char del);
 
         constexpr size_t findLast(const char* str, size_t len, char Del);
-    }
+    } // namespace detail
 
     template <class T>
     inline std::ostream& operator<<(std::ostream& os, const BasicStringView<T>& view)
@@ -186,20 +186,18 @@ namespace ct
 
     constexpr int stoiImplRange(const char* str, const char* end, int value = 0, bool negative = false)
     {
-        return str != end
-                   ? isDigit(*str) ? stoiImplRange(str + 1, end, (*str - '0') + value * 10, negative)
-                                   : *str == '-' ? stoiImplRange(str + 1, end, value, true)
-                                                 : throw std::runtime_error("compile-time-error: not a digit")
-                   : negative ? -value : value;
+        return str != end ? isDigit(*str) ? stoiImplRange(str + 1, end, (*str - '0') + value * 10, negative)
+                                          : *str == '-' ? stoiImplRange(str + 1, end, value, true)
+                                                        : throw std::runtime_error("compile-time-error: not a digit")
+                          : negative ? -value : value;
     }
 
     constexpr int stoiImpl(const char* str, int value = 0, bool negative = false)
     {
-        return *str
-                   ? isDigit(*str) ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
-                                   : *str == '-' ? stoiImpl(str + 1, value, true)
-                                                 : throw std::runtime_error("compile-time-error: not a digit")
-                   : value;
+        return *str ? isDigit(*str) ? stoiImpl(str + 1, (*str - '0') + value * 10, negative)
+                                    : *str == '-' ? stoiImpl(str + 1, value, true)
+                                                  : throw std::runtime_error("compile-time-error: not a digit")
+                    : value;
     }
 
     constexpr int stoi(const char* str) { return stoiImpl(str); }
@@ -237,7 +235,7 @@ namespace ct
         {
             return str[len] == Del ? len : len == 0 ? 0 : findLast(str, len - 1, Del);
         }
-    }
+    } // namespace detail
 
     template <class T>
     BasicStringView<T>::BasicStringView(const std::basic_string<T>& str) : m_data(str.c_str()), m_size(str.size())
@@ -291,15 +289,19 @@ namespace ct
     template <class T>
     constexpr size_t BasicStringView<T>::find(BasicStringView substring, size_t n, size_t pos) const
     {
-        return substring.size() < size() ? (substr(pos, substring.size()) == substring ? (n == 0 ? pos : find(substring, n - 1, pos + 1))
-                                        : ((pos + substring.size()) == m_size ? npos : find(substring, n, pos + 1))) : npos;
+        return substring.size() < size()
+                   ? (substr(pos, substring.size()) == substring
+                          ? (n == 0 ? pos : find(substring, n - 1, pos + 1))
+                          : ((pos + substring.size()) == m_size ? npos : find(substring, n, pos + 1)))
+                   : npos;
     }
 
     template <class T>
     constexpr size_t BasicStringView<T>::findInRange(T lower, T upper, size_t n, size_t pos) const
     {
-        return m_data[pos] >= lower && m_data[pos] < upper ? (n == 0 ? pos : findInRange(lower, upper, n - 1, pos + 1))
-                                                           : (pos == m_size ? npos : findInRange(lower, upper, n, pos + 1));
+        return m_data[pos] >= lower && m_data[pos] < upper
+                   ? (n == 0 ? pos : findInRange(lower, upper, n - 1, pos + 1))
+                   : (pos == m_size ? npos : findInRange(lower, upper, n, pos + 1));
     }
 
     template <class T>
@@ -320,8 +322,9 @@ namespace ct
     constexpr size_t BasicStringView<T>::rfindImpl(BasicStringView substring, size_t n, size_t pos) const
     {
         return (pos == 0 ? ((substr(pos, substring.size()) == substring) ? (n == 0 ? pos : npos) : npos)
-                         : ((substr(pos, substring.size()) == substring) ? (n == 0 ? pos : rfindImpl(substring, n - 1, pos - 1))
-                                                     : rfindImpl(substring, n, pos - 1)));
+                         : ((substr(pos, substring.size()) == substring)
+                                ? (n == 0 ? pos : rfindImpl(substring, n - 1, pos - 1))
+                                : rfindImpl(substring, n, pos - 1)));
     }
 
     template <class T>
@@ -340,23 +343,24 @@ namespace ct
     constexpr size_t BasicStringView<T>::rfindInRangeImpl(T lower, T upper, size_t n, size_t pos) const
     {
         return (pos == 0 ? ((m_data[pos] >= lower && m_data[pos] < upper) ? (n == 0 ? pos : npos) : npos)
-                         : ((m_data[pos] >= lower && m_data[pos] < upper) ? (n == 0 ? pos : rfindInRangeImpl(lower, upper, n - 1, pos - 1))
-                                                     : rfindInRangeImpl(lower, upper, n, pos - 1)));
+                         : ((m_data[pos] >= lower && m_data[pos] < upper)
+                                ? (n == 0 ? pos : rfindInRangeImpl(lower, upper, n - 1, pos - 1))
+                                : rfindInRangeImpl(lower, upper, n, pos - 1)));
     }
 
-    template<class T>
+    template <class T>
     constexpr size_t BasicStringView<T>::rfindInRange(T lower, T upper, size_t n) const
     {
         return rfindInRangeImpl(lower, upper, n, m_size);
     }
 
-    template<class T>
+    template <class T>
     constexpr size_t BasicStringView<T>::findLastChar() const
     {
         return rfindInRange(CharTable<T>::first_non_whitespace, CharTable<T>::last_non_whitespace + 1);
     }
 
-    template<class T>
+    template <class T>
     constexpr BasicStringView<T> BasicStringView<T>::strip() const
     {
         return slice(findFirstChar(), findLastChar() + 1);
@@ -365,15 +369,16 @@ namespace ct
     template <class T>
     constexpr size_t BasicStringView<T>::count(T character, size_t pos, size_t cnt) const
     {
-        return pos == m_size ? cnt : (m_data[pos] == character ? count(character, pos + 1, cnt + 1)
-                                                               : count(character, pos + 1, cnt));
+        return pos == m_size
+                   ? cnt
+                   : (m_data[pos] == character ? count(character, pos + 1, cnt + 1) : count(character, pos + 1, cnt));
     }
 
-	template <class T>
+    template <class T>
     constexpr const T* BasicStringView<T>::cStr() const
-	{
+    {
         return m_data;
-	}
+    }
 
     template <class T>
     BasicStringView<T>::operator std::basic_string<T>() const
