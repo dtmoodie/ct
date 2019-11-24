@@ -8,7 +8,7 @@ if(TARGET cereal)
 endif()
 if(cereal_INCLUDE_DIR)
     target_compile_definitions(all_the_things PUBLIC HAVE_CEREAL)
-    target_include_directories(all_the_things PUBLIC ${cereal_INCLUDE_DIR})
+    target_include_directories(all_the_things PUBLIC SYSTEM ${cereal_INCLUDE_DIR})
 endif()
 
 find_package(Boost QUIET COMPONENTS program_options)
