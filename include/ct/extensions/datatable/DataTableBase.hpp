@@ -2,6 +2,7 @@
 #define CT_EXT_DATA_TABLE_BASE_HPP
 #include "IDataTable.hpp"
 #include <ct/reflect.hpp>
+#include <array>
 
 namespace ct
 {
