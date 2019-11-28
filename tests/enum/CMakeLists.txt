@@ -14,7 +14,7 @@ if(CUDA_FOUND)
     add_test(test_ct_enum_cuda test_ct_enum_cuda)
 endif()
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     target_compile_options(test_ct_enum PRIVATE -Werror -Wall -Wextra)
     if(CUDA_FOUND)
         target_compile_options(test_ct_enum_cuda PRIVATE -Werror -Wall -Wextra)
