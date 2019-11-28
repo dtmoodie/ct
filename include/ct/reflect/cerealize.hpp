@@ -25,6 +25,7 @@ namespace ct
 #include <ct/static_asserts.hpp>
 #include <ct/type_traits.hpp>
 #include <ct/types/TArrayView.hpp>
+
 namespace ct
 {
     namespace cereal
@@ -80,7 +81,7 @@ namespace ct
         {
             using Ptr_t = MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA>;
             static constexpr const auto WRITABLE = FLAGS & ct::Flags::WRITABLE;
-            static constexpr const auto CONST = FLAGS & ct::Flags::COMPILE_TIME_CONSTANT;
+            static constexpr const auto IS_CONST = FLAGS & ct::Flags::COMPILE_TIME_CONSTANT;
 
             template <class AR>
             static void load(AR& ar, T& obj, const Ptr_t ptr)
@@ -91,7 +92,7 @@ namespace ct
             template <class AR>
             static void save(AR& ar, const T& obj, const Ptr_t ptr)
             {
-                saveImpl(ar, obj, ptr, std::integral_constant<bool, CONST == 0>{});
+                saveImpl(ar, obj, ptr, std::integral_constant<bool, IS_CONST == 0>{});
             }
 
           private:
@@ -378,7 +379,7 @@ namespace ct
         {
             using type = int;
         };
-    }
+    } // namespace cereal
 
     template <class AR, class T>
     EnableIf<!VariadicTypedef<void, const void>::contains<T>()> save(AR& ar, const TArrayView<T>& view)
@@ -430,7 +431,7 @@ namespace ct
     {
         throw std::runtime_error("Attempting to load a const array view");
     }
-}
+} // namespace ct
 
 namespace cereal
 {
