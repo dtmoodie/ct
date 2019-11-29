@@ -231,7 +231,7 @@ namespace ct
 
     // Specialization for when a type has the appropriate reflection information built into the type
     template <class T, class VISITED>
-    struct Reflect<T, VISITED, EnableIf<T::NUM_FIELDS != -1>> : public ImplementationFilter<T, T, VISITED>
+    struct Reflect<T, VISITED, EnableIfValid<decltype(T::NUM_FIELDS)>> : public ImplementationFilter<T, T, VISITED>
     {
         using ImplementationFilter_t = ImplementationFilter<T, T, VISITED>;
     };
