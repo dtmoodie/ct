@@ -1,5 +1,5 @@
 function(setTargetPlatformFlags tgt)
-    if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
         if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 4.9)
             target_compile_features(${tgt}
@@ -10,7 +10,7 @@ function(setTargetPlatformFlags tgt)
             target_compile_options(${tgt} INTERFACE "-std=c++1y")
         endif()
 
-    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
         target_compile_features(${tgt}
             INTERFACE cxx_return_type_deduction
         )

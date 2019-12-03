@@ -69,7 +69,7 @@ namespace ct
     using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
 
     template <class T, index_t I>
-    using PtrType = decltype(ct::Reflect<T>::getPtr(Indexer<I>{}));
+    using PtrType = decltype(ct::Reflect<typename std::decay<T>::type>::getPtr(Indexer<I>{}));
 
     template <class T>
     struct IsFunction

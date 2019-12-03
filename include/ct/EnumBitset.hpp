@@ -4,6 +4,10 @@
 
 #include <bitset>
 
+#ifdef max
+#undef max
+#endif
+
 namespace ct
 {
     template <class T>

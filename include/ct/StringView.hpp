@@ -204,7 +204,7 @@ namespace ct
 
     constexpr int stoiRange(const char* start, const char* end) { return stoiImplRange(start, end); }
 
-    constexpr int stoiRange(const char* start, int len) { return stoiImplRange(start, start + len); }
+    constexpr int stoiRange(const char* start, size_t len) { return stoiImplRange(start, start + len); }
 
     ///// Implementation
     namespace detail

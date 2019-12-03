@@ -41,7 +41,7 @@ struct TimeIt
         const auto secs = std::chrono::duration_cast<std::chrono::seconds>(delta);
         delta = delta - secs;
         const auto nsec = std::chrono::duration_cast<std::chrono::nanoseconds>(delta);
-        m_out = secs.count();
+        m_out = static_cast<double>(secs.count());
         m_out += nsec.count() * 1e-6;
     }
 
@@ -256,10 +256,10 @@ TEST(datatable, array_view)
         tmp.embeddings = ct::TArrayView<float>(embeddings.data(), 20);
         for (int i = 0; i < 20; ++i)
         {
-            tmp.x = i;
-            tmp.y = i * 2;
-            tmp.w = i * 3;
-            tmp.h = i * 4;
+            tmp.x = static_cast<decltype(tmp.x)>(i);
+            tmp.y = static_cast<decltype(tmp.x)>(i * 2);
+            tmp.w = static_cast<decltype(tmp.x)>(i * 3);
+            tmp.h = static_cast<decltype(tmp.x)>(i * 4);
             tmp.conf = 0.9F;
             for (auto& x : embeddings)
             {
