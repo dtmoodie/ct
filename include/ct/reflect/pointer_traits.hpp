@@ -89,6 +89,13 @@ namespace ct
         using type = DTYPE;
     };
 
+    // operator =
+    template <class DTYPE, class CTYPE>
+    struct InferSetterType<CTYPE& (CTYPE::*)(DTYPE)>
+    {
+        using type = ct::decay_t<DTYPE>;
+    };
+
     template <class DTYPE, class CTYPE>
     struct InferSetterType<void (*)(CTYPE, DTYPE)>
     {
@@ -101,6 +108,7 @@ namespace ct
     {
         using type = DTYPE;
     };
-}
+
+} // namespace ct
 
 #endif // CT_POINTER_TRAITS_HPP
