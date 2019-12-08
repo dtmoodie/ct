@@ -72,6 +72,13 @@ namespace ct
         return AccessToken<void (BASE::*)(DTYPE)>(obj, set_ptr, get(get_ptr, obj));
     }
 
+    // operator =
+    template <class DTYPE, class BASE, class DERIVED, class GET_PTR>
+    AccessToken<BASE& (BASE::*)(DTYPE)> setMutable(BASE& (BASE::*set_ptr)(DTYPE), GET_PTR get_ptr, DERIVED& obj)
+    {
+        return AccessToken<BASE& (BASE::*)(DTYPE)>(obj, set_ptr, get(get_ptr, obj));
+    }
+
     template <class DTYPE, class BASE, class DERIVED, class GET_PTR>
     AccessToken<void (*)(BASE&, DTYPE)> setMutable(void (*set_ptr)(BASE&, DTYPE), GET_PTR get_ptr, DERIVED& obj)
     {
@@ -142,10 +149,6 @@ namespace ct
         METADATA getMetadata() const { return m_metadata; }
     };
 
-
-
-
-
     template <Flag_t FLAGS = 0, class GET_PTR, class SET_PTR>
     constexpr MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS | Flags::READABLE | Flags::WRITABLE>
     makeMemberPropertyPointer(const char* name, const GET_PTR get, const SET_PTR set)
@@ -174,6 +177,6 @@ namespace ct
     {
         return MemberPropertyPointer<GET_PTR, std::nullptr_t, FLAGS | Flags::READABLE, METADATA>(name, get, metadata);
     }
-}
+} // namespace ct
 
 #endif // CT_MEMBER_PROPERTY_POINTER_HPP

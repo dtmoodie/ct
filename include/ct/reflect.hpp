@@ -1,5 +1,8 @@
 #ifndef CT_REFLECT_HPP
 #define CT_REFLECT_HPP
+
+#include "reflect_forward.hpp"
+
 #include "type_traits.hpp"
 
 #include "Indexer.hpp"
@@ -10,7 +13,7 @@
 #include "reflect/MemberFunctionPointer.hpp"
 #include "reflect/MemberObjectPointer.hpp"
 #include "reflect/MemberPropertyPointer.hpp"
-#include "reflect_forward.hpp"
+
 #include "static_asserts.hpp"
 
 #include "typename.hpp"
@@ -33,7 +36,7 @@ namespace ct
     };
 
     // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
-    template <class T>
+    template <class T, class E>
     struct ReflectImpl
     {
     };

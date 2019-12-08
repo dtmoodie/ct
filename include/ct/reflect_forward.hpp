@@ -9,7 +9,7 @@ namespace ct
     template <class T, class VISITED = VariadicTypedef<>, class ENABLE = void>
     struct Reflect;
 
-    template <class T>
+    template <class T, class E = void>
     struct ReflectImpl;
 
     struct EmptyImplementation;
@@ -31,6 +31,6 @@ namespace ct
 
     template <class T, index_t I>
     struct IsMemberFunction;
-}
+} // namespace ct
 
 #endif // CT_REFLECT_FORWARD_HPP

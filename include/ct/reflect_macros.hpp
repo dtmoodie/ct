@@ -49,7 +49,7 @@
 
 #define REFLECT_BEGIN(TYPE)                                                                                            \
     template <>                                                                                                        \
-    struct ReflectImpl<TYPE>                                                                                           \
+    struct ReflectImpl<TYPE, void>                                                                                     \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         static constexpr ct::StringView getName() { return #TYPE; }                                                    \
@@ -57,7 +57,7 @@
 
 #define REFLECT_DERIVED(TYPE, ...)                                                                                     \
     template <>                                                                                                        \
-    struct ReflectImpl<TYPE>                                                                                           \
+    struct ReflectImpl<TYPE, void>                                                                                     \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
@@ -66,7 +66,7 @@
 
 #define REFLECT_TEMPLATED_BEGIN(TYPE)                                                                                  \
     template <class... Args>                                                                                           \
-    struct ReflectImpl<TYPE<Args...>>                                                                                  \
+    struct ReflectImpl<TYPE<Args...>, void>                                                                            \
     {                                                                                                                  \
         using DataType = TYPE<Args...>;                                                                                \
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \

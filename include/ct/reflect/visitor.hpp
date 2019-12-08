@@ -413,7 +413,127 @@ namespace ct
             auto ptr = Reflect<T>::getPtr(idx);
             static_cast<DERIVED*>(this)->visitField(obj, path, ptr, idx, std::forward<ARGS>(args)...);
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////
+        // Static Versions
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        template <bool ENABLE,
+                  class DTYPE,
+                  class CTYPE,
+                  Flag_t FLAGS,
+                  class METADATA,
+                  class T,
+                  index_t I,
+                  class... ARGS>
+        EnableIf<ENABLE> visitMemberObject(std::string path,
+                                           MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA> ptr,
+                                           Indexer<I>,
+                                           ARGS&&... args)
+        {
+            if (OPTS::ACCUMULATE_PATH)
+            {
+                path += ptr.m_name.toString();
+            }
+            else
+            {
+                path = ptr.m_name.toString();
+            }
+
+            static_cast<DERIVED*>(this)->template visitData<I>(path, std::forward<ARGS>(args)...);
+        }
+
+        template <class R, class T, class U, class SIG, class... ARGS>
+        EnableIf<!std::is_same<R, void>::value> visitMemberFunction(
+            MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<ARGS...>*, ARGS&&... args)
+        {
+        }
+
+        template <class R, class T, class U, class SIG>
+        EnableIf<!std::is_same<R, void>::value>
+        visitMemberFunction(MemberFunction<U, SIG> func, const std::string& path, R*, VariadicTypedef<>*)
+        {
+        }
+
+        template <class T, class U, class SIG>
+        void visitMemberFunction(MemberFunction<U, SIG>, const std::string&, void*, VariadicTypedef<>*)
+        {
+            // cannot invoke
+        }
+
+        template <class T, index_t I, class U, Flag_t FLAGS, class METADATA, class... PTRS, class... ARGS>
+        void visitMemberFunctions(const std::string& path,
+                                  MemberFunctionPointers<U, FLAGS, METADATA, PTRS...> ptrs,
+                                  Indexer<I>,
+                                  ARGS&&... args)
+        {
+            auto mem_fun = std::get<0>(ptrs.m_ptrs);
+            using Ret_t = typename std::decay<decltype(mem_fun)>::type::Ret_t;
+            using Args_t = typename std::decay<decltype(mem_fun)>::type::Args_t;
+            std::string path_;
+            if (OPTS::ACCUMULATE_PATH)
+            {
+                path_ = path;
+                path_ = OPTS::DELIMINATOR + ptrs.m_name.toString();
+            }
+            else
+            {
+                path_ = ptrs.m_name.toString();
+            }
+            if (VisitorParams::visitMemberFunction(mem_fun))
+            {
+                static_cast<DERIVED*>(this)->visitMemberFunction(mem_fun,
+                                                                 path_,
+                                                                 static_cast<Ret_t*>(nullptr),
+                                                                 static_cast<Args_t*>(nullptr),
+                                                                 std::forward<ARGS>(args)...);
+            }
+        }
+
+        template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I, class... ARGS>
+        auto visitField(const std::string& path,
+                        MemberObjectPointer<DTYPE CTYPE::*, FLAGS, METADATA> ptrs,
+                        Indexer<I> idx,
+                        ARGS&&... args) -> EnableIf<OPTS::visitMemberObject(static_cast<decltype(ptrs)*>(nullptr))>
+        {
+            static_cast<DERIVED*>(this)
+                ->template visitMemberObject<VISIT_OBJECTS && !(FLAGS & Flags::DO_NOT_SERIALIZE)>(
+                    path, ptrs, idx, std::forward<ARGS>(args)...);
+        }
+
+        template <class T, index_t I, class GET_PTR, class SET_PTR, Flag_t FLAGS, class METADATA, class... ARGS>
+        auto visitField(const std::string& path,
+                        MemberPropertyPointer<GET_PTR, SET_PTR, FLAGS, METADATA> ptrs,
+                        Indexer<I> idx,
+                        ARGS&&... args) -> EnableIf<OPTS::visitProperty(static_cast<decltype(ptrs)*>(nullptr))>
+        {
+            static_cast<DERIVED*>(this)->visitProperty(path, ptrs, idx, std::forward<ARGS>(args)...);
+        }
+
+        template <class T, index_t I, class U, Flag_t FLAGS, class METADATA, class... PTRS, class... ARGS>
+        auto visitField(const std::string& path,
+                        MemberFunctionPointers<U, FLAGS, METADATA, PTRS...> ptrs,
+                        Indexer<I> idx,
+                        ARGS&&... args) -> EnableIf<OPTS::visitMemberFunctions(static_cast<decltype(ptrs)*>(nullptr))>
+        {
+            static_cast<DERIVED*>(this)->visitMemberFunctions(path, ptrs, idx, std::forward<ARGS>(args)...);
+        }
+
+        template <class T, class... ARGS>
+        void recurseFields(const std::string& path, Indexer<0> idx, ARGS&&... args)
+        {
+            auto ptr = Reflect<T>::getPtr(idx);
+            static_cast<DERIVED*>(this)->visitField(path, ptr, idx, std::forward<ARGS>(args)...);
+        }
+
+        template <class T, index_t I, class... ARGS>
+        void recurseFields(const std::string& path, Indexer<I> idx, ARGS&&... args)
+        {
+            recurseFields(path, --idx, std::forward<ARGS>(args)...);
+            auto ptr = Reflect<T>::getPtr(idx);
+            static_cast<DERIVED*>(this)->visitField(path, ptr, idx, std::forward<ARGS>(args)...);
+        }
     };
-}
+} // namespace ct
 
 #endif // CT_REFLECT_VISITOR_HPP

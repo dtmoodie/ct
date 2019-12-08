@@ -11,7 +11,7 @@
 namespace ct
 {
     template <>
-    struct ReflectImpl<cv::Mat>
+    struct ReflectImpl<cv::Mat, void>
     {
         using DataType = cv::Mat;
         static constexpr StringView getName() { return "cv::Mat"; }
@@ -29,9 +29,10 @@ namespace ct
     };
 
     template <class T, int R, int C>
-    struct ReflectImpl<cv::Matx<T, R, C>>
+    struct ReflectImpl<cv::Matx<T, R, C>, void>
     {
         using DataType = cv::Matx<T, R, C>;
+        using this_t = ReflectImpl<DataType, void>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static constexpr int rows() { return R; }
         static constexpr int cols() { return C; }
@@ -42,9 +43,9 @@ namespace ct
         static size_t getSize(const DataType&) { return C * R; }
 
         REFLECT_STUB
-            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &ReflectImpl<DataType>::getShape, nullptr)
-            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &ReflectImpl<DataType>::getSize, nullptr)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &this_t::getShape, nullptr)
+            PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size, &this_t::getSize, nullptr)
             STATIC_FUNCTION(eye, &DataType::eye)
             STATIC_FUNCTION(zeros, &DataType::zeros)
             STATIC_FUNCTION(ones, &DataType::ones)
@@ -52,16 +53,17 @@ namespace ct
             STATIC_FUNCTION(randn, &DataType::randn)
             MEMBER_FUNCTION(row)
             MEMBER_FUNCTION(col)
-            STATIC_FUNCTION(rows, &ReflectImpl<DataType>::rows)
-            STATIC_FUNCTION(rows, &ReflectImpl<DataType>::cols)
+            STATIC_FUNCTION(rows, &this_t::rows)
+            STATIC_FUNCTION(cols, &this_t::cols)
         REFLECT_INTERNAL_END;
         static constexpr Indexer<NUM_FIELDS - 1> end() { return ct::Indexer<NUM_FIELDS - 1>(); }
     };
 
     template <class T>
-    struct ReflectImpl<cv::Mat_<T>>
+    struct ReflectImpl<cv::Mat_<T>, void>
     {
         using DataType = cv::Mat_<T>;
+        using this_t = ReflectImpl<DataType, void>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
         static std::array<int, 2> getShape(const DataType& data) { return {data.rows, data.cols}; }
 
@@ -82,9 +84,9 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &ReflectImpl<DataType>::getData, &ReflectImpl<DataType>::getDataMutable)
-            PROPERTY(shape, &ReflectImpl<DataType>::getShape, &ReflectImpl<DataType>::reshape)
-            PROPERTY(size, &ReflectImpl<DataType>::getSize)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
+            PROPERTY(shape, &this_t::getShape, &this_t::reshape)
+            PROPERTY(size, &this_t::getSize)
             MEMBER_FUNCTION(elemSize)
             MEMBER_FUNCTION(elemSize1)
             MEMBER_FUNCTION(type)
@@ -95,14 +97,14 @@ namespace ct
     };
 
     template <class T, int R>
-    struct ReflectImpl<cv::Vec<T, R>> : public ReflectImpl<cv::Matx<T, R, 1>>
+    struct ReflectImpl<cv::Vec<T, R>, void> : public ReflectImpl<cv::Matx<T, R, 1>, void>
     {
         using DataType = cv::Vec<T, R>;
         static constexpr StringView getName() { return GetName<DataType>::getName(); }
     };
 
     template <class T>
-    struct ReflectImpl<cv::Scalar_<T>> : public ReflectImpl<cv::Vec<T, 4>>
+    struct ReflectImpl<cv::Scalar_<T>, void> : public ReflectImpl<cv::Vec<T, 4>, void>
     {
     };
 
