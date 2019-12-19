@@ -47,8 +47,19 @@ namespace ct
     {
     };
 
+    template<class T, class E = void>
+    struct HasFieldCounter: std::false_type
+    {
+
+    };
+    template<class T>
+    struct HasFieldCounter<T, Valid<decltype(T::NUM_FIELDS)>>: std::true_type
+    {
+
+    };
+
     template <class T>
-    struct InternallyReflected<T, Valid<decltype(T::NUM_FIELDS)>> : std::true_type
+    struct InternallyReflected<T, EnableIf<HasFieldCounter<T>::value>> : std::true_type
     {
     };
 
@@ -58,9 +69,10 @@ namespace ct
     };
 
     template <class T>
-    struct IsReflected<T, Valid<decltype(ReflectImpl<T>::NUM_FIELDS)>> : std::true_type
+    struct IsReflected<T, EnableIf<HasFieldCounter<ReflectImpl<T>>::value>>: std::true_type
     {
     };
+
 
     template <class T, class U = void>
     using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
