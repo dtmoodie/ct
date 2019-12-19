@@ -99,23 +99,50 @@
         return ct::makeMemberObjectPointer(#NAME, &DataType::NAME, METADATA);                                          \
     }
 
-#define PROPERTY_1(NAME)                                                                                               \
+#define INTERNAL_PROPERTY_1(NAME)                                                                                      \
     static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, &DataType::NAME, nullptr);                                         \
     }
 
-#define PROPERTY_2(NAME, GETTER)                                                                                       \
+#define INTERNAL_PROPERTY_2(NAME, GETTER)                                                                              \
     static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, GETTER, nullptr);                                                  \
     }
 
-#define PROPERTY_3(NAME, GETTER, SETTER)                                                                               \
+#define INTERNAL_PROPERTY_3(NAME, GETTER, SETTER)                                                                      \
     static constexpr auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                   \
     }
+
+#define PROPERTY_1(NAME)                                                                                               \
+    static constexpr decltype(ct::makeMemberPropertyPointer(#NAME, &DataType::NAME, nullptr)) getPtr(                  \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
+    {                                                                                                                  \
+        return ct::makeMemberPropertyPointer(#NAME, &DataType::NAME, nullptr);                                         \
+    }
+
+#define PROPERTY_2(NAME, GETTER)                                                                                       \
+    static constexpr decltype(ct::makeMemberPropertyPointer(#NAME, GETTER, nullptr)) getPtr(                           \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
+    {                                                                                                                  \
+        return ct::makeMemberPropertyPointer(#NAME, GETTER, nullptr);                                                  \
+    }
+
+#define PROPERTY_3(NAME, GETTER, SETTER)                                                                               \
+    static constexpr decltype(ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER)) getPtr(                            \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
+    {                                                                                                                  \
+        return ct::makeMemberPropertyPointer(#NAME, GETTER, SETTER);                                                   \
+    }
+
+#ifdef _MSC_VER
+#define INTERNAL_PROPERTY(...) CT_PP_CAT(CT_PP_OVERLOAD(INTERNAL_PROPERTY_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
+#else
+#define INTERNAL_PROPERTY(...) CT_PP_OVERLOAD(INTERNAL_PROPERTY_, __VA_ARGS__)(__VA_ARGS__)
+#endif
 
 #ifdef _MSC_VER
 #define PROPERTY(...) CT_PP_CAT(CT_PP_OVERLOAD(PROPERTY_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
@@ -150,12 +177,26 @@
 #endif
 
 #define MEMBER_FUNCTION_1(NAME)                                                                                        \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeMemberFunctionPointers<DataType>(#NAME, &DataType::NAME)) getPtr(                \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType>(#NAME, &DataType::NAME);                                       \
     }
 
 #define MEMBER_FUNCTION_N(NAME, ...)                                                                                   \
+    constexpr static decltype(ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__)) getPtr(                    \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
+    {                                                                                                                  \
+        return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
+    }
+
+#define INTERNAL_MEMBER_FUNCTION_1(NAME)                                                                               \
+    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    {                                                                                                                  \
+        return ct::makeMemberFunctionPointers<DataType>(#NAME, &DataType::NAME);                                       \
+    }
+
+#define INTERNAL_MEMBER_FUNCTION_N(NAME, ...)                                                                          \
     constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
     {                                                                                                                  \
         return ct::makeMemberFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
@@ -170,10 +211,26 @@
 #define MEMBER_FUNCTION_8(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
 #define MEMBER_FUNCTION_9(NAME, ...) MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
 
+#define INTERNAL_MEMBER_FUNCTION_2(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_3(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_4(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_5(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_6(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_7(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_8(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+#define INTERNAL_MEMBER_FUNCTION_9(NAME, ...) INTERNAL_MEMBER_FUNCTION_N(NAME, __VA_ARGS__)
+
 #ifdef _MSC_VER
 #define MEMBER_FUNCTION(...) CT_PP_CAT(CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
 #else
 #define MEMBER_FUNCTION(...) CT_PP_OVERLOAD(MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__)
+#endif
+
+#ifdef _MSC_VER
+#define INTERNAL_MEMBER_FUNCTION(...)                                                                                  \
+    CT_PP_CAT(CT_PP_OVERLOAD(INTERNAL_MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__), CT_PP_EMPTY())
+#else
+#define INTERNAL_MEMBER_FUNCTION(...) CT_PP_OVERLOAD(INTERNAL_MEMBER_FUNCTION_, __VA_ARGS__)(__VA_ARGS__)
 #endif
 
 #define MEMBER_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
@@ -308,6 +365,6 @@
 
 #define ENUM_BITVALUE(NAME, VALUE) static constexpr const EnumValueType NAME = static_cast<uint64_t>(1) << VALUE;
 
-#endif // ifndef(__NVCC__)
+#endif // ifndef(__NVCC__)*/
 
 #endif // CT_REFLECT_MACROS_HPP

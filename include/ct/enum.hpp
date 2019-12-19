@@ -12,7 +12,7 @@
  * A ct enum supports ostream<< operators and a fromString method.
  * The only caveat to this for c++ < 2017 is that you cannot take a ct Enum by reference into a function, it must be
  * taken by value.  Find example usage in tests/enum
-*/
+ */
 namespace ct
 {
 
@@ -269,5 +269,5 @@ namespace ct
     {
         return fromString<T>(str, ct::Reflect<T>::end(), case_sensitive);
     }
-}
+} // namespace ct
 #endif // CT_ENUM_HPP

@@ -122,7 +122,7 @@ struct Virtual
 {
     virtual ~Virtual();
     REFLECT_INTERNAL_BEGIN(Virtual)
-        MEMBER_FUNCTION(foo)
+        INTERNAL_MEMBER_FUNCTION(foo)
     REFLECT_INTERNAL_END;
     virtual void foo();
 };
