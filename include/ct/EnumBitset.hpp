@@ -55,6 +55,8 @@ namespace ct
         return V;
     }
 
+    constexpr uint16_t index(uint64_t v, uint16_t i = 0) { return (v & (1 << i)) ? i : index(v, i + 1); }
+
     template <class T, class E, uint16_t V, uint16_t I>
     constexpr bool operator==(T v, BitsetIndex<E, V, I>)
     {
@@ -277,7 +279,7 @@ namespace ct
         }
         return output;
     }
-}
+} // namespace ct
 
 namespace std
 {
@@ -288,6 +290,6 @@ namespace std
         ct::bitsetRecurse(os, v, ct::Reflect<T>::end(), empty);
         return os;
     }
-}
+} // namespace std
 
 #endif // CT_ENUM_BITSET_HPP

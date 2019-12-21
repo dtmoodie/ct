@@ -29,20 +29,10 @@ int main(int argc, char** argv)
     return RUN_ALL_TESTS();
 }
 
-BITSET_BEGIN(Bitset)
-ENUM_BITVALUE(v0, 0)
-ENUM_BITVALUE(v1, 1)
-ENUM_BITVALUE(v2, 2)
-ENUM_BITVALUE(v3, 3)
-ENUM_BITVALUE(v4, 4)
-ENUM_BITVALUE(v5, 5)
-ENUM_END
-;
-
 template <uint64_t V>
 void bitsetFoo(const std::string& expected)
 {
-    auto bitset = Bitset(V);
+    auto bitset = MyClass::Bitset(V);
     std::stringstream ss;
     ss << bitset;
     ASSERT_EQ(expected, ss.str());
@@ -296,21 +286,21 @@ TEST(enum_value_from_string, BitwiseEnum)
 
 TEST(enum_bitwise, bitwise)
 {
-    ct::StaticEquality<uint64_t, Bitset::v0.toBitset(), 1>{};
-    ct::StaticEquality<uint64_t, Bitset::v1.toBitset(), 1 << 1>{};
-    ct::StaticEquality<uint64_t, Bitset::v2.toBitset(), 1 << 2>{};
-    ct::StaticEquality<uint64_t, Bitset::v3.toBitset(), 1 << 3>{};
-    ct::StaticEquality<uint64_t, Bitset::v4.toBitset(), 1 << 4>{};
-    ct::StaticEquality<uint64_t, Bitset::v5.toBitset(), 1 << 5>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v0.toBitset(), 1>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v1.toBitset(), 1 << 1>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v2.toBitset(), 1 << 2>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v3.toBitset(), 1 << 3>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v4.toBitset(), 1 << 4>{};
+    ct::StaticEquality<uint64_t, MyClass::Bitset::v5.toBitset(), 1 << 5>{};
 
-    Bitset bitset(Bitset::v0);
-    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    MyClass::Bitset bitset(MyClass::Bitset::v0);
+    for (MyClass::Bitset i = MyClass::Bitset::v0; i <= MyClass::Bitset::v5; ++i)
     {
-        ct::EnumBitset<Bitset> bitset;
+        ct::EnumBitset<MyClass::Bitset> bitset;
         ASSERT_EQ(bitset.test(i), false);
         bitset.set(i);
         ASSERT_EQ(bitset.test(i), true);
-        for (Bitset j = Bitset::v1; j <= Bitset::v5; ++j)
+        for (MyClass::Bitset j = MyClass::Bitset::v1; j <= MyClass::Bitset::v5; ++j)
         {
             if (i != j)
             {
@@ -321,7 +311,7 @@ TEST(enum_bitwise, bitwise)
                 std::stringstream ss;
                 ss << bitset;
 
-                auto from_str = ct::bitsetFromString<Bitset>(ss.str());
+                auto from_str = ct::bitsetFromString<MyClass::Bitset>(ss.str());
                 ASSERT_EQ(from_str.test(i), true);
                 ASSERT_EQ(from_str.test(j), true);
 
@@ -334,39 +324,48 @@ TEST(enum_bitwise, bitwise)
         ASSERT_EQ(bitset.test(i), false);
     }
 
-    ct::EnumBitset<Bitset> bset;
-    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    ct::EnumBitset<MyClass::Bitset> bset;
+    for (MyClass::Bitset i = MyClass::Bitset::v0; i <= MyClass::Bitset::v5; ++i)
     {
         ASSERT_EQ(bset.test(i), false);
     }
-    for (Bitset i = Bitset::v0; i <= Bitset::v5; ++i)
+    for (MyClass::Bitset i = MyClass::Bitset::v0; i <= MyClass::Bitset::v5; ++i)
     {
         bset.set(i);
         auto j = i;
         ++j;
-        for (; j <= Bitset::v5; ++j)
+        for (; j <= MyClass::Bitset::v5; ++j)
         {
             ASSERT_EQ(bset.test(j), false);
         }
 
-        for (Bitset j = Bitset::v0; j <= i; ++j)
+        for (MyClass::Bitset j = MyClass::Bitset::v0; j <= i; ++j)
         {
             ASSERT_EQ(bset.test(j), true);
         }
     }
 }
 
+TEST(enum_bitwise, extended_bitwise)
+{
+    ct::StaticEquality<uint64_t, MyClass::BitwiseEnum::kVALUE0, 1>{};
+    ct::StaticEquality<uint64_t, MyClass::BitwiseEnum::kVALUE1, (1 << 1)>{};
+    ct::StaticEquality<uint64_t, MyClass::BitwiseEnum::kVALUE2, (1 << 2)>{};
+    ct::StaticEquality<uint64_t, MyClass::ExtendedEnum::kVALUE3, (1 << 3)>{};
+    ct::StaticEquality<uint64_t, MyClass::ExtendedEnum::kVALUE4, (1 << 4)>{};
+}
+
 TEST(enum_bitwise, from_template)
 {
-    auto bits = ct::EnumBitset<Bitset>(Bitset::v0 | Bitset::v1);
-    ASSERT_EQ(bits.test(Bitset::v0), true);
-    ASSERT_EQ(bits.test(Bitset::v1), true);
-    constexpr uint64_t v = Bitset::v0 | Bitset::v1;
+    auto bits = ct::EnumBitset<MyClass::Bitset>(MyClass::Bitset::v0 | MyClass::Bitset::v1);
+    ASSERT_EQ(bits.test(MyClass::Bitset::v0), true);
+    ASSERT_EQ(bits.test(MyClass::Bitset::v1), true);
+    constexpr uint64_t v = MyClass::Bitset::v0 | MyClass::Bitset::v1;
     bitsetFoo<v>("v1|v0");
-    bitsetFoo<uint64_t(Bitset::v0)>("v0");
-    bitsetFoo<uint64_t(Bitset::v1)>("v1");
-    bitsetFoo<uint64_t(Bitset::v2)>("v2");
-    bitsetFoo<uint64_t(Bitset::v3)>("v3");
+    bitsetFoo<uint64_t(MyClass::Bitset::v0)>("v0");
+    bitsetFoo<uint64_t(MyClass::Bitset::v1)>("v1");
+    bitsetFoo<uint64_t(MyClass::Bitset::v2)>("v2");
+    bitsetFoo<uint64_t(MyClass::Bitset::v3)>("v3");
 }
 
 // This is mostly to ensure certain operators are overloaded such that there are no undefined references in < c++17

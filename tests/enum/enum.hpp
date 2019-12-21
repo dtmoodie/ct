@@ -28,6 +28,20 @@ struct MyClass
         ENUM_BITVALUE(kVALUE2, 2)
     ENUM_END;
 
+    BITSET_BEGIN(ExtendedEnum)
+        ENUM_BITVALUE(kVALUE3, ct::index(BitwiseEnum::kVALUE2) + 1)
+        ENUM_BITVALUE(kVALUE4, ct::index(kVALUE3) + 1)
+    ENUM_END;
+
+    BITSET_BEGIN(Bitset)
+        ENUM_BITVALUE(v0, 0)
+        ENUM_BITVALUE(v1, 1)
+        ENUM_BITVALUE(v2, 2)
+        ENUM_BITVALUE(v3, 3)
+        ENUM_BITVALUE(v4, 4)
+        ENUM_BITVALUE(v5, 5)
+    ENUM_END;
+
     ENUM_BEGIN(MixedBitwise, uint64_t)
         ENUM_VALUE(kVALUE0, 1)
         ENUM_VALUE(kVALUE1, 2)
