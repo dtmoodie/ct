@@ -77,7 +77,7 @@ target_include_directories(test_ct_get_name SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_get_name PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_get_name test_ct_get_name)
 
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     target_compile_options(test_ct_static_checks PRIVATE -Werror -Wall -Wextra)
     target_compile_options(test_ct_reflect_access PRIVATE -Werror -Wall -Wextra)
     target_compile_options(test_ct_reflect_print PRIVATE -Werror -Wall -Wextra)
