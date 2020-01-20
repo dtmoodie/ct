@@ -123,6 +123,7 @@ namespace ct
             return ct::setMutable(m_setter, m_getter, obj);
         }
         METADATA getMetadata() const { return m_metadata; }
+        constexpr StringView getName() const { return m_name; }
     };
 
     template <class GET_PTR, Flag_t FLAGS, class METADATA>
@@ -147,6 +148,7 @@ namespace ct
             return ct::get(m_getter, obj);
         }
         METADATA getMetadata() const { return m_metadata; }
+        constexpr StringView getName() const { return m_name; }
     };
 
     template <Flag_t FLAGS = 0, class GET_PTR, class SET_PTR>
