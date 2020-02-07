@@ -151,19 +151,22 @@
 #endif
 
 #define PROPERTY_WITH_FLAG_1(FLAG, NAME)                                                                               \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, &DataType::NAME, nullptr)) getPtr(            \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, &DataType::NAME, nullptr);                                   \
     }
 
 #define PROPERTY_WITH_FLAG_2(FLAG, NAME, GETTER)                                                                       \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, nullptr)) getPtr(                     \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, nullptr);                                            \
     }
 
 #define PROPERTY_WITH_FLAG_3(FLAG, NAME, GETTER, SETTER)                                                               \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER)) getPtr(                      \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeMemberPropertyPointer<FLAG>(#NAME, GETTER, SETTER);                                             \
     }
@@ -240,13 +243,15 @@
     }
 
 #define STATIC_FUNCTION(NAME, ...)                                                                                     \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeStaticFunctionPointers<DataType>(#NAME, __VA_ARGS__)) getPtr(                    \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeStaticFunctionPointers<DataType>(#NAME, __VA_ARGS__);                                           \
     }
 
 #define STATIC_FUNCTION_WITH_FLAG(FLAG, NAME, ...)                                                                     \
-    constexpr static auto getPtr(const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                 \
+    constexpr static decltype(ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__)) getPtr(              \
+        const ct::Indexer<__COUNTER__ - REFLECT_COUNT_BEGIN>)                                                          \
     {                                                                                                                  \
         return ct::makeStaticFunctionPointers<DataType, FLAG>(#NAME, __VA_ARGS__);                                     \
     }
