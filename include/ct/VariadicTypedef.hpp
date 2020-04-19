@@ -1,10 +1,13 @@
 #ifndef CT_VARIADIC_TYPEDEF_HPP
 #define CT_VARIADIC_TYPEDEF_HPP
-#include <utility>
 #include <cstddef>
+#include <cstdint>
+#include <utility>
 
 namespace ct
 {
+    template <typename... Args>
+    struct VariadicTypedef;
     template <typename T, class T2>
     struct Append;
 
@@ -27,6 +30,45 @@ namespace ct
         using type = T;
     };
 
+    template <template <class> class PRED, class T>
+    constexpr bool allImpl(VariadicTypedef<T>)
+    {
+        return PRED<T>::value;
+    }
+
+    template <template <class> class PRED, class T, class... Ts>
+    constexpr bool allImpl(VariadicTypedef<T, Ts...>)
+    {
+        return !PRED<T>::value ? false : allImpl<PRED>(VariadicTypedef<Ts...>{});
+    }
+
+    template <template <class> class PRED, class T>
+    constexpr bool anyImpl(VariadicTypedef<T>)
+    {
+        return PRED<T>::value;
+    }
+
+    template <template <class> class PRED, class T, class... Ts>
+    constexpr bool anyImpl(ct::VariadicTypedef<T, Ts...>)
+    {
+        return PRED<T>::value ? true : allImpl<PRED>(VariadicTypedef<Ts...>{});
+    }
+
+    template <template <class> class PRED, class T>
+    constexpr int32_t indexOfImpl(int32_t idx, VariadicTypedef<T>)
+    {
+        return PRED<T>::value ? idx : -1;
+    }
+
+    template <template <class> class PRED, class T, class... Ts>
+    constexpr int32_t indexOfImpl(int32_t idx, VariadicTypedef<T, Ts...>)
+    {
+        return PRED<T>::value ? idx : indexOfImpl<PRED>(idx + 1, VariadicTypedef<Ts...>{});
+    }
+
+    template <size_t I, size_t J, class T>
+    struct TypeAt;
+
     template <typename... Args>
     struct VariadicTypedef
     {
@@ -37,29 +79,55 @@ namespace ct
         using Prepend = VariadicTypedef<T, Args...>;
         constexpr static const auto len = sizeof...(Args);
 
+        template <template <class> class T>
+        static constexpr bool all()
+        {
+            return allImpl<T>(VariadicTypedef<Args...>{});
+        }
+
+        template <template <class> class T>
+        static constexpr bool any()
+        {
+            return anyImpl<T>(VariadicTypedef<Args...>{});
+        }
+
         template <class T>
-        static constexpr int count()
+        static constexpr int countType()
         {
             return CountType<T, VariadicTypedef<Args...>>::count;
+        }
+
+        template <template <class> class T>
+        static constexpr int32_t indexOf()
+        {
+            return indexOfImpl<T>(0, VariadicTypedef<Args...>{});
         }
 
         template <class T>
         static constexpr bool contains()
         {
-            return count<T>() != 0;
+            return countType<T>() != 0;
         }
 
-        static constexpr VariadicTypedefIterator<Args...> begin()
-        {
-            return {};
-        }
+        template <size_t I>
+        using TypeAt = typename TypeAt<I, 0, VariadicTypedef<Args...>>::type;
 
-        static constexpr size_t size()
-        {
-            return sizeof...(Args);
-        }
+        static constexpr VariadicTypedefIterator<Args...> begin() { return {}; }
+
+        static constexpr size_t size() { return sizeof...(Args); }
 
         using tuple_type = std::tuple<Args...>;
+    };
+
+    template <size_t I, size_t J, class T, class... Ts>
+    struct TypeAt<I, J, VariadicTypedef<T, Ts...>> : TypeAt<I, J + 1, VariadicTypedef<Ts...>>
+    {
+    };
+
+    template <size_t I, class T, class... Ts>
+    struct TypeAt<I, I, VariadicTypedef<T, Ts...>>
+    {
+        using type = T;
     };
 
     template <typename... Args>
@@ -263,5 +331,5 @@ namespace ct
         using type = typename InsertUniqueMultiple<VariadicTypedef<T1...>, T2>::type;
     };
 
-}
+} // namespace ct
 #endif // CT_VARIADIC_TYPEDEF_HPP

@@ -246,7 +246,7 @@ namespace ct
     template <index_t I, class T>
     constexpr StringView getName()
     {
-        return Reflect<T>::getPtr(ct::Indexer<I>{}).m_name;
+        return Reflect<T>::getPtr(ct::Indexer<I>{}).getName();
     }
 
     template <index_t I, class T>

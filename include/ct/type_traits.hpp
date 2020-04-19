@@ -187,6 +187,9 @@ namespace ct
     using remove_reference_t = typename std::remove_reference<T>::type;
 #endif
 
+    template<class T>
+    using remove_pointer_t = typename std::remove_pointer<T>::type;    
+
     template <class T>
     using remove_cv_t = typename std::remove_cv<T>::type;
 
