@@ -66,11 +66,20 @@ namespace ct
         return PRED<T>::value ? idx : indexOfImpl<PRED>(idx + 1, VariadicTypedef<Ts...>{});
     }
 
-    template <size_t I, size_t J, class T>
-    struct TypeAt;
+    template <class U, class T>
+    constexpr int32_t indexOfTypeImpl(int32_t idx, VariadicTypedef<T>)
+    {
+        return std::is_same<T, U>::value ? idx : -1;
+    }
 
-    template <typename... Args>
-    struct VariadicTypedef
+    template <class U, class T, class... Ts>
+    constexpr int32_t indexOfTypeImpl(int32_t idx, VariadicTypedef<T, Ts...>)
+    {
+        return std::is_same<T, U>::value ? idx : indexOfTypeImpl<U>(idx + 1, VariadicTypedef<Ts...>{});
+    }
+
+    template <class... Args>
+    struct VariadicTypedefImpl
     {
         template <class T>
         using Append = ct::Append<VariadicTypedef<Args...>, T>;
@@ -104,13 +113,32 @@ namespace ct
         }
 
         template <class T>
+        static constexpr int32_t indexOfType()
+        {
+            return indexOfTypeImpl<T>(0, VariadicTypedef<Args...>{});
+        }
+
+        template <class T>
         static constexpr bool contains()
         {
             return countType<T>() != 0;
         }
 
+        template <size_t I, size_t J, class T>
+        struct TypeAtImpl;
+
+        template <size_t I, size_t J, class T, class... Ts>
+        struct TypeAtImpl<I, J, VariadicTypedef<T, Ts...>> : TypeAtImpl<I, J + 1, VariadicTypedef<Ts...>>
+        {
+        };
+
+        template <size_t I, class T, class... Ts>
+        struct TypeAtImpl<I, I, VariadicTypedef<T, Ts...>>
+        {
+            using type = T;
+        };
         template <size_t I>
-        using TypeAt = typename TypeAt<I, 0, VariadicTypedef<Args...>>::type;
+        using TypeAt = typename TypeAtImpl<I, 0, VariadicTypedef<Args...>>::type;
 
         static constexpr VariadicTypedefIterator<Args...> begin() { return {}; }
 
@@ -119,15 +147,19 @@ namespace ct
         using tuple_type = std::tuple<Args...>;
     };
 
-    template <size_t I, size_t J, class T, class... Ts>
-    struct TypeAt<I, J, VariadicTypedef<T, Ts...>> : TypeAt<I, J + 1, VariadicTypedef<Ts...>>
+    template <typename... Args>
+    struct VariadicTypedef : VariadicTypedefImpl<Args...>
     {
     };
 
-    template <size_t I, class T, class... Ts>
-    struct TypeAt<I, I, VariadicTypedef<T, Ts...>>
+    template <typename... Args>
+    struct VariadicTypedef<std::tuple<Args...>> : VariadicTypedefImpl<Args...>
     {
-        using type = T;
+    };
+
+    template <typename... Args>
+    struct VariadicTypedef<std::tuple<Args...>&> : VariadicTypedefImpl<Args...>
+    {
     };
 
     template <typename... Args>
