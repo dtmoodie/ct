@@ -245,6 +245,20 @@ namespace ct
     template <class T, class U>
     using append = typename Append<T, U>::type;
 
+    template <bool CHECK, class AppendItem, class AppendTo>
+    struct AppendIf
+    {
+        using type = typename Append<AppendItem, AppendTo>::type;
+        using tuple_type = typename Append<AppendItem, AppendTo>::tuple_type;
+    };
+
+    template <class T, class U>
+    struct AppendIf<false, T, U>
+    {
+        using type = VariadicTypedef<U>;
+        using tuple_type = std::tuple<U>;
+    };
+
     template <class T>
     using toTuple = typename ConvertToTuple<T>::type;
 
