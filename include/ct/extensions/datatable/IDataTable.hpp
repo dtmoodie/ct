@@ -29,7 +29,8 @@ namespace ct
             template <class T, class U>
             T* begin(T U::*mem_ptr)
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p.template ptr<T>();
@@ -38,7 +39,8 @@ namespace ct
             template <class T, class U>
             DataTableArrayIterator<T> begin(TArrayView<T> U::*mem_ptr)
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p;
@@ -47,7 +49,8 @@ namespace ct
             template <class T, class U>
             const T* begin(T U::*mem_ptr) const
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p.template ptr<T>();
@@ -56,7 +59,8 @@ namespace ct
             template <class T, class U>
             DataTableArrayIterator<const T> begin(TArrayView<T> U::*mem_ptr) const
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p;
@@ -117,15 +121,17 @@ namespace ct
              * @param out
              * @param index of the
              */
-            //virtual void populateData(DTYPE& out, size_t index) { populateDataRecurse(out, index, Reflect<DTYPE>::end()); }
+            // virtual void populateData(DTYPE& out, size_t index) { populateDataRecurse(out, index,
+            // Reflect<DTYPE>::end()); }
             virtual void populateData(DTYPE& out, size_t index) = 0;
+
           private:
             virtual DataTableArrayIterator<void> ptr(size_t offset, size_t idx) = 0;
             virtual DataTableArrayIterator<const void> ptr(size_t offset, size_t idx) const = 0;
         };
 
         template <class DTYPE, class BASE_TYPE>
-        struct IDataTable<DTYPE, VariadicTypedef<BASE_TYPE>>: virtual IDataTable<BASE_TYPE>
+        struct IDataTable<DTYPE, VariadicTypedef<BASE_TYPE>> : virtual IDataTable<BASE_TYPE>
         {
             using IDataTable<BASE_TYPE>::populateData;
 
@@ -133,7 +139,8 @@ namespace ct
             template <class T, class U>
             T* begin(T U::*mem_ptr)
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p.template ptr<T>();
@@ -142,7 +149,8 @@ namespace ct
             template <class T, class U>
             DataTableArrayIterator<T> begin(TArrayView<T> U::*mem_ptr)
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p;
@@ -151,7 +159,8 @@ namespace ct
             template <class T, class U>
             const T* begin(T U::*mem_ptr) const
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p.template ptr<T>();
@@ -160,7 +169,8 @@ namespace ct
             template <class T, class U>
             DataTableArrayIterator<const T> begin(TArrayView<T> U::*mem_ptr) const
             {
-                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value || IsBase<Base<U>, Derived<DTYPE>>::value,
+                static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
+                                  IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
                 return p;
@@ -221,19 +231,62 @@ namespace ct
              * @param out
              * @param index of the
              */
-            //virtual void populateData(DTYPE& out, size_t index) { populateDataRecurse(out, index, Reflect<DTYPE>::end()); }
+            // virtual void populateData(DTYPE& out, size_t index) { populateDataRecurse(out, index,
+            // Reflect<DTYPE>::end()); }
             virtual void populateData(DTYPE& out, size_t index) = 0;
+
           private:
             virtual DataTableArrayIterator<void> ptr(size_t offset, size_t idx) = 0;
             virtual DataTableArrayIterator<const void> ptr(size_t offset, size_t idx) const = 0;
         };
 
+        struct IComponentProvider
+        {
+            virtual ~IComponentProvider() = default;
+            virtual bool providesComponent(const std::type_info&) const = 0;
+        };
 
-        template<class DTYPE, class DERIVED, class DERIVED_TYPES = typename Reflect<DTYPE>::BaseTypes>
+        template <class T>
+        struct TComponentProvider : IComponentProvider
+        {
+            bool providesComponent(const std::type_info& info) const override { return &info == &typeid(T); }
+            // virtual TArrayView<T> getComponentMutable() = 0;
+            // virtual TArrayView<const T> getComponent() const = 0;
+        };
+
+        template <class DERIVED, class T>
+        struct TComponentProviderImpl : IComponentProvider
+        {
+            bool providesComponent(const std::type_info&) const override { return false; }
+        };
+
+        template <class DERIVED, class T>
+        struct TComponentProviderImpl<DERIVED, VariadicTypedef<T>> : TComponentProvider<T>
+        {
+        };
+
+        template <class DERIVED, class T, class... U>
+        struct TComponentProviderImpl<DERIVED, VariadicTypedef<T, U...>>
+            : TComponentProvider<T>, TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>
+        {
+            using super = TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>;
+
+            bool providesComponent(const std::type_info& type) const override
+            {
+                if (super::providesComponent(type))
+                {
+                    return true;
+                }
+                return TComponentProvider<T>::providesComponent(type);
+            }
+        };
+
+        template <class DTYPE, class DERIVED, class DERIVED_TYPES = typename Reflect<DTYPE>::BaseTypes>
         struct IDataTableImpl;
 
-        template<class DTYPE, class DERIVED, class BASE_TYPE>
-        struct IDataTableImpl<DTYPE, DERIVED, VariadicTypedef<BASE_TYPE>>: virtual IDataTable<DTYPE>, IDataTableImpl<BASE_TYPE, DERIVED>
+        template <class DTYPE, class DERIVED, class BASE_TYPE>
+        struct IDataTableImpl<DTYPE, DERIVED, VariadicTypedef<BASE_TYPE>> : virtual IDataTable<DTYPE>,
+                                                                            IDataTableImpl<BASE_TYPE, DERIVED>
         {
             using IDataTableImpl<BASE_TYPE, DERIVED>::populateData;
             void populateData(DTYPE& out, size_t index) override
@@ -242,14 +295,14 @@ namespace ct
             }
         };
 
-        template<class DTYPE, class DERIVED>
-        struct IDataTableImpl<DTYPE, DERIVED, VariadicTypedef<>>: virtual IDataTable<DTYPE>
+        template <class DTYPE, class DERIVED>
+        struct IDataTableImpl<DTYPE, DERIVED, VariadicTypedef<>> : virtual IDataTable<DTYPE>
         {
             void populateData(DTYPE& out, size_t index) override
             {
                 static_cast<DERIVED*>(this)->populateDataRecurse(out, index, Reflect<DTYPE>::end());
             }
         };
-    }
-}
+    } // namespace ext
+} // namespace ct
 #endif // CT_EXT_IDATA_TABLE_HPP
