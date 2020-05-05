@@ -2,8 +2,8 @@
 #define CT_EXT_DATA_TABLE_STORAGE_HPP
 #include "DataTableArrayIterator.hpp"
 
-#include <ct/types/TArrayView.hpp>
 #include <ct/types.hpp>
+#include <ct/types/TArrayView.hpp>
 
 #include <tuple>
 #include <vector>
@@ -29,6 +29,7 @@ namespace ct
 
             size_t size() const { return m_data.size(); }
             void resizeSubarray(size_t) {}
+
           private:
             std::vector<T> m_data;
         };
@@ -36,25 +37,13 @@ namespace ct
         template <class T>
         struct DataTableStorage<TArrayView<T>>
         {
-            TArrayView<T> operator[](size_t idx)
-            {
-                return {&m_data[idx * m_stride], m_stride};
-            }
+            TArrayView<T> operator[](size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
 
-            TArrayView<const T> operator[](size_t idx) const
-            {
-                return {&m_data[idx * m_stride], m_stride};
-            }
+            TArrayView<const T> operator[](size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
 
-            DataTableArrayIterator<T> data(size_t idx)
-            {
-                return {&m_data[idx * m_stride], m_stride};
-            }
+            DataTableArrayIterator<T> data(size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
 
-            DataTableArrayIterator<const T> data(size_t idx) const
-            {
-                return {&m_data[idx * m_stride], m_stride};
-            }
+            DataTableArrayIterator<const T> data(size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
 
             void reserve(size_t size) { m_data.reserve(size * m_stride); }
             void push_back(const TArrayView<T>& val)
@@ -97,7 +86,10 @@ namespace ct
         template <class... Ts>
         struct DefaultStoragePolicy
         {
-            std::tuple<DataTableStorage<Ts>...> m_data;
+            using type = std::tuple<DataTableStorage<Ts>...>;
+            type m_data;
+
+            static type init() { return {}; }
 
             template <index_t I>
             auto get() -> decltype(std::get<I>(m_data))
@@ -113,10 +105,40 @@ namespace ct
 
             DefaultStoragePolicy()
             {
-                static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value, "Expect to be returning a reference");
+                static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value,
+                              "Expect to be returning a reference");
             }
         };
-    }
-}
+
+        template <class... Ts>
+        struct SharedPtrStoragePolicy
+        {
+            using type = std::tuple<std::shared_ptr<DataTableStorage<Ts>>...>;
+            type m_data;
+
+            static type init() { return {std::make_shared<DataTableStorage<Ts>>...}; }
+
+            template <index_t I>
+            auto get() -> decltype(*std::get<I>(m_data))
+            {
+                assert(std::get<I>(m_data));
+                return *std::get<I>(m_data);
+            }
+
+            template <index_t I>
+            auto get() const -> decltype(*std::get<I>(m_data))
+            {
+                assert(std::get<I>(m_data));
+                return *std::get<I>(m_data);
+            }
+
+            SharedPtrStoragePolicy()
+            {
+                static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value,
+                              "Expect to be returning a reference");
+            }
+        };
+    } // namespace ext
+} // namespace ct
 
 #endif // CT_EXT_DATA_TABLE_STORAGE_HPP
