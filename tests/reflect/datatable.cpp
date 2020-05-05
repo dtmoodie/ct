@@ -1,5 +1,6 @@
 #include "common.hpp"
 #include <ct/extensions/DataTable.hpp>
+#include <ct/static_asserts.hpp>
 
 #include <chrono>
 #include <cstring>
@@ -440,6 +441,70 @@ TEST(datatable, shared_ptr)
     ASSERT_EQ(&new_storage, &storage);
     ASSERT_EQ(new_storage.data().begin, storage.data().begin);
 }
+
+struct Position : ct::ext::Component
+{
+    REFLECT_INTERNAL_BEGIN(Position)
+        REFLECT_INTERNAL_MEMBER(float, x);
+        REFLECT_INTERNAL_MEMBER(float, y);
+        REFLECT_INTERNAL_MEMBER(float, z);
+    REFLECT_INTERNAL_END;
+};
+
+struct Velocity : ct::ext::Component
+{
+    REFLECT_INTERNAL_BEGIN(Velocity)
+        REFLECT_INTERNAL_MEMBER(float, x);
+        REFLECT_INTERNAL_MEMBER(float, y);
+        REFLECT_INTERNAL_MEMBER(float, z);
+    REFLECT_INTERNAL_END;
+};
+
+struct GameMember
+{
+    REFLECT_INTERNAL_BEGIN(GameMember)
+        REFLECT_INTERNAL_MEMBER(Position, position);
+        REFLECT_INTERNAL_MEMBER(Velocity, velocity);
+    REFLECT_INTERNAL_END;
+};
+
+TEST(entity_component_system, component_access)
+{
+    using components = ct::VariadicTypedef<Position, Velocity>;
+    using selected = typename ct::ext::SelectComponents<components>::type;
+    ct::StaticEqualTypes<selected, components>{};
+    ct::ext::DataTable<GameMember> table;
+    auto ptr = &table;
+
+    EXPECT_TRUE(table.providesComponent(typeid(Position)));
+
+    auto position_provider = dynamic_cast<ct::ext::TComponentProvider<Position>*>(ptr);
+    EXPECT_TRUE(position_provider);
+
+    auto velocity_provider = dynamic_cast<ct::ext::TComponentProvider<Velocity>*>(ptr);
+    EXPECT_TRUE(velocity_provider);
+}
+
+TEST(entity_component_system, component_mutate)
+{
+    ct::ext::DataTable<GameMember> table;
+    auto ptr = &table;
+    table.reserve(5);
+    for (size_t i = 0; i < 5; ++i)
+    {
+        GameMember member;
+        member.position.x = std::rand();
+        member.position.y = std::rand();
+        member.position.z = std::rand();
+        member.velocity.x = std::rand();
+        member.velocity.y = std::rand();
+        member.velocity.z = std::rand();
+        table.push_back(std::move(member));
+    }
+
+    auto position_provider = dynamic_cast<ct::ext::TComponentProvider<Position>*>(ptr);
+    EXPECT_TRUE(position_provider);
+};
 
 int main(int argc, char** argv)
 {
