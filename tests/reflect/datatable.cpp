@@ -80,11 +80,11 @@ bool fclose(float f1, float f2, float eps = 0.00001F)
     return std::abs(f1 - f2) < eps;
 }
 
-template <class T>
-ct::ext::DataTable<T> createAndFillTable(size_t elems)
+template <class T, template <class...> class STORAGE_POLICY = ct::ext::DefaultStoragePolicy>
+ct::ext::DataTable<T, STORAGE_POLICY> createAndFillTable(size_t elems)
 {
     auto val = TestData<T>::init();
-    ct::ext::DataTable<TestB> table;
+    ct::ext::DataTable<TestB, STORAGE_POLICY> table;
     table.reserve(elems);
     for (size_t i = 0; i < 20; ++i)
     {
@@ -412,6 +412,34 @@ TEST_P(DataTablePerformance, search_performance)
 }
 
 INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(10, 14, 18));
+
+TEST(datatable, copy)
+{
+    ct::ext::DataTable<TestB> table = createAndFillTable<TestB>(20);
+
+    const auto& storage = table.storage(&TestB::x);
+
+    auto copy = table;
+
+    const auto& new_storage = copy.storage(&TestB::x);
+
+    ASSERT_NE(storage.data().begin, new_storage.data().begin);
+}
+
+TEST(datatable, shared_ptr)
+{
+    ct::ext::DataTable<TestB, ct::ext::SharedPtrStoragePolicy> table =
+        createAndFillTable<TestB, ct::ext::SharedPtrStoragePolicy>(20);
+
+    const auto& storage = table.storage(&TestB::x);
+
+    auto copy = table;
+
+    const auto& new_storage = copy.storage(&TestB::x);
+
+    ASSERT_EQ(&new_storage, &storage);
+    ASSERT_EQ(new_storage.data().begin, storage.data().begin);
+}
 
 int main(int argc, char** argv)
 {
