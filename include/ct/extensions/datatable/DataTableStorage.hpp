@@ -19,13 +19,14 @@ namespace ct
 
             const T& operator[](size_t idx) const { return m_data[idx]; }
 
-            DataTableArrayIterator<T> data(size_t idx) { return {&m_data[idx], 1}; }
+            DataTableArrayIterator<T> data(size_t idx = 0) { return {&m_data[idx], 1}; }
 
-            DataTableArrayIterator<const T> data(size_t idx) const { return {&m_data[idx], 1}; }
+            DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx], 1}; }
 
             void reserve(size_t size) { m_data.reserve(size); }
 
             void push_back(const T& val) { m_data.push_back(val); }
+            void push_back(T&& val) { m_data.push_back(std::move(val)); }
 
             size_t size() const { return m_data.size(); }
             void resizeSubarray(size_t) {}
@@ -41,9 +42,9 @@ namespace ct
 
             TArrayView<const T> operator[](size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
 
-            DataTableArrayIterator<T> data(size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
+            DataTableArrayIterator<T> data(size_t idx = 0) { return {&m_data[idx * m_stride], m_stride}; }
 
-            DataTableArrayIterator<const T> data(size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
+            DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx * m_stride], m_stride}; }
 
             void reserve(size_t size) { m_data.reserve(size * m_stride); }
             void push_back(const TArrayView<T>& val)
@@ -116,8 +117,6 @@ namespace ct
             using type = std::tuple<std::shared_ptr<DataTableStorage<Ts>>...>;
             type m_data;
 
-            static type init() { return {std::make_shared<DataTableStorage<Ts>>...}; }
-
             template <index_t I>
             auto get() -> decltype(*std::get<I>(m_data))
             {
@@ -134,9 +133,29 @@ namespace ct
 
             SharedPtrStoragePolicy()
             {
+                init(m_data);
                 static_assert(std::is_lvalue_reference<decltype(this->template get<0>())>::value,
                               "Expect to be returning a reference");
             }
+
+          private:
+            static void init(type& data, Indexer<0>)
+            {
+                using Ptr_t = typename std::remove_reference<decltype(std::get<0>(data))>::type;
+                using Storage_t = typename Ptr_t::element_type;
+                std::get<0>(data) = std::make_shared<Storage_t>();
+            }
+            template <index_t I>
+            static void init(type& data, Indexer<I> idx)
+            {
+                using Ptr_t = typename std::remove_reference<decltype(std::get<I>(data))>::type;
+                using Storage_t = typename Ptr_t::element_type;
+                std::get<I>(data) = std::make_shared<Storage_t>();
+                auto next_idx = --idx;
+                init(data, next_idx);
+            }
+
+            static void init(type& data) { init(data, Indexer<sizeof...(Ts) - 1>{}); }
         };
     } // namespace ext
 } // namespace ct
