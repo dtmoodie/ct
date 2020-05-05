@@ -47,15 +47,13 @@ namespace ct
     {
     };
 
-    template<class T, class E = void>
-    struct HasFieldCounter: std::false_type
+    template <class T, class E = void>
+    struct HasFieldCounter : std::false_type
     {
-
     };
-    template<class T>
-    struct HasFieldCounter<T, Valid<decltype(T::NUM_FIELDS)>>: std::true_type
+    template <class T>
+    struct HasFieldCounter<T, Valid<decltype(T::NUM_FIELDS)>> : std::true_type
     {
-
     };
 
     template <class T>
@@ -69,10 +67,9 @@ namespace ct
     };
 
     template <class T>
-    struct IsReflected<T, EnableIf<HasFieldCounter<ReflectImpl<T>>::value>>: std::true_type
+    struct IsReflected<T, EnableIf<HasFieldCounter<ReflectImpl<T>>::value>> : std::true_type
     {
     };
-
 
     template <class T, class U = void>
     using EnableIfReflected = EnableIf<IsReflected<T>::value, U>;
@@ -197,6 +194,25 @@ namespace ct
         using FunctionPtr_t = typename std::decay<decltype(std::get<J>(std::declval<Ptr_t>().m_ptrs))>::type;
         constexpr static const index_t NUM_ARGS = FunctionPtr_t::NUM_ARGS;
     };
+
+    template <class T, class U>
+    constexpr index_t indexOfMemberTypeImpl(Indexer<0>)
+    {
+        return std::is_same<decay_t<typename FieldSetType<T, 0>::type>, U>::value ? 0 : -1;
+    }
+
+    template <class T, class U, index_t I>
+    constexpr index_t indexOfMemberTypeImpl(Indexer<I> idx)
+    {
+        return std::is_same<decay_t<typename FieldSetType<T, I>::type>, U>::value ? I
+                                                                                  : indexOfMemberTypeImpl<T, U>(--idx);
+    }
+
+    template <class T, class U>
+    constexpr index_t indexOfMemberType()
+    {
+        return indexOfMemberTypeImpl<T, U>(Reflect<T>::end());
+    }
 
     template <class T, index_t I, index_t J = 0, class U = void>
     using EnableIfArgs = EnableIf<CountArgs<T, I, J>::NUM_ARGS >= 1, U>;
