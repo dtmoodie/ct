@@ -33,10 +33,8 @@ namespace ct
 
         template <class U, template <class...> class STORAGE_POLICY, class... Args>
         struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>
-            : STORAGE_POLICY<Args...>,
-              IDataTableImpl<U, DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>>,
-              TComponentProviderImpl<DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>,
-                                     typename SelectComponents<VariadicTypedef<Args...>>::type>
+            : STORAGE_POLICY<Args...>, IDataTableImpl<U, DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>>
+
         {
             using Storage = STORAGE_POLICY<Args...>;
             DataTableBase() { fillOffsets(Reflect<U>::end()); }

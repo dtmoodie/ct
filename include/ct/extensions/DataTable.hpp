@@ -17,8 +17,13 @@ namespace ct
     namespace ext
     {
         template <class U, template <class...> class STORAGE_POLICY = DefaultStoragePolicy>
-        struct DataTable : DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>
+        struct DataTable
+            : DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>,
+              TComponentProviderImpl<DataTable<U, STORAGE_POLICY>,
+                                     typename SelectComponents<typename ct::GlobMemberObjects<U>::types>::type>
+
         {
+            using DType = U;
             using Super = DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>;
             using Storage = typename Super::Storage;
 
