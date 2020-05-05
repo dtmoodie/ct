@@ -1,8 +1,9 @@
 #ifndef CT_EXT_DATA_TABLE_BASE_HPP
 #define CT_EXT_DATA_TABLE_BASE_HPP
 #include "IDataTable.hpp"
-#include <ct/reflect.hpp>
 #include <array>
+#include <ct/reflect.hpp>
+#include <ct/type_traits.hpp>
 
 namespace ct
 {
@@ -10,14 +11,37 @@ namespace ct
     {
         template <class DTYPE, template <class...> class STORAGE_POLICY, class T>
         struct DataTableBase;
+        struct Component
+        {
+        };
+
+        template <class T>
+        struct SelectComponents;
+
+        template <class T>
+        struct SelectComponents<VariadicTypedef<T>>
+        {
+            using type = typename AppendIf<IsBase<Base<Component>, Derived<T>>::value, T, VariadicTypedef<>>::type;
+        };
+
+        template <class T, class... U>
+        struct SelectComponents<VariadicTypedef<T, U...>>
+        {
+            using super = SelectComponents<VariadicTypedef<U...>>;
+            using type = typename AppendIf<IsBase<Base<Component>, Derived<T>>::value, T, typename super::type>::type;
+        };
 
         template <class U, template <class...> class STORAGE_POLICY, class... Args>
-        struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>> : STORAGE_POLICY<Args...>, IDataTableImpl<U, DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>>
+        struct DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>
+            : STORAGE_POLICY<Args...>,
+              IDataTableImpl<U, DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>>,
+              TComponentProviderImpl<DataTableBase<U, STORAGE_POLICY, VariadicTypedef<Args...>>,
+                                     typename SelectComponents<VariadicTypedef<Args...>>::type>
         {
             using Storage = STORAGE_POLICY<Args...>;
             DataTableBase() { fillOffsets(Reflect<U>::end()); }
 
-            template<class V>
+            template <class V>
             void populateDataRecurse(V& data, const size_t row, const ct::Indexer<0> idx)
             {
                 const auto accessor = Reflect<V>::getPtr(idx);
@@ -187,6 +211,6 @@ namespace ct
 
             std::array<size_t, sizeof...(Args)> m_field_offsets;
         };
-    }
-}
+    } // namespace ext
+} // namespace ct
 #endif // CT_EXT_DATA_TABLE_BASE_HPP
