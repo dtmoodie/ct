@@ -17,7 +17,7 @@ namespace ct
     namespace ext
     {
         template <class U, template <class...> class STORAGE_POLICY = DefaultStoragePolicy>
-        struct DataTable : public DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>
+        struct DataTable : DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>
         {
             using Super = DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>;
             using Storage = typename Super::Storage;
@@ -79,7 +79,6 @@ namespace ct
 
             size_t size() const override;
         };
-
 
         ///////////////////////////////////////////////////////////////////
         // IMPLEMENTATION
@@ -205,8 +204,8 @@ namespace ct
         {
             return Storage::template get<0>().size();
         }
-    }
-}
+    } // namespace ext
+} // namespace ct
 #include "datatable/print.hpp"
 
 #endif // CT_EXTENSIONS_DATA_TABLE_HPP
