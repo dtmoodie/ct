@@ -501,9 +501,13 @@ TEST(entity_component_system, component_mutate)
         member.velocity.z = std::rand();
         table.push_back(std::move(member));
     }
-
+    ct::StaticEquality<index_t, ct::indexOfMemberType<GameMember, Position>(), 0>{};
+    ct::StaticEquality<index_t, ct::indexOfMemberType<GameMember, Velocity>(), 1>{};
     auto position_provider = dynamic_cast<ct::ext::TComponentProvider<Position>*>(ptr);
     EXPECT_TRUE(position_provider);
+    ct::TArrayView<Position> view;
+    position_provider->getComponentMutable(view);
+    EXPECT_EQ(view.size(), 5);
 };
 
 int main(int argc, char** argv)
