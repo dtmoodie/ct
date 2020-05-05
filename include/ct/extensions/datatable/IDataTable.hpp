@@ -1,6 +1,7 @@
 #ifndef CT_EXT_IDATA_TABLE_HPP
 #define CT_EXT_IDATA_TABLE_HPP
 #include "DataTableArrayIterator.hpp"
+#include "DataTableStorage.hpp"
 
 #include <ct/reflect.hpp>
 
@@ -250,8 +251,11 @@ namespace ct
         struct TComponentProvider : IComponentProvider
         {
             bool providesComponent(const std::type_info& info) const override { return &info == &typeid(T); }
-            // virtual TArrayView<T> getComponentMutable() = 0;
-            // virtual TArrayView<const T> getComponent() const = 0;
+            // We only get views to the data since we are mutating the fields of an entity, we do NOT want to add
+            // new entities with this interface since we would be breaking the associating with other components.
+            // At the table level we can add or remove an entity, but not at the component level
+            virtual TArrayView<T> getComponentMutable() = 0;
+            virtual TArrayView<const T> getComponent() const = 0;
         };
 
         template <class DERIVED, class T>
@@ -263,6 +267,9 @@ namespace ct
         template <class DERIVED, class T>
         struct TComponentProviderImpl<DERIVED, VariadicTypedef<T>> : TComponentProvider<T>
         {
+            TArrayView<T> getComponentMutable() {}
+
+            TArrayView<const T> getComponent() const {}
         };
 
         template <class DERIVED, class T, class... U>
