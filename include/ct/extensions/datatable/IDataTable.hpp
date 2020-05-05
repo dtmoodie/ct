@@ -254,8 +254,8 @@ namespace ct
             // We only get views to the data since we are mutating the fields of an entity, we do NOT want to add
             // new entities with this interface since we would be breaking the associating with other components.
             // At the table level we can add or remove an entity, but not at the component level
-            virtual TArrayView<T> getComponentMutable() = 0;
-            virtual TArrayView<const T> getComponent() const = 0;
+            virtual void getComponentMutable(TArrayView<T>&) = 0;
+            virtual void getComponent(TArrayView<const T>&) const = 0;
         };
 
         template <class DERIVED, class T>
@@ -267,9 +267,9 @@ namespace ct
         template <class DERIVED, class T>
         struct TComponentProviderImpl<DERIVED, VariadicTypedef<T>> : TComponentProvider<T>
         {
-            TArrayView<T> getComponentMutable() {}
+            void getComponentMutable(TArrayView<T>&) {}
 
-            TArrayView<const T> getComponent() const {}
+            void getComponent(TArrayView<const T>&) const {}
         };
 
         template <class DERIVED, class T, class... U>
@@ -277,6 +277,8 @@ namespace ct
             : TComponentProvider<T>, TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>
         {
             using super = TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>;
+            // using DType = typename DERIVED::DType;
+            // static constexpr const index_t I = indexOfMemberType<DType, T>();
 
             bool providesComponent(const std::type_info& type) const override
             {
@@ -285,6 +287,16 @@ namespace ct
                     return true;
                 }
                 return TComponentProvider<T>::providesComponent(type);
+            }
+
+            void getComponentMutable(TArrayView<T>&)
+            {
+                // constexpr const auto ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+            }
+
+            void getComponent(TArrayView<const T>&) const
+            {
+                // constexpr const auto ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
             }
         };
 
