@@ -103,7 +103,7 @@ struct ReflectPrinter : ::testing::Test
     {
         T data = TestData<T>::init();
         std::cout << "\n====================\n";
-        std::cout << ct::Reflect<T>::getName() << std::endl;
+        std::cout << ct::Reflect<T>::getTypeName() << std::endl;
         std::stringstream ss;
         ct::printStruct<ct::PrintOptions>(ss, data);
         CheckPrint<T>::check(ss.str());

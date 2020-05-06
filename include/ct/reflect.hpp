@@ -32,7 +32,7 @@ namespace ct
     struct Reflect
     {
         using BaseTypes = VariadicTypedef<>;
-        static CT_CONSTEXPR_NAME auto getName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
+        static CT_CONSTEXPR_NAME auto getTypeName() -> decltype(GetName<T>::getName()) { return GetName<T>::getName(); }
     };
 
     // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
@@ -152,13 +152,13 @@ namespace ct
     template <class T, class IMPL, typename ENABLE = void>
     struct NameSelector
     {
-        constexpr static StringView getName() { return GetName<T>::getName(); }
+        constexpr static StringView getTypeName() { return GetName<T>::getName(); }
     };
 
     template <class T, class IMPL>
     struct NameSelector<T, IMPL, EnableIf<Has_name<IMPL>::value>>
     {
-        constexpr static StringView getName() { return IMPL::getName(); }
+        constexpr static StringView getTypeName() { return IMPL::getTypeName(); }
     };
 
     /* ImplementationFilter is used to filter out repeatedly visiting base classes while visiting an inheritance
@@ -293,13 +293,13 @@ namespace ct
     template <class T>
     void printTypes(const ct::VariadicTypedef<T>, std::ostream& os)
     {
-        os << ct::Reflect<T>::getName();
+        os << ct::Reflect<T>::getTypeName();
     }
 
     template <class T, class... T1>
     void printTypes(const ct::VariadicTypedef<T, T1...>, std::ostream& os)
     {
-        os << ct::Reflect<T>::getName() << ", ";
+        os << ct::Reflect<T>::getTypeName() << ", ";
         printTypes(ct::VariadicTypedef<T1...>{}, os);
     }
 } // namespace ct

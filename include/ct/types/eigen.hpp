@@ -12,7 +12,7 @@ namespace ct
     {
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
@@ -42,7 +42,7 @@ namespace ct
     {
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
@@ -78,7 +78,7 @@ namespace ct
     {
         using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static TArrayView<const T> getData(const DataType& arr)
         {

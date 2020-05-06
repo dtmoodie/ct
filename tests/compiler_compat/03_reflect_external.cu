@@ -17,7 +17,7 @@ namespace ct
     struct ReflectImpl<TestStruct0>
     {
         using DataType = TestStruct0;
-        static constexpr ct::StringView getName() { return "TestStruct0"; }
+        static constexpr ct::StringView getTypeName() { return "TestStruct0"; }
         static constexpr const ct::index_t REFLECT_COUNT_BEGIN = __COUNTER__ + 1;
 
         constexpr static ct::MemberObjectPointer<float DataType::*, ct::Flags::READABLE | ct::Flags::WRITABLE>

@@ -40,13 +40,13 @@ struct Cerealization : ::testing::Test
             }
             catch (std::exception& exception)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getName()
+                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName()
                           << " failed with exception: " << exception.what() << std::endl;
             }
             cerealization_success = ct::compare(data, loaded_data, DebugEqual());
             if (!cerealization_success)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getName() << std::endl;
+                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
                 WRITE archive(std::cout);
                 archive(cereal::make_nvp("data", data));
             }

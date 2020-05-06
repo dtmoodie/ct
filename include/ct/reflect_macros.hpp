@@ -76,7 +76,7 @@ namespace ct
     struct ReflectImpl<TYPE, void> : ct::ReflectClassFunctionHelper<TYPE, std::is_class<TYPE>::value>                  \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
+        static constexpr ct::StringView getTypeName() { return #TYPE; }                                                \
         REFLECT_STUB
 
 #define REFLECT_DERIVED(TYPE, ...)                                                                                     \
@@ -85,7 +85,7 @@ namespace ct
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
+        static constexpr ct::StringView getTypeName() { return #TYPE; }                                                \
         REFLECT_STUB
 
 #define REFLECT_TEMPLATED_BEGIN(TYPE)                                                                                  \
@@ -100,7 +100,7 @@ namespace ct
 #define REFLECT_INTERNAL_BEGIN(TYPE)                                                                                   \
     REFLECT_STUB                                                                                                       \
         using DataType = TYPE;                                                                                         \
-        static constexpr ct::StringView getName() { return #TYPE; }
+        static constexpr ct::StringView getTypeName() { return #TYPE; }
 
 #define INFER_THIS_TYPE                                                                                                \
     static constexpr auto getTypeHelper()->decltype(this);                                                             \

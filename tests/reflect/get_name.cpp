@@ -82,11 +82,11 @@ struct CheckName : ::testing::Test
     void testName()
     {
         auto expected_name = ExpectedName<T>::getName();
-        if (ct::Reflect<T>::getName() != expected_name)
+        if (ct::Reflect<T>::getTypeName() != expected_name)
         {
             std::cout << "funcname: " << ct::GetName<T>::funcName() << std::endl;
         }
-        EXPECT_EQ(ct::Reflect<T>::getName(), expected_name);
+        EXPECT_EQ(ct::Reflect<T>::getTypeName(), expected_name);
     }
 };
 
