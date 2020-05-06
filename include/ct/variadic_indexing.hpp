@@ -23,6 +23,18 @@ namespace ct
             Indexer<I>{}, Indexer<0>{}, std::forward<Ts>(args)...);
     }
 
+    template <class T, class... Ts>
+    T& get(std::tuple<Ts...>& tup)
+    {
+        return std::get<VariadicTypedef<Ts...>::template indexOfType<T>()>(tup);
+    }
+
+    template <class T, class... Ts>
+    const T& get(const std::tuple<Ts...>& tup)
+    {
+        return std::get<VariadicTypedef<Ts...>::template indexOfType<T>()>(tup);
+    }
+
 } // namespace ct
 
 #endif // CT_VARIADIC_INDEXING_HPP

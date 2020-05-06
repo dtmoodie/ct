@@ -55,7 +55,7 @@ namespace ct
         return std::bind(p, ptr, placeholder_template<Is>{}...);
     }
 
-    template <class R, class... Args, int... Is>
+    template <class R, class... Args>
     std::function<R(Args...)> variadicBind(R (*p)(Args...))
     {
         return variadicBind(p, make_int_sequence<sizeof...(Args)>{});

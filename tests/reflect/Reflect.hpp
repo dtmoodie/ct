@@ -23,9 +23,9 @@ namespace ct
         PUBLIC_ACCESS(y)
         PUBLIC_ACCESS(z)
         MEMBER_FUNCTION(norm, &TestA::norm)
-        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float) const>(&TestA::mul))
-        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(float, float) const>(&TestA::mul))
-        MEMBER_FUNCTION(mul, static_cast<TestA (TestA::*)(int) const>(&TestA::mul))
+        MEMBER_FUNCTION(mul, constFunctionCast<TestA, float>(&TestA::mul))
+        MEMBER_FUNCTION(mul, constFunctionCast<TestA, float, float>(&TestA::mul))
+        MEMBER_FUNCTION(mul, constFunctionCast<TestA, int>(&TestA::mul))
         STATIC_FUNCTION(create, &TestA::create)
     REFLECT_END;
 

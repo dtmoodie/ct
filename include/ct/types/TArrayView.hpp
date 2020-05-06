@@ -9,13 +9,13 @@
 namespace ct
 {
     template <class T = uint8_t, class U>
-    T* ptrCast(U* ptr)
+    CT_DEVICE_INLINE T* ptrCast(U* ptr)
     {
         return static_cast<T*>(static_cast<void*>(ptr));
     }
 
     template <class T = uint8_t, class U>
-    const T* ptrCast(const U* ptr)
+    CT_DEVICE_INLINE const T* ptrCast(const U* ptr)
     {
         return static_cast<const T*>(static_cast<const void*>(ptr));
     }
