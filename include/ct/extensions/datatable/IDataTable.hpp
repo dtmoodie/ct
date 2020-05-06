@@ -267,9 +267,27 @@ namespace ct
         template <class DERIVED, class T>
         struct TComponentProviderImpl<DERIVED, VariadicTypedef<T>> : TComponentProvider<T>
         {
-            void getComponentMutable(TArrayView<T>&) {}
+            void getComponentMutable(TArrayView<T>& out)
+            {
+                using DType = typename DERIVED::DType;
+                constexpr const index_t I = indexOfMemberType<DType, T>();
+                static_assert(I != -1, "");
+                constexpr const auto mem_ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                const auto size = static_cast<DERIVED*>(this)->size();
+                auto ptr = static_cast<DERIVED*>(this)->begin(mem_ptr.m_ptr);
+                out = TArrayView<T>(ptr, size);
+            }
 
-            void getComponent(TArrayView<const T>&) const {}
+            void getComponent(TArrayView<const T>& out) const
+            {
+                using DType = typename DERIVED::DType;
+                constexpr const index_t I = indexOfMemberType<DType, T>();
+                static_assert(I != -1, "");
+                constexpr const auto mem_ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                const auto ptr = static_cast<const DERIVED*>(this)->begin(mem_ptr.m_ptr);
+                const auto size = static_cast<const DERIVED*>(this)->size();
+                out = TArrayView<const T>(ptr, size);
+            }
         };
 
         template <class DERIVED, class T, class... U>
@@ -277,8 +295,6 @@ namespace ct
             : TComponentProvider<T>, TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>
         {
             using super = TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>;
-            // using DType = typename DERIVED::DType;
-            // static constexpr const index_t I = indexOfMemberType<DType, T>();
 
             bool providesComponent(const std::type_info& type) const override
             {
@@ -289,14 +305,26 @@ namespace ct
                 return TComponentProvider<T>::providesComponent(type);
             }
 
-            void getComponentMutable(TArrayView<T>&)
+            void getComponentMutable(TArrayView<T>& out)
             {
-                // constexpr const auto ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                using DType = typename DERIVED::DType;
+                constexpr const index_t I = indexOfMemberType<DType, T>();
+                static_assert(I != -1, "");
+                constexpr const auto mem_ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                const auto size = static_cast<DERIVED*>(this)->size();
+                auto ptr = static_cast<DERIVED*>(this)->begin(mem_ptr.m_ptr);
+                out = TArrayView<T>(ptr, size);
             }
 
-            void getComponent(TArrayView<const T>&) const
+            void getComponent(TArrayView<const T>& out) const
             {
-                // constexpr const auto ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                using DType = typename DERIVED::DType;
+                constexpr const index_t I = indexOfMemberType<DType, T>();
+                static_assert(I != -1, "");
+                constexpr const auto mem_ptr = ct::Reflect<DType>::getPtr(Indexer<I>{});
+                const auto ptr = static_cast<const DERIVED*>(this)->begin(mem_ptr.m_ptr);
+                const auto size = static_cast<const DERIVED*>(this)->size();
+                out = TArrayView<const T>(ptr, size);
             }
         };
 

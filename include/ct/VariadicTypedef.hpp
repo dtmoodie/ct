@@ -238,8 +238,8 @@ namespace ct
     template <>
     struct Append<void, void>
     {
-        using type = VariadicTypedef<void>;
-        using tuple_type = std::tuple<void>;
+        using type = VariadicTypedef<>;
+        using tuple_type = std::tuple<>;
     };
 
     template <class T, class U>
@@ -257,6 +257,20 @@ namespace ct
     {
         using type = VariadicTypedef<U>;
         using tuple_type = std::tuple<U>;
+    };
+
+    template <class T, class... U>
+    struct AppendIf<false, T, VariadicTypedef<U...>>
+    {
+        using type = VariadicTypedef<U...>;
+        using tuple_type = std::tuple<U...>;
+    };
+
+    template <class T>
+    struct AppendIf<false, T, void>
+    {
+        using type = VariadicTypedef<>;
+        using tuple_type = std::tuple<>;
     };
 
     template <class T>

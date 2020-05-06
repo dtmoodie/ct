@@ -21,7 +21,7 @@ namespace ct
         template <class T>
         struct SelectComponents<VariadicTypedef<T>>
         {
-            using type = typename AppendIf<IsBase<Base<Component>, Derived<T>>::value, T, VariadicTypedef<>>::type;
+            using type = typename AppendIf<IsBase<Base<Component>, Derived<T>>::value, T, ct::VariadicTypedef<>>::type;
         };
 
         template <class T, class... U>

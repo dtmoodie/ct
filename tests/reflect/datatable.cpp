@@ -505,9 +505,32 @@ TEST(entity_component_system, component_mutate)
     ct::StaticEquality<index_t, ct::indexOfMemberType<GameMember, Velocity>(), 1>{};
     auto position_provider = dynamic_cast<ct::ext::TComponentProvider<Position>*>(ptr);
     EXPECT_TRUE(position_provider);
-    ct::TArrayView<Position> view;
-    position_provider->getComponentMutable(view);
-    EXPECT_EQ(view.size(), 5);
+    ct::TArrayView<Position> position_view;
+    position_provider->getComponentMutable(position_view);
+    EXPECT_EQ(position_view.size(), 5);
+
+    auto velocity_provider = dynamic_cast<ct::ext::TComponentProvider<Velocity>*>(ptr);
+    ct::TArrayView<Velocity> velocity_view;
+    velocity_provider->getComponentMutable(velocity_view);
+    EXPECT_EQ(velocity_view.size(), 5);
+
+    velocity_view[0].x = 5;
+    velocity_view[0].y = 4;
+    velocity_view[0].z = 3;
+
+    auto member = table[0];
+    EXPECT_EQ(member.velocity.x, 5);
+    EXPECT_EQ(member.velocity.y, 4);
+    EXPECT_EQ(member.velocity.z, 3);
+
+    velocity_view[0].x = 4;
+    velocity_view[0].y = 3;
+    velocity_view[0].z = 2;
+
+    member = table[0];
+    EXPECT_EQ(member.velocity.x, 4);
+    EXPECT_EQ(member.velocity.y, 3);
+    EXPECT_EQ(member.velocity.z, 2);
 };
 
 int main(int argc, char** argv)
