@@ -245,6 +245,10 @@ namespace ct
         {
             virtual ~IComponentProvider() = default;
             virtual bool providesComponent(const std::type_info&) const = 0;
+
+            virtual uint32_t getNumComponents() const = 0;
+            virtual const std::type_info* getComponentType(uint32_t idx) const = 0;
+
             virtual IComponentProvider* getProvider(const std::type_info&) = 0;
             virtual const IComponentProvider* getProvider(const std::type_info&) const = 0;
 
@@ -271,6 +275,8 @@ namespace ct
             bool providesComponent(const std::type_info&) const override { return false; }
             IComponentProvider* getProvider(const std::type_info&) override { return nullptr; }
             const IComponentProvider* getProvider(const std::type_info&) const override { return nullptr; }
+            virtual uint32_t getNumComponents() const { return 0; };
+            virtual const std::type_info* getComponentType(uint32_t) const override { return nullptr; }
         };
 
         template <class DERIVED, class T>
@@ -315,6 +321,16 @@ namespace ct
                 const auto ptr = static_cast<const DERIVED*>(this)->begin(mem_ptr.m_ptr);
                 const auto size = static_cast<const DERIVED*>(this)->size();
                 out = TArrayView<const T>(ptr, size);
+            }
+
+            uint32_t getNumComponents() const override { return 1; }
+            const std::type_info* getComponentType(uint32_t idx) const override
+            {
+                if (idx == 0)
+                {
+                    return &typeid(T);
+                }
+                return nullptr;
             }
         };
 
@@ -373,6 +389,16 @@ namespace ct
                 const auto ptr = static_cast<const DERIVED*>(this)->begin(mem_ptr.m_ptr);
                 const auto size = static_cast<const DERIVED*>(this)->size();
                 out = TArrayView<const T>(ptr, size);
+            }
+
+            uint32_t getNumComponents() const override { return sizeof...(U) + 1; }
+            const std::type_info* getComponentType(uint32_t idx) const override
+            {
+                if (idx == 0)
+                {
+                    return &typeid(T);
+                }
+                return super::getComponentType(idx - 1);
             }
         };
 
