@@ -468,6 +468,20 @@ struct GameMember
     REFLECT_INTERNAL_END;
 };
 
+TEST(entity_component_system, component_query)
+{
+    using components = ct::VariadicTypedef<Position, Velocity>;
+    using selected = typename ct::ext::SelectComponents<components>::type;
+    ct::StaticEqualTypes<selected, components>{};
+    ct::ext::DataTable<GameMember> table;
+
+    EXPECT_TRUE(table.providesComponent(typeid(Position)));
+    EXPECT_TRUE(table.providesComponent(typeid(Velocity)));
+    EXPECT_EQ(table.getNumComponents(), 2);
+    EXPECT_EQ(table.getComponentType(0), &typeid(Position));
+    EXPECT_EQ(table.getComponentType(1), &typeid(Velocity));
+}
+
 TEST(entity_component_system, component_access)
 {
     using components = ct::VariadicTypedef<Position, Velocity>;
@@ -475,8 +489,6 @@ TEST(entity_component_system, component_access)
     ct::StaticEqualTypes<selected, components>{};
     ct::ext::DataTable<GameMember> table;
     auto ptr = &table;
-
-    EXPECT_TRUE(table.providesComponent(typeid(Position)));
 
     auto position_provider = dynamic_cast<ct::ext::TComponentProvider<Position>*>(ptr);
     EXPECT_TRUE(position_provider);
@@ -514,11 +526,17 @@ TEST(entity_component_system, component_mutate)
     velocity_provider->getComponentMutable(velocity_view);
     EXPECT_EQ(velocity_view.size(), 5);
 
+    auto member = table[0];
+
+    EXPECT_NE(member.velocity.x, 5);
+    EXPECT_NE(member.velocity.y, 4);
+    EXPECT_NE(member.velocity.z, 3);
+
     velocity_view[0].x = 5;
     velocity_view[0].y = 4;
     velocity_view[0].z = 3;
 
-    auto member = table[0];
+    member = table[0];
     EXPECT_EQ(member.velocity.x, 5);
     EXPECT_EQ(member.velocity.y, 4);
     EXPECT_EQ(member.velocity.z, 3);
