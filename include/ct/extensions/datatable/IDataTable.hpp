@@ -245,6 +245,13 @@ namespace ct
         {
             virtual ~IComponentProvider() = default;
             virtual bool providesComponent(const std::type_info&) const = 0;
+            virtual IComponentProvider* getProvider(const std::type_info&) = 0;
+            virtual const IComponentProvider* getProvider(const std::type_info&) const = 0;
+
+            template <class T>
+            bool getComponentMutable(TArrayView<T>&);
+            template <class T>
+            bool getComponent(TArrayView<const T>&);
         };
 
         template <class T>
@@ -262,11 +269,32 @@ namespace ct
         struct TComponentProviderImpl : IComponentProvider
         {
             bool providesComponent(const std::type_info&) const override { return false; }
+            IComponentProvider* getProvider(const std::type_info&) override { return nullptr; }
+            const IComponentProvider* getProvider(const std::type_info&) const override { return nullptr; }
         };
 
         template <class DERIVED, class T>
         struct TComponentProviderImpl<DERIVED, VariadicTypedef<T>> : TComponentProvider<T>
         {
+
+            IComponentProvider* getProvider(const std::type_info& type) override
+            {
+                if (&type == &typeid(T))
+                {
+                    return this;
+                }
+                return nullptr;
+            }
+
+            const IComponentProvider* getProvider(const std::type_info& type) const override
+            {
+                if (&type == &typeid(T))
+                {
+                    return this;
+                }
+                return nullptr;
+            }
+
             void getComponentMutable(TArrayView<T>& out)
             {
                 using DType = typename DERIVED::DType;
@@ -295,6 +323,26 @@ namespace ct
             : TComponentProvider<T>, TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>
         {
             using super = TComponentProviderImpl<DERIVED, VariadicTypedef<U...>>;
+
+            IComponentProvider* getProvider(const std::type_info& type) override
+            {
+                IComponentProvider* out = super::getProvider(type);
+                if (!out && &type == &typeid(T))
+                {
+                    out = static_cast<TComponentProvider<T>*>(this);
+                }
+                return out;
+            }
+
+            const IComponentProvider* getProvider(const std::type_info& type) const override
+            {
+                const IComponentProvider* out = super::getProvider(type);
+                if (!out && &type == &typeid(T))
+                {
+                    out = static_cast<const TComponentProvider<T>*>(this);
+                }
+                return out;
+            }
 
             bool providesComponent(const std::type_info& type) const override
             {
@@ -327,6 +375,30 @@ namespace ct
                 out = TArrayView<const T>(ptr, size);
             }
         };
+
+        template <class T>
+        bool IComponentProvider::getComponentMutable(TArrayView<T>& out)
+        {
+            auto provider = getProvider(typeid(T));
+            if (!provider)
+            {
+                return false;
+            }
+            provider->getComponentMutable(out);
+            return true;
+        }
+
+        template <class T>
+        bool IComponentProvider::getComponent(TArrayView<const T>& out)
+        {
+            auto provider = getProvider(typeid(T));
+            if (!provider)
+            {
+                return false;
+            }
+            provider->getComponent(out);
+            return true;
+        }
 
         template <class DTYPE, class DERIVED, class DERIVED_TYPES = typename Reflect<DTYPE>::BaseTypes>
         struct IDataTableImpl;
