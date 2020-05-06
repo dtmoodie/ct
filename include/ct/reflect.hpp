@@ -54,6 +54,82 @@ namespace ct
         static void printHierarchy(std::ostream&, const std::string& = "") {}
     };
 
+    // When reflecting over a type and base types, ImplementationFilter creates two getPtr functions
+    // One that redirects to the implementation and one that redirects to the base types
+    // If either one of these has zero getPtr implementations due to being an empty reflection implementation
+    // then we will run into a compiler error.
+    // These two classes are used to specialize based on the number of fields between the two implementations
+
+    template <class IMPL, class BASES, index_t NUM_FIELDS, index_t START_INDEX, index_t END_INDEX>
+    struct EmptyReflectionHandler
+    {
+        // The generic case where both START_INDEX > 0, thus BASES contains reflection fields
+        // and NUM_FIELDS > 0, and thus IMPL contains reflection fields
+        template <index_t I>
+        constexpr static auto getPtr(const Indexer<I>)
+            -> EnableIf<(I >= START_INDEX) && (I < END_INDEX), decltype(IMPL::getPtr(Indexer<I - START_INDEX>()))>
+        {
+            return IMPL::getPtr(Indexer<I - START_INDEX>());
+        }
+
+        template <index_t I>
+            constexpr static auto getPtr(const Indexer<I> idx)
+                -> EnableIf < I<START_INDEX, decltype(BASES::getPtr(idx))>
+        {
+            return BASES::getPtr(idx);
+        }
+    };
+
+    template <class IMPL, class BASES, index_t START_INDEX, index_t END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, 0, START_INDEX, END_INDEX>
+    {
+        // The specialization where START_INDEX > 0, thus BASES contains reflection fields
+        // but NUM_FIELDS == 0, and thus IMPL contains no reflection fields
+
+        template <index_t I>
+            constexpr static auto getPtr(const Indexer<I> idx)
+                -> EnableIf < I<START_INDEX, decltype(BASES::getPtr(idx))>
+        {
+            return BASES::getPtr(idx);
+        }
+    };
+
+    template <class IMPL, class BASES, index_t END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, 0, 0, END_INDEX>
+    {
+        // The specialization where START_INDEX == 0, thus BASES does not contain reflection fields
+        // and NUM_FIELDS == 0, and thus IMPL contains no reflection fields
+    };
+
+    template <class IMPL, class BASES, index_t NUM_FIELDS, index_t END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, NUM_FIELDS, 0, END_INDEX>
+    {
+        // The specialization where START_INDEX == 0, thus BASES does not contain reflection fields
+        // and NUM_FIELDS > 0, and thus IMPL contains reflection fields
+        template <index_t I>
+        constexpr static auto getPtr(const Indexer<I>)
+            -> EnableIf<(I >= 0) && (I < END_INDEX), decltype(IMPL::getPtr(Indexer<I>()))>
+        {
+            return IMPL::getPtr(Indexer<I>());
+        }
+    };
+
+    // This class just makes it easier to fill the template parameters of EmptyReflectionHandler
+    template <class T, class IMPL, class VISITED>
+    struct EmptyReflectionHandlerSelector
+    {
+        using BaseTypes = typename BaseSelector<IMPL>::BaseTypes_t;
+
+        using Bases_t = ReflectBases<BaseTypes, typename Append<T, VISITED>::type>;
+        using ClassInheritanceList = typename Append<T, typename Bases_t::ClassInheritanceList>::type;
+        using VisitationList = typename Bases_t::VisitationList;
+
+        constexpr static const index_t NUM_FIELDS = IMPL::NUM_FIELDS + Bases_t::NUM_FIELDS;
+        constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
+        constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
+        using type = EmptyReflectionHandler<IMPL, Bases_t, NUM_FIELDS, START_INDEX, END_INDEX>;
+    };
+
     // These classes are used for reflecting about base classes of type T
     // Implementation details not necessary for most users
 
@@ -98,6 +174,7 @@ namespace ct
     // End recursion
     template <class T, class V>
     struct ReflectBasesImpl<VariadicTypedef<T>, V>
+        : EmptyReflectionHandler<Reflect<T, V>, void, Reflect<T, V>::NUM_FIELDS, 0, Reflect<T, V>::NUM_FIELDS>
     {
         using Impl = Reflect<T, V>;
         using VisitationListTmp = typename InsertUnique<T, typename Impl::VisitationList>::type;
@@ -109,11 +186,11 @@ namespace ct
 
         using ClassInheritanceList = typename Impl::ClassInheritanceList;
 
-        template <index_t I>
+        /*template <index_t I>
             constexpr static auto getPtr(const Indexer<I> idx) -> EnableIf < I<END_INDEX, decltype(Impl::getPtr(idx))>
         {
             return Impl::getPtr(idx);
-        }
+        }*/
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
@@ -174,7 +251,7 @@ namespace ct
     */
     template <class T, class IMPL, class VISITED>
     struct ImplementationFilter<T, IMPL, VISITED, EnableIf<!ContainsType<T, VISITED>::value>>
-        : public NameSelector<decay_t<T>, IMPL>
+        : NameSelector<decay_t<T>, IMPL>, EmptyReflectionHandlerSelector<T, IMPL, VISITED>::type
     {
         using DataType = T;
         using BaseTypes = typename BaseSelector<IMPL>::BaseTypes_t;
@@ -186,20 +263,6 @@ namespace ct
         constexpr static const index_t NUM_FIELDS = IMPL::NUM_FIELDS + Bases_t::NUM_FIELDS;
         constexpr static const index_t START_INDEX = Bases_t::END_INDEX;
         constexpr static const index_t END_INDEX = START_INDEX + IMPL::NUM_FIELDS;
-
-        template <index_t I>
-        constexpr static auto getPtr(const Indexer<I>)
-            -> EnableIf<(I >= START_INDEX) && (I < END_INDEX), decltype(IMPL::getPtr(Indexer<I - START_INDEX>()))>
-        {
-            return IMPL::getPtr(Indexer<I - START_INDEX>());
-        }
-
-        template <index_t I>
-            constexpr static auto getPtr(const Indexer<I> idx)
-                -> EnableIf < I<START_INDEX, decltype(Bases_t::getPtr(idx))>
-        {
-            return Bases_t::getPtr(idx);
-        }
 
         static void printHierarchy(std::ostream& os, const std::string& indent = "")
         {
