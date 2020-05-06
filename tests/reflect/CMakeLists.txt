@@ -6,6 +6,7 @@ target_include_directories(test_ct_static_checks SYSTEM PRIVATE ${GTEST_INCLUDE}
 set_target_properties(test_ct_static_checks PROPERTIES FOLDER Tests/ct)
 add_test(test_ct_static_checks test_ct_static_checks)
 
+
 find_package(Eigen3 QUIET)
 if(Eigen3_FOUND)
     include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
@@ -90,3 +91,5 @@ if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
     target_compile_options(test_ct_get_name PRIVATE -Werror -Wall -Wextra)
 endif()
 
+add_executable(test_ct_empty_reflection empty_reflection.cpp)
+target_link_libraries(test_ct_empty_reflection  ct gtest gtest_main)
