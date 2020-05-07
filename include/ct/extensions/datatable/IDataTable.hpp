@@ -256,6 +256,8 @@ namespace ct
             bool getComponentMutable(TArrayView<T>&);
             template <class T>
             bool getComponent(TArrayView<const T>&);
+
+            virtual size_t getNumEntities() const = 0;
         };
 
         template <class T>
@@ -277,6 +279,7 @@ namespace ct
             const IComponentProvider* getProvider(const std::type_info&) const override { return nullptr; }
             virtual uint32_t getNumComponents() const { return 0; };
             virtual const std::type_info* getComponentType(uint32_t) const override { return nullptr; }
+            size_t getNumEntities() const override { return 0; };
         };
 
         template <class DERIVED, class T>
@@ -332,6 +335,7 @@ namespace ct
                 }
                 return nullptr;
             }
+            size_t getNumEntities() const override { return static_cast<const DERIVED*>(this)->size(); };
         };
 
         template <class DERIVED, class T, class... U>
@@ -400,6 +404,7 @@ namespace ct
                 }
                 return super::getComponentType(idx - 1);
             }
+            size_t getNumEntities() const override { return static_cast<const DERIVED*>(this)->size(); };
         };
 
         template <class T>
