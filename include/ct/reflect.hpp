@@ -269,7 +269,7 @@ namespace ct
             auto num_fields = IMPL::NUM_FIELDS;
             auto start_index = START_INDEX;
             auto end_index = END_INDEX;
-            os << indent << "Reflect<" << NameSelector<T, IMPL>::getName() << ", Visited: ";
+            os << indent << "Reflect<" << NameSelector<T, IMPL>::getTypeName() << ", Visited: ";
             printTypes(VISITED{}, os);
             os << "> (" << start_index << ":" << num_fields << ":" << end_index << ')' << std::endl;
             Bases_t::printHierarchy(os, indent + "  ");
