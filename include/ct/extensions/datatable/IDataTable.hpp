@@ -271,6 +271,17 @@ namespace ct
             virtual void getComponent(TArrayView<const T>&) const = 0;
         };
 
+        template <class T>
+        struct TComponentProvider<TArrayView<T>> : IComponentProvider
+        {
+            bool providesComponent(const std::type_info& info) const override { return &info == &typeid(T); }
+            // We only get views to the data since we are mutating the fields of an entity, we do NOT want to add
+            // new entities with this interface since we would be breaking the associating with other components.
+            // At the table level we can add or remove an entity, but not at the component level
+            virtual void getComponentMutable(DataTableArrayIterator<T>&) = 0;
+            virtual void getComponent(DataTableArrayIterator<const T>&) const = 0;
+        };
+
         template <class DERIVED, class T>
         struct TComponentProviderImpl : IComponentProvider
         {
@@ -415,7 +426,8 @@ namespace ct
             {
                 return false;
             }
-            provider->getComponentMutable(out);
+            auto typed = static_cast<TComponentProvider<T>*>(provider);
+            typed->getComponentMutable(out);
             return true;
         }
 
