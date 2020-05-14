@@ -24,12 +24,15 @@ namespace ct
             DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx], 1}; }
 
             void reserve(size_t size) { m_data.reserve(size); }
+            void resize(size_t size) { m_data.resize(size); }
 
             void push_back(const T& val) { m_data.push_back(val); }
             void push_back(T&& val) { m_data.push_back(std::move(val)); }
 
             size_t size() const { return m_data.size(); }
             void resizeSubarray(size_t) {}
+
+            void erase(uint32_t index) { m_data.erase(m_data.begin() + index); }
 
           private:
             std::vector<T> m_data;
@@ -47,6 +50,7 @@ namespace ct
             DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx * m_stride], m_stride}; }
 
             void reserve(size_t size) { m_data.reserve(size * m_stride); }
+            void resize(size_t size) { m_data.resize(size * m_stride); }
             void push_back(const TArrayView<T>& val)
             {
                 if (m_stride == 0 && m_data.size() == 0)
@@ -77,6 +81,13 @@ namespace ct
 
                     m_stride = size;
                 }
+            }
+
+            void erase(uint32_t index)
+            {
+                auto begin = m_data.begin() + index * m_stride;
+                auto end = m_data.begin() + (index + 1) * m_stride;
+                m_data.erase(begin, end);
             }
 
           private:
