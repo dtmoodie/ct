@@ -62,7 +62,7 @@ namespace ct
         template <>
         struct DataTableArrayIterator<void> : DataTableArrayIteratorBase<void, DataTableArrayIterator<void>>
         {
-            DataTableArrayIterator(void* ptr, size_t step) : begin(ptr), stride(step) {}
+            DataTableArrayIterator(void* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step) {}
 
             template <class T>
             DataTableArrayIterator(DataTableArrayIterator<T> other)
@@ -90,7 +90,7 @@ namespace ct
         struct DataTableArrayIterator<const void>
             : DataTableArrayIteratorConstBase<void, DataTableArrayIterator<const void>>
         {
-            DataTableArrayIterator(const void* ptr, size_t step) : begin(ptr), stride(step) {}
+            DataTableArrayIterator(const void* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step) {}
 
             template <class T>
             DataTableArrayIterator(DataTableArrayIterator<T> other)
@@ -117,7 +117,7 @@ namespace ct
         template <class T>
         struct DataTableArrayIterator : DataTableArrayIteratorBase<T, DataTableArrayIterator<T>>
         {
-            DataTableArrayIterator(T* ptr, size_t step) : begin(ptr), stride(step) {}
+            DataTableArrayIterator(T* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step) {}
 
             DataTableArrayIterator(DataTableArrayIterator<void> other)
                 : begin{static_cast<T*>(other.begin)}, stride{other.stride / sizeof(T)}
@@ -135,7 +135,7 @@ namespace ct
         template <class T>
         struct DataTableArrayIterator<const T> : DataTableArrayIteratorConstBase<T, DataTableArrayIterator<const T>>
         {
-            DataTableArrayIterator(const T* ptr, size_t step) : begin(ptr), stride(step / sizeof(T)) {}
+            DataTableArrayIterator(const T* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step / sizeof(T)) {}
 
             DataTableArrayIterator(DataTableArrayIterator<const void> itr)
                 : begin(static_cast<const T*>(itr.begin)), stride(itr.stride / sizeof(T))
