@@ -20,11 +20,15 @@ namespace ct
         return static_cast<const T*>(static_cast<const void*>(ptr));
     }
 
+    struct TArrayViewTag
+    {
+    };
+
     template <class T, ssize_t N = -1>
     struct TArrayView;
 
     template <class T, ssize_t N, class DERIVED>
-    struct TArrayBaseConst
+    struct TArrayBaseConst : TArrayViewTag
     {
         CT_DEVICE_INLINE const T* begin() const;
         CT_DEVICE_INLINE const T* end() const;
@@ -800,6 +804,12 @@ namespace ct
     {
         using Type = TArrayView<T>;
         using ConstType = TArrayView<const T>;
+    };
+
+    template <class T>
+    struct IsArrayView
+    {
+        static constexpr const bool value = IsBase<Base<TArrayViewTag>, Derived<T>>::value;
     };
 } // namespace ct
 
