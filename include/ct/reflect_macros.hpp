@@ -97,6 +97,16 @@ namespace ct
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
         REFLECT_STUB
 
+#define REFLECT_TEMPLATED_DERIVED(TYPE, ...)                                                                           \
+    template <class... Args>                                                                                           \
+    struct ReflectImpl<TYPE<Args...>, void>                                                                            \
+        : ct::ReflectClassFunctionHelper<TYPE<Args...>, std::is_class<TYPE<Args...>>::value>                           \
+    {                                                                                                                  \
+        using DataType = TYPE<Args...>;                                                                                \
+        using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
+        using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
+        REFLECT_STUB
+
 #define REFLECT_INTERNAL_BEGIN(TYPE)                                                                                   \
     REFLECT_STUB                                                                                                       \
         using DataType = TYPE;                                                                                         \
