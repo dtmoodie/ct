@@ -33,6 +33,7 @@ namespace ct
             void resizeSubarray(size_t) {}
 
             void erase(uint32_t index) { m_data.erase(m_data.begin() + index); }
+            void clear() { m_data.clear(); }
 
           private:
             std::vector<T> m_data;
@@ -89,6 +90,8 @@ namespace ct
                 auto end = m_data.begin() + (index + 1) * m_stride;
                 m_data.erase(begin, end);
             }
+
+            void clear() { m_data.clear(); }
 
           private:
             std::vector<T> m_data;
