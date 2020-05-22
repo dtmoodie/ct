@@ -30,6 +30,7 @@ namespace ct
             void push_back(T&& val) { m_data.push_back(std::move(val)); }
 
             size_t size() const { return m_data.size(); }
+            size_t stride() const { return 1; }
             void resizeSubarray(size_t) {}
 
             void erase(uint32_t index) { m_data.erase(m_data.begin() + index); }
@@ -63,7 +64,7 @@ namespace ct
                 m_data.resize(m_data.size() + m_stride);
                 memcpy(&m_data[idx], val.data(), m_stride * sizeof(T));
             }
-            size_t size() const { return m_data.size(); }
+            size_t size() const { return m_data.size() / m_stride; }
             size_t stride() const { return m_stride; }
             void resizeSubarray(size_t size)
             {
@@ -172,6 +173,32 @@ namespace ct
             static void init(type& data) { init(data, Indexer<sizeof...(Ts) - 1>{}); }
         };
     } // namespace ext
+
+    template <class T>
+    struct ReflectImpl<ext::DataTableStorage<T>, void>
+    {
+        using DataType = ext::DataTableStorage<T>;
+        using this_t = ReflectImpl<DataType, void>;
+
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
+        static std::array<size_t, 2> shape(const DataType& data) { return {data.size(), data.stride()}; }
+
+        static void reshape(DataType& data, const std::array<size_t, 2> shape)
+        {
+            data.resizeSubarray(shape[1]);
+            data.resize(shape[0]);
+        }
+
+        static TArrayView<const T> getData(const DataType& data) { return *data.data(); }
+        static TArrayView<T> getDataMutable(DataType& data) { return *data.data(); }
+
+        REFLECT_STUB
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
+            PROPERTY(shape, &this_t::shape, &this_t::reshape)
+        REFLECT_INTERNAL_END;
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
+    };
+
 } // namespace ct
 
 #endif // CT_EXT_DATA_TABLE_STORAGE_HPP
