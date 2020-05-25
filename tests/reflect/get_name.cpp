@@ -53,6 +53,8 @@ EXPECTED_NAME(std::vector<std::string>);
 EXPECTED_NAME(std::vector<std::vector<std::string>>);
 EXPECTED_NAME(Templated<double>);
 EXPECTED_NAME(std::map<std::string, Inherited>);
+EXPECTED_NAME(ct::ext::DataTableStorage<float>);
+EXPECTED_NAME(ct::ext::DataTableStorage<ct::TArrayView<float>>);
 
 #ifdef HAVE_EIGEN
 EXPECTED_NAME(Eigen::Matrix3f);
