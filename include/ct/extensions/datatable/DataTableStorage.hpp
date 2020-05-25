@@ -189,12 +189,18 @@ namespace ct
             data.resize(shape[0]);
         }
 
-        static TArrayView<const T> getData(const DataType& data) { return *data.data(); }
-        static TArrayView<T> getDataMutable(DataType& data) { return *data.data(); }
+        static size_t size(const DataType& data)
+        {
+            return data.size() * data.stride();
+        }
+
+        static auto getData(const DataType& data) -> decltype(*data.data()) { return *data.data(); }
+        static auto getDataMutable(DataType& data) -> decltype(*data.data()) { return *data.data(); }
 
         REFLECT_STUB
             PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(shape, &this_t::shape, &this_t::reshape)
+            PROPERTY(size, &this_t::size)
         REFLECT_INTERNAL_END;
         static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
