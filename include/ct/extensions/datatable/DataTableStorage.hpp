@@ -212,6 +212,47 @@ namespace ct
         static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
 
+    template <class T>
+    struct ReflectImpl<ext::DataTableStorage<TArrayView<T>>, void>
+    {
+        using DataType = ext::DataTableStorage<TArrayView<T>>;
+        using this_t = ReflectImpl<DataType, void>;
+
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
+        static std::array<size_t, 2> shape(const DataType& data) { return {data.size(), data.stride()}; }
+
+        static void reshape(DataType& data, const std::array<size_t, 2> shape)
+        {
+            data.resizeSubarray(shape[1]);
+            data.resize(shape[0]);
+        }
+
+        static size_t size(const DataType& data) { return data.size() * data.stride(); }
+
+        static TArrayView<const T> getData(const DataType& data)
+        { 
+            auto dptr = data.data();
+            const auto size = this_t::size(data);
+            auto ptr = dptr.array(0).data();
+            return TArrayView<const T>(ptr, size);
+        }
+         
+        static TArrayView<T> getDataMutable(DataType& data)
+        { 
+            auto dptr = data.data();
+            const auto size = this_t::size(data);
+            auto ptr = dptr.array(0).data();
+            return TArrayView<T>(ptr, size);
+         }
+
+        REFLECT_STUB
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
+            PROPERTY(shape, &this_t::shape, &this_t::reshape)
+            PROPERTY(size, &this_t::size)
+        REFLECT_INTERNAL_END;
+        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
+    };
+
 } // namespace ct
 
 #endif // CT_EXT_DATA_TABLE_STORAGE_HPP
