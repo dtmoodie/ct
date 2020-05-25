@@ -3,6 +3,7 @@
 
 #include <ct/reflect/cerealize.hpp>
 #include <ct/reflect/compare.hpp>
+#include <ct/reflect/print-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 
 #include <cereal/archives/binary.hpp>
@@ -47,9 +48,12 @@ struct Cerealization : ::testing::Test
             if (!cerealization_success)
             {
                 std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
+                ct::printStruct(std::cout, data);
+                std::cout << std::endl;
                 WRITE archive(std::cout);
                 archive(cereal::make_nvp("data", data));
             }
+            std::cout << std::endl;
             EXPECT_TRUE(cerealization_success);
         }
         std::cout << std::endl;
