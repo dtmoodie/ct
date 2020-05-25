@@ -64,7 +64,17 @@ namespace ct
                 m_data.resize(m_data.size() + m_stride);
                 memcpy(&m_data[idx], val.data(), m_stride * sizeof(T));
             }
-            size_t size() const { return m_data.size() / m_stride; }
+            size_t size() const
+            {
+                if (m_stride == 0)
+                {
+                    return 0;
+                }
+
+                const auto total_size = m_data.size();
+                return total_size / m_stride;
+            }
+
             size_t stride() const { return m_stride; }
             void resizeSubarray(size_t size)
             {
@@ -189,10 +199,7 @@ namespace ct
             data.resize(shape[0]);
         }
 
-        static size_t size(const DataType& data)
-        {
-            return data.size() * data.stride();
-        }
+        static size_t size(const DataType& data) { return data.size() * data.stride(); }
 
         static auto getData(const DataType& data) -> decltype(*data.data()) { return *data.data(); }
         static auto getDataMutable(DataType& data) -> decltype(*data.data()) { return *data.data(); }
