@@ -214,9 +214,9 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(shape, &this_t::shape, &this_t::reshape)
             PROPERTY(size, &this_t::size)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
         REFLECT_INTERNAL_END;
         static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
@@ -255,9 +255,9 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(shape, &this_t::shape, &this_t::reshape)
             PROPERTY(size, &this_t::size)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
         REFLECT_INTERNAL_END;
         static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
