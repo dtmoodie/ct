@@ -135,7 +135,7 @@ namespace ct
         template <class T>
         struct DataTableArrayIterator<const T> : DataTableArrayIteratorConstBase<T, DataTableArrayIterator<const T>>
         {
-            DataTableArrayIterator(const T* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step / sizeof(T)) {}
+            DataTableArrayIterator(const T* ptr = nullptr, size_t step = 1) : begin(ptr), stride(step) {}
 
             DataTableArrayIterator(DataTableArrayIterator<const void> itr)
                 : begin(static_cast<const T*>(itr.begin)), stride(itr.stride / sizeof(T))

@@ -201,8 +201,17 @@ namespace ct
 
         static size_t size(const DataType& data) { return data.size() * data.stride(); }
 
-        static auto getData(const DataType& data) -> decltype(*data.data()) { return *data.data(); }
-        static auto getDataMutable(DataType& data) -> decltype(*data.data()) { return *data.data(); }
+        static TArrayView<const T> getData(const DataType& data)
+        {
+            auto first = *data.data();
+            return TArrayView<const T>(first.begin(), data.size());
+        }
+
+        static TArrayView<T> getDataMutable(DataType& data)
+        {
+            auto first = *data.data();
+            return TArrayView<T>(first.begin(), data.size());
+        }
 
         REFLECT_STUB
             PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
@@ -230,20 +239,20 @@ namespace ct
         static size_t size(const DataType& data) { return data.size() * data.stride(); }
 
         static TArrayView<const T> getData(const DataType& data)
-        { 
+        {
             auto dptr = data.data();
             const auto size = this_t::size(data);
             auto ptr = dptr.array(0).data();
             return TArrayView<const T>(ptr, size);
         }
-         
+
         static TArrayView<T> getDataMutable(DataType& data)
-        { 
+        {
             auto dptr = data.data();
             const auto size = this_t::size(data);
             auto ptr = dptr.array(0).data();
             return TArrayView<T>(ptr, size);
-         }
+        }
 
         REFLECT_STUB
             PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
