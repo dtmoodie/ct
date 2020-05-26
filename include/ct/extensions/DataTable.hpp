@@ -199,9 +199,12 @@ namespace ct
         template <class T>
         DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr)
         {
-            void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
+            const auto offset = memberOffset(mem_ptr);
+            const auto idx = Reflect<U>::end();
+            void* out = this->template storageImpl<DataTableStorage<T>>(offset, idx);
             assert(out != nullptr);
-            return *static_cast<DataTableStorage<T>*>(out);
+            auto typed = static_cast<DataTableStorage<T>*>(out);
+            return *typed;
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
