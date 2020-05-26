@@ -212,7 +212,8 @@ TEST(datatable, dyn_array_init)
         auto emb = table.access(&DynStruct::embeddings, 0);
         EXPECT_EQ(val.embeddings.data(), emb.data());
         EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
-        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 20);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 1);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).stride(), 20);
     }
 }
 
@@ -239,7 +240,8 @@ TEST(datatable, dyn_array_reserve_init)
         auto emb = table.access(&DynStruct::embeddings, 0);
         EXPECT_EQ(val.embeddings.data(), emb.data());
         EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
-        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 20);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 1);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).stride(), 20);
     }
 }
 
