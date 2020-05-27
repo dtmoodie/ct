@@ -319,30 +319,6 @@ namespace ct
         return accessor.set(obj);
     }
 
-    template <class T>
-    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<0>)
-    {
-        return getName<0, T>() == field_name ? 0 : -1;
-    }
-
-    template <class T, index_t I>
-    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<I> idx)
-    {
-        return getName<I, T>() == field_name ? I : indexOfFieldImpl<T>(field_name, --idx);
-    }
-
-    template <class T>
-    constexpr index_t indexOfField(StringView field_name)
-    {
-        return indexOfFieldImpl<T>(field_name, ct::Reflect<T>::end());
-    }
-
-    template <class T>
-    constexpr bool haveField(const char* field_name)
-    {
-        return indexOfField<T>(field_name) != -1;
-    }
-
     template <class M, ct::index_t I, class T>
     M* getMetadata()
     {

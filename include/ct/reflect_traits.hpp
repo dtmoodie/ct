@@ -77,8 +77,38 @@ namespace ct
     template <class T, class U = void>
     using DisableIfReflected = EnableIf<!IsReflected<T>::value, U>;
 
+    template <class T>
+    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<0>)
+    {
+        return getName<0, T>() == field_name ? 0 : -1;
+    }
+
     template <class T, index_t I>
-    using PtrType = decltype(ct::Reflect<typename std::decay<T>::type>::getPtr(Indexer<I>{}));
+    constexpr index_t indexOfFieldImpl(StringView field_name, const Indexer<I> idx)
+    {
+        return getName<I, T>() == field_name ? I : indexOfFieldImpl<T>(field_name, --idx);
+    }
+
+    template <class T>
+    constexpr index_t indexOfField(StringView field_name, EnableIfReflected<T, int32_t> = 0)
+    {
+        return indexOfFieldImpl<T>(field_name, Reflect<T>::end());
+    }
+
+    template <class T>
+    constexpr index_t indexOfField(StringView, DisableIfReflected<T, int32_t> = 0)
+    {
+        return -1;
+    }
+
+    template <class T>
+    constexpr bool haveField(const char* field_name)
+    {
+        return indexOfField<T>(field_name) != -1;
+    }
+
+    template <class T, index_t I>
+    using PtrType = decltype(Reflect<typename std::decay<T>::type>::getPtr(Indexer<I>{}));
 
     template <class T>
     struct IsFunction
