@@ -60,7 +60,7 @@ namespace ct
     // then we will run into a compiler error.
     // These two classes are used to specialize based on the number of fields between the two implementations
 
-    template <class IMPL, class BASES, index_t NUM_FIELDS, index_t START_INDEX, index_t END_INDEX>
+    template <class IMPL, class BASES, index_t NUM_FIELDS, index_t START_INDEX, index_t END_INDEX, class Enable = void>
     struct EmptyReflectionHandler
     {
         // The generic case where both START_INDEX > 0, thus BASES contains reflection fields
@@ -80,8 +80,19 @@ namespace ct
         }
     };
 
+    template <class IMPL, class BASES, index_t NUM_FIELDS, index_t START_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, NUM_FIELDS, START_INDEX, START_INDEX, EnableIf<NUM_FIELDS != 0>>
+    {
+        template <index_t I>
+            constexpr static auto getPtr(const Indexer<I> idx)
+                -> EnableIf < I<START_INDEX, decltype(BASES::getPtr(idx))>
+        {
+            return BASES::getPtr(idx);
+        }
+    };
+
     template <class IMPL, class BASES, index_t START_INDEX, index_t END_INDEX>
-    struct EmptyReflectionHandler<IMPL, BASES, 0, START_INDEX, END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, 0, START_INDEX, END_INDEX, void>
     {
         // The specialization where START_INDEX > 0, thus BASES contains reflection fields
         // but NUM_FIELDS == 0, and thus IMPL contains no reflection fields
@@ -95,14 +106,14 @@ namespace ct
     };
 
     template <class IMPL, class BASES, index_t END_INDEX>
-    struct EmptyReflectionHandler<IMPL, BASES, 0, 0, END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, 0, 0, END_INDEX, void>
     {
         // The specialization where START_INDEX == 0, thus BASES does not contain reflection fields
         // and NUM_FIELDS == 0, and thus IMPL contains no reflection fields
     };
 
     template <class IMPL, class BASES, index_t NUM_FIELDS, index_t END_INDEX>
-    struct EmptyReflectionHandler<IMPL, BASES, NUM_FIELDS, 0, END_INDEX>
+    struct EmptyReflectionHandler<IMPL, BASES, NUM_FIELDS, 0, END_INDEX, void>
     {
         // The specialization where START_INDEX == 0, thus BASES does not contain reflection fields
         // and NUM_FIELDS > 0, and thus IMPL contains reflection fields
