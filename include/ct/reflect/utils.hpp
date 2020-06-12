@@ -17,7 +17,7 @@ namespace ct
         return ptr;
     }
 
-    template <class T, class R, class... ARGS>
+    template <class R, class... ARGS>
     constexpr R (*selectFunctionPointer(R (*ptr)(ARGS...)))(ARGS...)
     {
         return ptr;
