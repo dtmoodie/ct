@@ -54,8 +54,9 @@ EXPECTED_NAME(std::vector<std::vector<std::string>>);
 EXPECTED_NAME(Templated<double>);
 EXPECTED_NAME(std::map<std::string, Inherited>);
 EXPECTED_NAME(ct::ext::DataTableStorage<float>);
+// clang-format off
 EXPECTED_NAME(ct::ext::DataTableStorage<ct::TArrayView<float> >);
-
+// clang-format on
 #ifdef HAVE_EIGEN
 EXPECTED_NAME(Eigen::Matrix3f);
 EXPECTED_NAME(Eigen::MatrixXf);
