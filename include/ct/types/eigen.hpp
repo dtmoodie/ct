@@ -108,20 +108,4 @@ namespace ct
 
 } // namespace ct
 
-#ifdef _MSC_VER
-#include <ct/reflect/cerealize.hpp>
-namespace ct
-{
-    namespace cereal
-    {
-        template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
-        struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
-            : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
-        {
-        };
-    } // namespace cereal
-} // namespace ct
-
-#endif
-
 #endif // CT_EIGEN_HPP
