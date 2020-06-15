@@ -36,6 +36,8 @@ namespace ct
             void erase(uint32_t index) { m_data.erase(m_data.begin() + index); }
             void clear() { m_data.clear(); }
 
+            void insert(uint32_t idx, const T& val) { m_data.insert(m_data.begin() + idx, val); }
+
           private:
             std::vector<T> m_data;
         };
@@ -64,6 +66,18 @@ namespace ct
                 m_data.resize(m_data.size() + m_stride);
                 memcpy(&m_data[idx], val.data(), m_stride * sizeof(T));
             }
+
+            void insert(uint32_t idx, const TArrayView<T>& val)
+            {
+                if (m_stride == 0 && m_data.size() == 0)
+                {
+                    resizeSubarray(val.size());
+                }
+                assert(val.size() == m_stride);
+                auto begin = m_data.data() + idx * m_stride;
+                memcpy(begin, val.data(), m_stride * sizeof(T));
+            }
+
             size_t size() const
             {
                 if (m_stride == 0)
