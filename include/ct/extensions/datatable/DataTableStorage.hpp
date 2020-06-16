@@ -15,6 +15,8 @@ namespace ct
         template <class T>
         struct DataTableStorage
         {
+            using Iterator_t = DataTableArrayIterator<T>;
+            using ConstIterator_t = DataTableArrayIterator<const T>;
             T& operator[](size_t idx) { return m_data[idx]; }
 
             const T& operator[](size_t idx) const { return m_data[idx]; }
@@ -45,6 +47,9 @@ namespace ct
         template <class T>
         struct DataTableStorage<TArrayView<T>>
         {
+            using Iterator_t = DataTableArrayIterator<T>;
+            using ConstIterator_t = DataTableArrayIterator<const T>;
+
             TArrayView<T> operator[](size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
 
             TArrayView<const T> operator[](size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
