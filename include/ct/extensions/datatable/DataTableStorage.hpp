@@ -5,6 +5,8 @@
 #include <ct/types.hpp>
 #include <ct/types/TArrayView.hpp>
 
+#include <minitensor/Tensor.hpp>
+
 #include <tuple>
 #include <vector>
 
@@ -15,15 +17,25 @@ namespace ct
         template <class T>
         struct DataTableStorage
         {
-            using Iterator_t = DataTableArrayIterator<T>;
-            using ConstIterator_t = DataTableArrayIterator<const T>;
             T& operator[](size_t idx) { return m_data[idx]; }
 
             const T& operator[](size_t idx) const { return m_data[idx]; }
 
-            DataTableArrayIterator<T> data(size_t idx = 0) { return {&m_data[idx], 1}; }
+            mt::Tensor<T, 2> data(uint32_t idx = 0)
+            {
+                T* ptr = m_data.data();
+                ptr += idx;
+                mt::Shape<2> shape(m_data.size() - idx, 1);
+                return mt::Tensor<T, 2>(ptr, shape);
+            }
 
-            DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx], 1}; }
+            mt::Tensor<const T, 2> data(uint32_t idx = 0) const
+            {
+                const T* ptr = m_data.data();
+                ptr += idx;
+                mt::Shape<2> shape(m_data.size() - idx, 1);
+                return mt::Tensor<const T, 2>(ptr, shape);
+            }
 
             void reserve(size_t size) { m_data.reserve(size); }
             void resize(size_t size) { m_data.resize(size); }
@@ -47,16 +59,30 @@ namespace ct
         template <class T>
         struct DataTableStorage<TArrayView<T>>
         {
-            using Iterator_t = DataTableArrayIterator<T>;
-            using ConstIterator_t = DataTableArrayIterator<const T>;
 
             TArrayView<T> operator[](size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
 
             TArrayView<const T> operator[](size_t idx) const { return {&m_data[idx * m_stride], m_stride}; }
 
-            DataTableArrayIterator<T> data(size_t idx = 0) { return {&m_data[idx * m_stride], m_stride}; }
+            mt::Tensor<T, 2> data(uint32_t idx = 0)
+            {
+                T* ptr = m_data.data();
+                ptr += idx * m_stride;
+                auto num_elems = m_data.size() / m_stride;
+                num_elems -= idx;
+                mt::Shape<2> shape(num_elems, m_stride);
+                return mt::Tensor<T, 2>(ptr, shape);
+            }
 
-            DataTableArrayIterator<const T> data(size_t idx = 0) const { return {&m_data[idx * m_stride], m_stride}; }
+            mt::Tensor<const T, 2> data(uint32_t idx = 0) const
+            {
+                const T* ptr = m_data.data();
+                ptr += idx * m_stride;
+                auto num_elems = m_data.size() / m_stride;
+                num_elems -= idx;
+                mt::Shape<2> shape(num_elems, m_stride);
+                return mt::Tensor<const T, 2>(ptr, shape);
+            }
 
             void reserve(size_t size) { m_data.reserve(size * m_stride); }
             void resize(size_t size) { m_data.resize(size * m_stride); }
@@ -222,14 +248,14 @@ namespace ct
 
         static TArrayView<const T> getData(const DataType& data)
         {
-            auto first = *data.data();
-            return TArrayView<const T>(first.begin(), data.size());
+            auto tensor = data.data();
+            return TArrayView<const T>(tensor.getData(), data.size());
         }
 
         static TArrayView<T> getDataMutable(DataType& data)
         {
-            auto first = *data.data();
-            return TArrayView<T>(first.begin(), data.size());
+            auto tensor = data.data();
+            return TArrayView<T>(tensor.getData(), data.size());
         }
 
         REFLECT_STUB
@@ -261,7 +287,7 @@ namespace ct
         {
             auto dptr = data.data();
             const auto size = this_t::size(data);
-            auto ptr = dptr.array(0).data();
+            auto ptr = dptr.getData();
             return TArrayView<const T>(ptr, size);
         }
 
@@ -269,7 +295,7 @@ namespace ct
         {
             auto dptr = data.data();
             const auto size = this_t::size(data);
-            auto ptr = dptr.array(0).data();
+            auto ptr = dptr.getData();
             return TArrayView<T>(ptr, size);
         }
 

@@ -34,7 +34,7 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
@@ -54,11 +54,11 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<const T> begin(TArrayView<T> U::*mem_ptr) const
+            mt::Tensor<const T, 2> begin(TArrayView<T> U::*mem_ptr) const
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
@@ -73,11 +73,11 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<T> end(TArrayView<T> U::*mem_ptr)
+            mt::Tensor<T, 2> end(TArrayView<T> U::*mem_ptr)
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
@@ -91,11 +91,11 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<const T> end(TArrayView<T> U::*mem_ptr) const
+            mt::Tensor<const T, 2> end(TArrayView<T> U::*mem_ptr) const
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
@@ -127,8 +127,8 @@ namespace ct
             virtual void populateData(DTYPE& out, size_t index) = 0;
 
           private:
-            virtual DataTableArrayIterator<void> ptr(size_t offset, size_t idx) = 0;
-            virtual DataTableArrayIterator<const void> ptr(size_t offset, size_t idx) const = 0;
+            virtual mt::Tensor<void, 2> ptr(size_t offset, size_t idx) = 0;
+            virtual mt::Tensor<const void, 2> ptr(size_t offset, size_t idx) const = 0;
         };
 
         template <class DTYPE, class BASE_TYPE>
@@ -148,7 +148,7 @@ namespace ct
             }
 
             template <class T, class U>
-            DataTableArrayIterator<T> begin(TArrayView<T> U::*mem_ptr)
+            mt::Tensor<T, 2> begin(TArrayView<T> U::*mem_ptr)
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
@@ -164,11 +164,11 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<const T> begin(TArrayView<T> U::*mem_ptr) const
+            mt::Tensor<const T, 2> begin(TArrayView<T> U::*mem_ptr) const
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
@@ -183,11 +183,11 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<T> end(TArrayView<T> U::*mem_ptr)
+            mt::Tensor<T, 2> end(TArrayView<T> U::*mem_ptr)
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
@@ -201,11 +201,11 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return p.template ptr<T>();
+                return ptrCast<T>(p.getData());
             }
 
             template <class T, class U>
-            DataTableArrayIterator<const T> end(TArrayView<T> U::*mem_ptr) const
+            mt::Tensor<const T, 2> end(TArrayView<T> U::*mem_ptr) const
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
@@ -237,8 +237,8 @@ namespace ct
             virtual void populateData(DTYPE& out, size_t index) = 0;
 
           private:
-            virtual DataTableArrayIterator<void> ptr(size_t offset, size_t idx) = 0;
-            virtual DataTableArrayIterator<const void> ptr(size_t offset, size_t idx) const = 0;
+            virtual mt::Tensor<void, 2> ptr(size_t offset, size_t idx) = 0;
+            virtual mt::Tensor<const void, 2> ptr(size_t offset, size_t idx) const = 0;
         };
 
         struct IComponentProvider

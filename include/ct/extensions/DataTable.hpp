@@ -115,16 +115,18 @@ namespace ct
         template <class T>
         TArrayView<T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx)
         {
-            auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
-            return *p;
+            auto tensor = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
+            const uint32_t num_elements = tensor.getShape()[1];
+            return TArrayView<T>(ptrCast<T>(tensor.getData()), num_elements);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         TArrayView<const T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx) const
         {
-            auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
-            return *p;
+            auto tensor = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
+            const uint32_t num_elements = tensor.getShape()[1];
+            return TArrayView<const T>(ptrCast<const T>(tensor.getData()), num_elements);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -132,7 +134,7 @@ namespace ct
         T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr)
         {
             auto p = this->ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
-            return p.template ptr<T>();
+            return ptrCast<T>(p.getData());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -140,7 +142,7 @@ namespace ct
         const T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr) const
         {
             auto p = this->ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
-            return p.template ptr<T>();
+            return ptrCast<const T>(p.getData());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -148,7 +150,7 @@ namespace ct
         T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr)
         {
             auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
-            return p.template ptr<T>();
+            return static_cast<T*>(p.getData());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -156,7 +158,7 @@ namespace ct
         const T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr) const
         {
             auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
-            return p.template ptr<T>();
+            return static_cast<const T*>(p.getData());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>

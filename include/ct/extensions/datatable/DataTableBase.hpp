@@ -78,7 +78,7 @@ namespace ct
                 push(data, --idx);
             }
 
-            DataTableArrayIterator<void> ptr(const size_t offset, const size_t index, const ct::Indexer<0>)
+            mt::Tensor<void, 2> ptr(const size_t offset, const size_t index, const ct::Indexer<0>)
             {
                 if (offset == m_field_offsets[0])
                 {
@@ -88,7 +88,7 @@ namespace ct
             }
 
             template <index_t I>
-            DataTableArrayIterator<void> ptr(const size_t offset, const size_t index, const ct::Indexer<I> field_index)
+            mt::Tensor<void, 2> ptr(const size_t offset, const size_t index, const ct::Indexer<I> field_index)
             {
                 if (offset == m_field_offsets[I])
                 {
@@ -97,12 +97,12 @@ namespace ct
                 return ptr(offset, index, --field_index);
             }
 
-            DataTableArrayIterator<void> ptr(const size_t offset, const size_t index) override
+            mt::Tensor<void, 2> ptr(const size_t offset, const size_t index) override
             {
                 return ptr(offset, index, ct::Reflect<U>::end());
             }
 
-            DataTableArrayIterator<const void> ptr(const size_t offset, const size_t index, ct::Indexer<0>) const
+            mt::Tensor<const void, 2> ptr(const size_t offset, const size_t index, ct::Indexer<0>) const
             {
                 if (offset == m_field_offsets[0])
                 {
@@ -112,8 +112,7 @@ namespace ct
             }
 
             template <index_t I>
-            DataTableArrayIterator<const void>
-            ptr(const size_t offset, const size_t index, ct::Indexer<I> field_index) const
+            mt::Tensor<const void, 2> ptr(const size_t offset, const size_t index, ct::Indexer<I> field_index) const
             {
                 if (offset == m_field_offsets[I])
                 {
@@ -122,7 +121,7 @@ namespace ct
                 return ptr(offset, index, --field_index);
             }
 
-            DataTableArrayIterator<const void> ptr(const size_t offset, const size_t index) const override
+            mt::Tensor<const void, 2> ptr(const size_t offset, const size_t index) const override
             {
                 return ptr(offset, index, ct::Reflect<U>::end());
             }

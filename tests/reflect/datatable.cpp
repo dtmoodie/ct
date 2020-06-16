@@ -426,7 +426,7 @@ TEST(datatable, copy)
 
     const auto& new_storage = copy.storage(&TestB::x);
 
-    ASSERT_NE(storage.data().begin, new_storage.data().begin);
+    ASSERT_NE(storage.data().getData(), new_storage.data().getData());
 }
 
 TEST(datatable, shared_ptr)
@@ -441,7 +441,7 @@ TEST(datatable, shared_ptr)
     const auto& new_storage = copy.storage(&TestB::x);
 
     ASSERT_EQ(&new_storage, &storage);
-    ASSERT_EQ(new_storage.data().begin, storage.data().begin);
+    ASSERT_EQ(new_storage.data().getData(), storage.data().getData());
 }
 
 struct Position : ct::ext::Component
