@@ -34,7 +34,7 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -54,7 +54,7 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -73,7 +73,7 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -91,7 +91,7 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -164,7 +164,7 @@ namespace ct
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), 0);
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -183,7 +183,7 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
@@ -201,7 +201,7 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
                 auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.getData());
+                return ptrCast<T>(p.data());
             }
 
             template <class T, class U>
