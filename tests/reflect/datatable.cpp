@@ -213,7 +213,7 @@ TEST(datatable, dyn_array_init)
         EXPECT_EQ(val.embeddings.data(), emb.data());
         EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
         EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 1);
-        EXPECT_EQ(table.storage(&DynStruct::embeddings).stride(), 20);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).shape()[1], 20);
     }
 }
 
@@ -241,7 +241,7 @@ TEST(datatable, dyn_array_reserve_init)
         EXPECT_EQ(val.embeddings.data(), emb.data());
         EXPECT_EQ(table.storage(&DynStruct::x).size(), 1);
         EXPECT_EQ(table.storage(&DynStruct::embeddings).size(), 1);
-        EXPECT_EQ(table.storage(&DynStruct::embeddings).stride(), 20);
+        EXPECT_EQ(table.storage(&DynStruct::embeddings).shape()[1], 20);
     }
 }
 
@@ -426,7 +426,7 @@ TEST(datatable, copy)
 
     const auto& new_storage = copy.storage(&TestB::x);
 
-    ASSERT_NE(storage.data().getData(), new_storage.data().getData());
+    ASSERT_NE(storage.data().data(), new_storage.data().data());
 }
 
 TEST(datatable, shared_ptr)
@@ -441,7 +441,7 @@ TEST(datatable, shared_ptr)
     const auto& new_storage = copy.storage(&TestB::x);
 
     ASSERT_EQ(&new_storage, &storage);
-    ASSERT_EQ(new_storage.data().getData(), storage.data().getData());
+    ASSERT_EQ(new_storage.data().data(), storage.data().data());
 }
 
 struct Position : ct::ext::Component
