@@ -10,54 +10,145 @@
 #include <tuple>
 #include <vector>
 
+namespace mt
+{
+    template <class T, ssize_t N>
+    Tensor<const T, 1> tensorWrap(const ct::TArrayView<T, N>& data)
+    {
+        return Tensor<const T, 1>(data.data(), data.size());
+    }
+
+    template <class T, ssize_t N>
+    Tensor<T, 1> tensorWrap(ct::TArrayView<T, N>& data)
+    {
+        return Tensor<T, 1>(data.data(), data.size());
+    }
+} // namespace mt
+
 namespace ct
 {
     namespace ext
     {
         template <class T>
-        struct DataTableStorage
+        struct DataDimensionality
         {
-            T& operator[](size_t idx) { return m_data[idx]; }
-
-            const T& operator[](size_t idx) const { return m_data[idx]; }
-
-            mt::Tensor<T, 2> data(uint32_t idx = 0)
-            {
-                T* ptr = m_data.data();
-                ptr += idx;
-                mt::Shape<2> shape(m_data.size() - idx, 1);
-                return mt::Tensor<T, 2>(ptr, shape);
-            }
-
-            mt::Tensor<const T, 2> data(uint32_t idx = 0) const
-            {
-                const T* ptr = m_data.data();
-                ptr += idx;
-                mt::Shape<2> shape(m_data.size() - idx, 1);
-                return mt::Tensor<const T, 2>(ptr, shape);
-            }
-
-            void reserve(size_t size) { m_data.reserve(size); }
-            void resize(size_t size) { m_data.resize(size); }
-
-            void push_back(const T& val) { m_data.push_back(val); }
-            void push_back(T&& val) { m_data.push_back(std::move(val)); }
-
-            size_t size() const { return m_data.size(); }
-            size_t stride() const { return 1; }
-            void resizeSubarray(size_t) {}
-
-            void erase(uint32_t index) { m_data.erase(m_data.begin() + index); }
-            void clear() { m_data.clear(); }
-
-            void insert(uint32_t idx, const T& val) { m_data.insert(m_data.begin() + idx, val); }
-
-          private:
-            std::vector<T> m_data;
+            static constexpr const uint8_t value = 1;
+            using DType = T;
         };
 
         template <class T>
-        struct DataTableStorage<TArrayView<T>>
+        struct DataDimensionality<TArrayView<T>>
+        {
+            static constexpr const uint8_t value = DataDimensionality<T>::value + 1;
+            using DType = T;
+        };
+
+        template <class T_, uint8_t DIM = DataDimensionality<T_>::value>
+        struct DataTableStorage
+        {
+            using T = typename DataDimensionality<T_>::DType;
+
+            DataTableStorage() {}
+
+            auto operator[](size_t idx) -> decltype(std::declval<mt::Tensor<T, DIM>>()[idx])
+            {
+                mt::Tensor<T, DIM> view(m_data.data(), m_shape);
+                return view[idx];
+            }
+
+            auto operator[](size_t idx) const -> decltype(std::declval<mt::Tensor<const T, DIM>>()[idx])
+            {
+                mt::Tensor<const T, DIM> view(m_data.data(), m_shape);
+                return view[idx];
+            }
+
+            mt::Tensor<T, DIM> data()
+            {
+                T* ptr = m_data.data();
+                return mt::Tensor<T, DIM>(ptr, m_shape);
+            }
+
+            mt::Tensor<const T, DIM> data() const
+            {
+                const T* ptr = m_data.data();
+                return mt::Tensor<const T, DIM>(ptr, m_shape);
+            }
+
+            void reserve(size_t size)
+            {
+                m_shape.setShape(0, size);
+                m_data.reserve(m_shape.numElements());
+            }
+
+            mt::Shape<DIM> shape() const { return m_shape; }
+
+            size_t size() const { return m_shape[0]; }
+
+            void resize(size_t size)
+            {
+                m_shape.setShape(0, size);
+                m_data.resize(m_shape.numElements());
+            }
+
+            void push_back(const T_& val)
+            {
+                auto input_view = mt::tensorWrap(val);
+                size_t new_size = m_data.size() + input_view.getShape().numElements();
+                m_data.resize(new_size);
+                uint32_t new_index = m_shape[0];
+                m_shape.setShape(0, new_index + 1);
+                mt::Tensor<T, DIM> storage_view = this->data();
+                // storage_view[new_size - 1].assign(input_view);
+                // m_data.push_back(val);
+            }
+            void push_back(T_&& val)
+            {
+                auto input_view = mt::tensorWrap(val);
+                size_t new_size = m_data.size() + input_view.getShape().numElements();
+                m_data.resize(new_size);
+                uint32_t new_index = m_shape[0];
+                m_shape.setShape(0, new_index + 1);
+                mt::Tensor<T, DIM> storage_view = this->data();
+                input_view.copyTo(storage_view[new_index]);
+            }
+
+            void resizeSubarray(mt::Shape<DIM - 1> subshape)
+            {
+                // TODO move stuff?
+                for (uint8_t i = 1; i < DIM; ++i)
+                {
+                    m_shape.setShape(i, subshape(i - 1));
+                }
+            }
+
+            void erase(uint32_t index)
+            {
+                if (DIM > 1)
+                {
+                    const auto subdim_size = mt::stripOuterDim(m_shape).numElements();
+                    m_data.erase(m_data.begin() + index * subdim_size, m_data.begin() + (index + 1) * subdim_size);
+                }
+                else
+                {
+                    m_data.erase(m_data.begin() + index);
+                }
+            }
+            void clear()
+            {
+                m_shape.setShape(0, 0);
+                m_data.clear();
+            }
+
+            void insert(uint32_t idx, const T_& val) { m_data.insert(m_data.begin() + idx, val); }
+            void assign(uint32_t idx, const T_& val) { m_data.at(idx) = val; }
+
+          private:
+            std::vector<T> m_data;
+            mt::Shape<DIM> m_shape;
+        };
+
+        /*template <class T, ssize_t N>
+        struct DataTableStorage<TArrayView<T, N>>
         {
 
             TArrayView<T> operator[](size_t idx) { return {&m_data[idx * m_stride], m_stride}; }
@@ -105,6 +196,25 @@ namespace ct
                     resizeSubarray(val.size());
                 }
                 assert(val.size() == m_stride);
+                if (m_data.empty())
+                {
+                    m_data.resize((idx + 1) * m_stride);
+                }
+                auto begin = m_data.data() + idx * m_stride;
+                memcpy(begin, val.data(), m_stride * sizeof(T));
+            }
+
+            void assign(uint32_t idx, const TArrayView<T>& val)
+            {
+                if (m_stride == 0 && m_data.size() == 0)
+                {
+                    resizeSubarray(val.size());
+                }
+                assert(val.size() == m_stride);
+                if (m_data.empty())
+                {
+                    m_data.resize((idx + 1) * m_stride);
+                }
                 auto begin = m_data.data() + idx * m_stride;
                 memcpy(begin, val.data(), m_stride * sizeof(T));
             }
@@ -152,7 +262,7 @@ namespace ct
           private:
             std::vector<T> m_data;
             size_t m_stride = 0;
-        };
+        };*/
 
         template <class... Ts>
         struct DefaultStoragePolicy
@@ -249,13 +359,13 @@ namespace ct
         static TArrayView<const T> getData(const DataType& data)
         {
             auto tensor = data.data();
-            return TArrayView<const T>(tensor.getData(), data.size());
+            return TArrayView<const T>(tensor.data(), data.size());
         }
 
         static TArrayView<T> getDataMutable(DataType& data)
         {
             auto tensor = data.data();
-            return TArrayView<T>(tensor.getData(), data.size());
+            return TArrayView<T>(tensor.data(), data.size());
         }
 
         REFLECT_STUB
@@ -287,7 +397,7 @@ namespace ct
         {
             auto dptr = data.data();
             const auto size = this_t::size(data);
-            auto ptr = dptr.getData();
+            auto ptr = dptr.data();
             return TArrayView<const T>(ptr, size);
         }
 
@@ -295,7 +405,7 @@ namespace ct
         {
             auto dptr = data.data();
             const auto size = this_t::size(data);
-            auto ptr = dptr.getData();
+            auto ptr = dptr.data();
             return TArrayView<T>(ptr, size);
         }
 
