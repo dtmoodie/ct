@@ -2,10 +2,11 @@
 #define CT_ARRAY_VIEW_HPP
 #include "../config.hpp"
 #include "../type_traits.hpp"
+#include <minitensor/Tensor.hpp>
 
+#include <cassert>
 #include <cstdint>
 #include <iostream>
-
 namespace ct
 {
     template <class T = uint8_t, class U>
@@ -105,6 +106,7 @@ namespace ct
     {
         CT_DEVICE_INLINE TArrayView(T* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(T* begin, T* end);
+        CT_DEVICE_INLINE TArrayView(mt::Tensor<T, 1> tensor);
 
         CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
         CT_DEVICE_INLINE T& operator[](ssize_t idx);
@@ -471,6 +473,14 @@ namespace ct
     template <class T>
     CT_DEVICE_INLINE TArrayView<T>::TArrayView(T* begin, T* end) : m_data(begin), m_size(end - begin)
     {
+    }
+
+    template <class T>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(mt::Tensor<T, 1> tensor)
+    {
+        assert(tensor.getShape().isContinuous());
+        m_data = tensor.data();
+        m_size = tensor.getShape()[0];
     }
 
     template <class T>
