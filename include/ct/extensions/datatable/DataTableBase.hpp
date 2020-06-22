@@ -51,7 +51,8 @@ namespace ct
             {
                 const auto accessor = Reflect<V>::getPtr(idx);
                 accessor.set(data, Storage::template get<I>()[row]);
-                populateDataRecurse(data, row, --idx);
+                const auto next = --idx;
+                populateDataRecurse(data, row, next);
             }
 
           protected:
@@ -61,7 +62,8 @@ namespace ct
             void reserveImpl(const size_t size, const ct::Indexer<I> idx)
             {
                 Storage::template get<I>().reserve(size);
-                reserveImpl(size, --idx);
+                const auto next = --idx;
+                reserveImpl(size, next);
             }
 
             void push(const U& data, const ct::Indexer<0> idx)
@@ -75,7 +77,8 @@ namespace ct
             {
                 const auto accessor = Reflect<U>::getPtr(idx);
                 Storage::template get<I>().push_back(accessor.get(data));
-                push(data, --idx);
+                const auto next = --idx;
+                push(data, next);
             }
 
             mt::Tensor<void, 2> ptr(const size_t offset, const size_t index, const ct::Indexer<0>)
@@ -94,12 +97,14 @@ namespace ct
                 {
                     return (Storage::template get<I>().data(index));
                 }
-                return ptr(offset, index, --field_index);
+                const auto next = --field_index;
+                return ptr(offset, index, next);
             }
 
             mt::Tensor<void, 2> ptr(const size_t offset, const size_t index) override
             {
-                return ptr(offset, index, ct::Reflect<U>::end());
+                const auto itr = ct::Reflect<U>::end();
+                return ptr(offset, index, itr);
             }
 
             mt::Tensor<const void, 2> ptr(const size_t offset, const size_t index, ct::Indexer<0>) const
@@ -118,12 +123,14 @@ namespace ct
                 {
                     return (Storage::template get<I>().data(index));
                 }
-                return ptr(offset, index, --field_index);
+                const auto next = --field_index;
+                return ptr(offset, index, next);
             }
 
             mt::Tensor<const void, 2> ptr(const size_t offset, const size_t index) const override
             {
-                return ptr(offset, index, ct::Reflect<U>::end());
+                const auto itr = ct::Reflect<U>::end();
+                return ptr(offset, index, itr);
             }
 
             template <class T>
@@ -145,7 +152,8 @@ namespace ct
                 {
                     return &Storage::template get<I>();
                 }
-                return storageImpl<T>(offset, --field_index);
+                const auto next = --field_index;
+                return storageImpl<T>(offset, next);
             }
 
             template <class T>
@@ -167,7 +175,8 @@ namespace ct
                 {
                     return &Storage::template get<I>();
                 }
-                return storageImpl<T>(offset, --field_index);
+                const auto next = --field_index;
+                return storageImpl<T>(offset, next);
             }
 
             void fillOffsets(const Indexer<0> idx)
@@ -186,24 +195,26 @@ namespace ct
                 fillOffsets(--idx);
             }
 
-            void resizeSubarrayImpl(const size_t offset, const size_t size, ct::Indexer<0>)
+            template <class SHAPE>
+            void resizeSubarrayImpl(const size_t offset, const SHAPE shape, ct::Indexer<0>)
             {
                 if (offset == m_field_offsets[0])
                 {
-                    Storage::template get<0>().resizeSubarray(size);
+                    Storage::template get<0>().resizeSubarray(shape);
                     return;
                 }
             }
 
-            template <index_t I>
-            void resizeSubarrayImpl(const size_t offset, const size_t size, ct::Indexer<I> idx)
+            template <index_t I, class SHAPE>
+            void resizeSubarrayImpl(const size_t offset, const SHAPE shape, ct::Indexer<I> idx)
             {
                 if (offset == m_field_offsets[I])
                 {
-                    Storage::template get<I>().resizeSubarray(size);
+                    Storage::template get<I>().resizeSubarray(shape);
                     return;
                 }
-                resizeSubarrayImpl(offset, size, --idx);
+                const auto next = --idx;
+                resizeSubarrayImpl(offset, shape, next);
             }
 
             std::array<size_t, sizeof...(Args)> m_field_offsets;
