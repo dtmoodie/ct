@@ -227,7 +227,7 @@ TEST(datatable, dyn_array_reserve_init)
     }
     {
         ext::DataTable<DynStruct> table;
-        table.resizeSubarray(&DynStruct::embeddings, 20);
+        table.resizeSubarray(&DynStruct::embeddings, mt::Shape<1>(20));
         table.reserve(10);
 
         DynStruct tmp{0.1F, 0.2F, 0.3F, 0.4F, {embeddings.data(), 20}};
