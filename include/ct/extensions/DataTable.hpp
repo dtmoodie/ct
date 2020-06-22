@@ -68,8 +68,8 @@ namespace ct
 
             void reserve(const size_t size);
 
-            template <class T>
-            void resizeSubarray(T U::*mem_ptr, size_t size);
+            template <class T, class SHAPE>
+            void resizeSubarray(T U::*mem_ptr, const SHAPE size);
 
             // Currently not const since DataTableArray returns a pointer into the data table which is potentially
             // mutable
@@ -165,21 +165,24 @@ namespace ct
         U DataTable<U, STORAGE_POLICY>::access(const size_t idx)
         {
             U out;
-            this->populateDataRecurse(out, idx, ct::Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->populateDataRecurse(out, idx, start_idx);
             return out;
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
         void DataTable<U, STORAGE_POLICY>::reserve(const size_t size)
         {
-            this->reserveImpl(size, Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->reserveImpl(size, start_idx);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
-        template <class T>
-        void DataTable<U, STORAGE_POLICY>::resizeSubarray(T U::*mem_ptr, size_t size)
+        template <class T, class SHAPE>
+        void DataTable<U, STORAGE_POLICY>::resizeSubarray(T U::*mem_ptr, const SHAPE shape)
         {
-            this->resizeSubarrayImpl(memberOffset(mem_ptr), size, Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->resizeSubarrayImpl(memberOffset(mem_ptr), shape, start_idx);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
