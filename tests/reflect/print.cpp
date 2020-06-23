@@ -62,7 +62,8 @@ EXPECTED_OBJECT_PRINT(std::vector<ReflectedStruct>,
                       "[(x: 0 y: 1 z: 2 id: 3 )  (x: 4 y: 5 z: 6 id: 7 )  (x: 8 y: 9 z: 10 id: 11 ) ]");
 EXPECTED_OBJECT_PRINT(StringMap, "{asdf:(x: 0 y: 1 z: 2 id: -1 w: 15 )  asdfg:(x: 0 y: 1 z: 4 id: -1 w: 15 ) }");
 
-EXPECTED_OBJECT_PRINT(ct::ext::DataTableStorage<float>, "(shape: [10 1] size: 10 data: [0 1 2 3 4 5 6 7 8 9] ) ");
+EXPECTED_OBJECT_PRINT(ct::ext::DataTableStorage<float>,
+                      "((size: 1 data: [10] ) size: 10 data: [0 1 2 3 4 5 6 7 8 9] ) ");
 EXPECTED_OBJECT_PRINT(
     ct::ext::DataTableStorage<ct::TArrayView<float>>,
     "(shape: [10 10] size: 100 data: [0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 "
