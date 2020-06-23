@@ -85,8 +85,10 @@ namespace ct
 
             void reserve(size_t size)
             {
-                m_shape.setShape(0, size);
-                m_data.reserve(m_shape.numElements());
+                auto tmp = m_shape;
+                tmp.setShape(0, size);
+                const auto num_elems = tmp.numElements();
+                m_data.reserve(num_elems);
             }
 
             mt::Shape<storage_dim> shape() const { return m_shape; }
@@ -108,7 +110,10 @@ namespace ct
             void push_back(const T_& val)
             {
                 auto input_view = mt::tensorWrap(val);
-                size_t new_size = m_data.size() + input_view.getShape().numElements();
+                resizeSubarray(input_view.getShape());
+                const size_t current_elems = m_data.size();
+                const size_t new_elems = input_view.getShape().numElements();
+                const size_t new_size = current_elems + new_elems;
                 m_data.resize(new_size);
                 uint32_t new_index = m_shape[0];
                 m_shape.setShape(0, new_index + 1);
@@ -136,6 +141,7 @@ namespace ct
                 {
                     m_shape.setShape(i, subshape[i - 1]);
                 }
+                m_shape.calculateStride();
             }
 
             template <uint8_t I>
