@@ -98,7 +98,8 @@ ct::ext::DataTable<T, STORAGE_POLICY> createAndFillTable(size_t elems)
 TEST(datatable, write)
 {
     ct::ext::DataTable<TestB> table = createAndFillTable<TestB>(20);
-    EXPECT_EQ(table.size(), 20);
+    const auto size = table.size();
+    EXPECT_EQ(size, 20);
 }
 
 TEST(datatable, read)
