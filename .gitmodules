@@ -1,6 +1,3 @@
-[submodule "googletest"]
-	path = googletest
-	url = ../googletest
 [submodule "dependencies/minitensor"]
 	path = dependencies/minitensor
 	url = ../minitensor
