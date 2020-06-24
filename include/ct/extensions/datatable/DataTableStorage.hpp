@@ -34,6 +34,8 @@ namespace ct
         {
             static constexpr const uint8_t value = 0;
             using DType = T;
+            using TensorView = mt::Tensor<DType, value + 1>;
+            using ConstTensorView = mt::Tensor<const DType, value + 1>;
         };
 
         template <class T>
@@ -41,6 +43,8 @@ namespace ct
         {
             static constexpr const uint8_t value = DataDimensionality<T>::value + 1;
             using DType = T;
+            using TensorView = mt::Tensor<DType, value + 1>;
+            using ConstTensorView = mt::Tensor<const DType, value + 1>;
         };
 
         template <class T_>
@@ -142,6 +146,7 @@ namespace ct
                     m_shape.setShape(i, subshape[i - 1]);
                 }
                 m_shape.calculateStride();
+                m_data.resize(m_shape.numElements());
             }
 
             template <uint8_t I>
@@ -160,6 +165,7 @@ namespace ct
                 {
                     m_data.erase(m_data.begin() + index);
                 }
+                m_shape.setShape(0, m_shape[0] - 1);
             }
 
             void clear()
@@ -168,8 +174,18 @@ namespace ct
                 m_data.clear();
             }
 
+            // TODO tensorize
             void insert(uint32_t idx, const T_& val) { m_data.insert(m_data.begin() + idx, val); }
-            void assign(uint32_t idx, const T_& val) { m_data.at(idx) = val; }
+            void assign(uint32_t idx, const T_& val)
+            {
+                auto input_view = mt::tensorWrap(val);
+                if (m_data.empty())
+                {
+                    resizeSubarray(input_view.getShape());
+                }
+                mt::Tensor<T, storage_dim> storage_view = this->data();
+                input_view.copyTo(storage_view[idx]);
+            }
 
           private:
             std::vector<T> m_data;
