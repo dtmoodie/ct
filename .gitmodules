@@ -3,4 +3,4 @@
 	url = ../googletest
 [submodule "dependencies/minitensor"]
 	path = dependencies/minitensor
-	url = /mnt/usb/git/minitensor/
+	url = ../minitensor
