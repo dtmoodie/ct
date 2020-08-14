@@ -31,6 +31,7 @@ namespace ct
     template <class T, ssize_t N, class DERIVED>
     struct TArrayBaseConst : TArrayViewTag
     {
+        using value_type = T;
         CT_DEVICE_INLINE const T* begin() const;
         CT_DEVICE_INLINE const T* end() const;
         CT_DEVICE_INLINE size_t revIndex(ssize_t) const;
