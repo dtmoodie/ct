@@ -415,7 +415,7 @@ TEST_P(DataTablePerformance, search_performance)
     testSearch();
 }
 
-INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(10, 14, 18));
+INSTANTIATE_TEST_SUITE_P(DataTablePerformance, DataTablePerformance, ::testing::Values(12, 14, 18));
 
 TEST(datatable, copy)
 {
