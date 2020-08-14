@@ -2,6 +2,7 @@
 #define CT_EXT_DATA_TABLE_STORAGE_HPP
 #include "DataTableArrayIterator.hpp"
 
+#include <ct/type_traits.hpp>
 #include <ct/types.hpp>
 #include <ct/types/TArrayView.hpp>
 
@@ -29,7 +30,7 @@ namespace ct
 {
     namespace ext
     {
-        template <class T>
+        template <class T, class E = void>
         struct DataDimensionality
         {
             static constexpr const uint8_t value = 0;
@@ -37,12 +38,12 @@ namespace ct
             using TensorView = mt::Tensor<DType, value + 1>;
             using ConstTensorView = mt::Tensor<const DType, value + 1>;
         };
-
         template <class T>
-        struct DataDimensionality<TArrayView<T>>
+        struct DataDimensionality<T, EnableIf<IsBase<Base<TArrayViewTag>, Derived<T>>::value>>
         {
-            static constexpr const uint8_t value = DataDimensionality<T>::value + 1;
-            using DType = T;
+            using DType = typename T::value_type;
+            static constexpr const uint8_t value = DataDimensionality<DType>::value + 1;
+
             using TensorView = mt::Tensor<DType, value + 1>;
             using ConstTensorView = mt::Tensor<const DType, value + 1>;
         };
@@ -59,13 +60,15 @@ namespace ct
 
             auto operator[](size_t idx) -> decltype(std::declval<mt::Tensor<T, storage_dim>>()[idx])
             {
-                mt::Tensor<T, storage_dim> view(m_data.data(), m_shape);
+                T* ptr = m_data.data();
+                mt::Tensor<T, storage_dim> view(ptr, m_shape);
                 return view[idx];
             }
 
             auto operator[](size_t idx) const -> decltype(std::declval<mt::Tensor<const T, storage_dim>>()[idx])
             {
-                mt::Tensor<const T, storage_dim> view(m_data.data(), m_shape);
+                const T* ptr = m_data.data();
+                mt::Tensor<const T, storage_dim> view(ptr, m_shape);
                 return view[idx];
             }
 
@@ -73,7 +76,8 @@ namespace ct
             {
                 T* ptr = m_data.data();
                 mt::Shape<storage_dim> out_shape = m_shape;
-                ptr += out_shape.getStride(0) * idx;
+                const auto stride = out_shape.getStride(0);
+                ptr += stride * idx;
                 out_shape.setShape(0, out_shape[0] - idx);
                 return mt::Tensor<T, storage_dim>(ptr, out_shape);
             }
@@ -82,7 +86,8 @@ namespace ct
             {
                 const T* ptr = m_data.data();
                 mt::Shape<storage_dim> out_shape = m_shape;
-                ptr += out_shape.getStride(0) * idx;
+                const auto stride = out_shape.getStride(0);
+                ptr += stride * idx;
                 out_shape.setShape(0, out_shape[0] - idx);
                 return mt::Tensor<const T, storage_dim>(ptr, out_shape);
             }
