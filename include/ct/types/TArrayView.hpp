@@ -108,6 +108,7 @@ namespace ct
         CT_DEVICE_INLINE TArrayView(T* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(T* begin, T* end);
         CT_DEVICE_INLINE TArrayView(mt::Tensor<T, 1> tensor);
+        explicit TArrayView(std::vector<T>& vector);
 
         CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
         CT_DEVICE_INLINE T& operator[](ssize_t idx);
@@ -134,6 +135,9 @@ namespace ct
     {
         CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(const T* begin, const T* end);
+        explicit TArrayView(const std::vector<const T>& vector);
+        explicit TArrayView(const std::vector<T>& vector);
+
         CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<T>& other);
 
         CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
@@ -485,6 +489,13 @@ namespace ct
     }
 
     template <class T>
+    TArrayView<T>::TArrayView(std::vector<T>& vector)
+    {
+        m_data = vector.data();
+        m_size = vector.size();
+    }
+
+    template <class T>
     CT_DEVICE_INLINE const T& TArrayView<T>::operator[](ssize_t idx) const
     {
         return m_data[this->revIndex(idx)];
@@ -575,6 +586,16 @@ namespace ct
 
     template <class T>
     CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const T* begin, const T* end) : m_data(begin), m_size(end - begin)
+    {
+    }
+
+    template <class T>
+    TArrayView<const T>::TArrayView(const std::vector<const T>& vector) : m_data(vector.data()), m_size(vector.size())
+    {
+    }
+
+    template <class T>
+    TArrayView<const T>::TArrayView(const std::vector<T>& vector) : m_data(vector.data()), m_size(vector.size())
     {
     }
 
