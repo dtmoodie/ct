@@ -288,18 +288,22 @@ namespace ct
             data.resize(shape[0]);
         }
 
-        static size_t size(const DataType& data) { return data.shape().numElements(); }
+        static size_t size(const DataType& data) { return data.size(); }
 
         static TArrayView<const StorageType> getData(const DataType& data)
         {
             auto tensor = data.data();
-            return TArrayView<const StorageType>(tensor.data(), data.size());
+            const StorageType* ptr = tensor.data();
+            const size_t size = data.size();
+            return TArrayView<const StorageType>(ptr, size);
         }
 
         static TArrayView<StorageType> getDataMutable(DataType& data)
         {
             auto tensor = data.data();
-            return TArrayView<StorageType>(tensor.data(), data.size());
+            StorageType* ptr = tensor.data();
+            const size_t size = data.size();
+            return TArrayView<StorageType>(ptr, size);
         }
 
         REFLECT_STUB
@@ -309,47 +313,6 @@ namespace ct
         REFLECT_INTERNAL_END;
         static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
     };
-
-    /*template <class T>
-    struct ReflectImpl<ext::DataTableStorage<TArrayView<T>>, void>
-    {
-        using DataType = ext::DataTableStorage<TArrayView<T>>;
-        using this_t = ReflectImpl<DataType, void>;
-
-        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
-        static std::array<size_t, 2> shape(const DataType& data) { return {data.size(), data.stride()}; }
-
-        static void reshape(DataType& data, const std::array<size_t, 2> shape)
-        {
-            data.resizeSubarray(shape[1]);
-            data.resize(shape[0]);
-        }
-
-        static size_t size(const DataType& data) { return data.shape().numElements(); }
-
-        static TArrayView<const T> getData(const DataType& data)
-        {
-            auto dptr = data.data();
-            const auto size = this_t::size(data);
-            auto ptr = dptr.data();
-            return TArrayView<const T>(ptr, size);
-        }
-
-        static TArrayView<T> getDataMutable(DataType& data)
-        {
-            auto dptr = data.data();
-            const auto size = this_t::size(data);
-            auto ptr = dptr.data();
-            return TArrayView<T>(ptr, size);
-        }
-
-        REFLECT_STUB
-            PROPERTY(shape, &this_t::shape, &this_t::reshape)
-            PROPERTY(size, &this_t::size)
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
-        REFLECT_INTERNAL_END;
-        static constexpr Indexer<NUM_FIELDS - 1> end() { return Indexer<NUM_FIELDS - 1>(); }
-    };*/
 
     template <uint8_t N>
     struct ReflectImpl<mt::Shape<N>, void>
