@@ -13,17 +13,30 @@
 
 namespace mt
 {
-    template <class T, ssize_t N>
-    Tensor<const T, 1> tensorWrap(const ct::TArrayView<T, N>& data)
+    template <class T>
+    struct TensorWrap<T, ct::EnableIf<ct::IsBase<ct::Base<ct::TArrayViewTag>, ct::Derived<T>>::value>, 2>
     {
-        return Tensor<const T, 1>(data.data(), data.size());
-    }
+        using value_type = typename T::value_type;
 
-    template <class T, ssize_t N>
-    Tensor<T, 1> tensorWrap(ct::TArrayView<T, N>& data)
+        static Tensor<const value_type, 1> wrap(const T& data)
+        {
+            return Tensor<const value_type, 1>(data.data(), data.size());
+        }
+
+        static Tensor<value_type, 1> wrap(T& data) { return Tensor<value_type, 1>(data.data(), data.size()); }
+    };
+
+    template <class T>
+    struct TensorWrap<const T, ct::EnableIf<ct::IsBase<ct::Base<ct::TArrayViewTag>, ct::Derived<T>>::value>, 3>
     {
-        return Tensor<T, 1>(data.data(), data.size());
-    }
+        using value_type = typename T::value_type;
+
+        static Tensor<const value_type, 1> wrap(const T& data)
+        {
+            return Tensor<const value_type, 1>(data.data(), data.size());
+        }
+    };
+
 } // namespace mt
 
 namespace ct
@@ -119,6 +132,9 @@ namespace ct
             void push_back(const T_& val)
             {
                 auto input_view = mt::tensorWrap(val);
+                ct::StaticEquality<uint8_t, decltype(input_view)::DIM, data_dim>{};
+                ct::StaticEqualTypes<const T, const typename decltype(input_view)::DType>{};
+
                 resizeSubarray(input_view.getShape());
                 const size_t current_elems = m_data.size();
                 const size_t new_elems = input_view.getShape().numElements();
