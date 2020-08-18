@@ -61,6 +61,21 @@ struct DynStruct
     REFLECT_INTERNAL_END;
 };
 
+struct Descriptor : ct::TArrayView<float>
+{
+    template <class... ARGS>
+    Descriptor(ARGS&&... args) : ct::TArrayView<float>(std::forward<ARGS>(args)...)
+    {
+    }
+};
+
+struct DescStruct
+{
+    REFLECT_INTERNAL_BEGIN(DescStruct)
+        REFLECT_INTERNAL_MEMBER(Descriptor, descriptors)
+    REFLECT_INTERNAL_END;
+};
+
 struct DerivedDynStruct : public DynStruct
 {
     REFLECT_INTERNAL_DERIVED(DerivedDynStruct, DynStruct)
@@ -279,6 +294,43 @@ TEST(datatable, array_view)
         EXPECT_EQ(embeddings.size(), elem.embeddings.size());
         static_cast<ext::IDataTable<DerivedDynStruct>&>(table).populateData(elem, 19);
         EXPECT_EQ(elem.embeddings, embeddings);
+    }
+}
+
+TEST(datatable, array_view_descriptor)
+{
+    ct::StaticEqualTypes<ct::ext::DataDimensionality<Descriptor>::DType, float>{};
+    ct::StaticEquality<uint32_t, ct::ext::DataDimensionality<Descriptor>::value, 1>{};
+    ct::StaticEquality<uint32_t, ct::ext::DataTableStorage<Descriptor>::storage_dim, 2>{};
+    using StorageView_t = decltype(std::declval<ct::ext::DataTableStorage<Descriptor>>().data());
+    using DescriptorView_t = decltype(std::declval<StorageView_t>()[0]);
+    ct::StaticEqualTypes<DescriptorView_t, mt::Tensor<float, 1>>{};
+
+    std::vector<float> embeddings;
+    embeddings.resize(20);
+    for (auto& x : embeddings)
+    {
+        x = float(std::rand()) / float(RAND_MAX);
+    }
+    {
+        ext::DataTable<DescStruct> table;
+        DescStruct tmp;
+        tmp.descriptors = ct::TArrayView<float>(embeddings.data(), 20);
+        for (int i = 0; i < 20; ++i)
+        {
+            for (auto& x : embeddings)
+            {
+                x = float(std::rand()) / float(RAND_MAX);
+            }
+            table.push_back(tmp);
+        }
+        tableViewer<DescStruct>(table);
+
+        DescStruct elem;
+        static_cast<ext::IDataTable<DescStruct>&>(table).populateData(elem, 0);
+        EXPECT_EQ(embeddings.size(), elem.descriptors.size());
+        static_cast<ext::IDataTable<DescStruct>&>(table).populateData(elem, 19);
+        EXPECT_EQ(elem.descriptors, embeddings);
     }
 }
 
