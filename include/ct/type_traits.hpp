@@ -10,7 +10,7 @@
 /*!
     This macro is used for determining of a class has a desired static function.
     It can be used as follows:
-    DEFINE_HAS_STATIC_FUNCTION(HasFoo, foo, void(*)(int));
+    DEFINE_HAS_STATIC_FUNCTION(HasFoo, foo, void, int);
     struct Has
     {
         static void foo(int);
