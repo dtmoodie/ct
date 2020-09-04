@@ -415,7 +415,7 @@ namespace ct
         template <class T, class BP, class U, Flag_t FLAGS, class MDATA, class... PTRS>
         auto addPropertyImpl(BP& bp, MemberFunctionPointers<U, FLAGS, MDATA, PTRS...> ptr, index_t)
         {
-            addMemberFunctionRecurse<T>(bp, ptr, Indexer<sizeof...(PTRS)-1>());
+            addMemberFunctionRecurse<T>(bp, ptr, Indexer<sizeof...(PTRS) - 1>());
         }
 
         template <class T, index_t I, class BP>
@@ -475,7 +475,7 @@ namespace ct
         template <class T, Flag_t FLAGS, class MDATA, class... PTR>
         void registerPropertyReturn(MemberFunctionPointers<T, FLAGS, MDATA, PTR...> ptr)
         {
-            registerMemberFunctionReturn(ptr, Indexer<sizeof...(PTR)-1>());
+            registerMemberFunctionReturn(ptr, Indexer<sizeof...(PTR) - 1>());
         }
 
         template <class T, index_t I>
@@ -504,15 +504,15 @@ namespace ct
             ensureRegisteredRecurse<T>(Reflect<T>::end());
         }
 
-    } // namespace ct::detail
+        template <class T>
+        std::string repr(const T& obj)
+        {
+            std::stringstream ss;
+            printStruct(ss, obj);
+            return std::move(ss).str();
+        }
 
-    template <class T>
-    std::string ReflectedConverter<T, 1, void>::repr(const T& obj)
-    {
-        std::stringstream ss;
-        printStruct(ss, obj);
-        return std::move(ss).str();
-    }
+    } // namespace detail
 
     template <class T>
     void ReflectedConverter<T, 1, void>::registerToPython(const char* name)
@@ -522,7 +522,7 @@ namespace ct
         detail::addInit<T>(bpobj);
         bpobj.def("__getitem__", &detail::getItem<T>);
         bpobj.def("__setitem__", &detail::setItem<T>);
-        bpobj.def("__repr__", &repr);
+        bpobj.def("__repr__", &detail::repr<T>);
         bpobj.def("__len__", &detail::len<T>);
 
         // Now we ensure any returned datatype is also registered
@@ -566,8 +566,8 @@ namespace boost
             {
                 static const bool value = true;
             };
-        }
-    }
-}
+        } // namespace detail
+    }     // namespace python
+} // namespace boost
 
 #endif // CT_INTEROP_BOOST_PYTHON_REFLECTED_CONVERTER_HPP
