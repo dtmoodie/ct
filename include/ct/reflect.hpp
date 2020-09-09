@@ -36,7 +36,7 @@ namespace ct
     };
 
     // RelfectImpl is specializaed for each type to contain reflection information for the provided type.
-    template <class T, class E = void>
+    template <class T, class E>
     struct ReflectImpl
     {
     };
