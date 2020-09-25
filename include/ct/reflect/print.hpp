@@ -500,7 +500,7 @@ namespace std
     }
 
     template <class T>
-    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
+    ct::EnableIf<ct::EnumChecker<T>::value && ct::IsReflected<T>::value, ostream&> operator<<(ostream& os, T v)
     {
         return ct::printEnum(os, v);
     }
