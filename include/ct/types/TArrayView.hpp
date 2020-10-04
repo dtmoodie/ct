@@ -41,7 +41,7 @@ namespace ct
         CT_DEVICE_INLINE TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
         CT_DEVICE_INLINE TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
 
-        void copyTo(const TArrayView<T, N>& dest) const;
+        void copyTo(TArrayView<T, N>& dest) const;
     };
 
     template <class T, ssize_t N, class DERIVED>
@@ -263,7 +263,7 @@ namespace ct
     }
 
     template <class T, ssize_t N, class D>
-    void TArrayBaseConst<T, N, D>::copyTo(const TArrayView<T, N>& dest) const
+    void TArrayBaseConst<T, N, D>::copyTo(TArrayView<T, N>& dest) const
     {
         const size_t size = static_cast<const D*>(this)->size();
         assert(dest.size() == size);
