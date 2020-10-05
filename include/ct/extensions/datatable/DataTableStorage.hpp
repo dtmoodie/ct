@@ -208,6 +208,17 @@ namespace ct
                 input_view.copyTo(storage_view[idx]);
             }
 
+            /*void assign(uint32_t idx, T_ val)
+            {
+                auto input_view = mt::tensorWrap(val);
+                if (m_data.empty())
+                {
+                    resizeSubarray(input_view.getShape());
+                }
+                mt::Tensor<T, storage_dim> storage_view = this->data();
+                input_view.copyTo(storage_view[idx]);
+            }*/
+
           private:
             std::vector<T> m_data;
             mt::Shape<storage_dim> m_shape;
