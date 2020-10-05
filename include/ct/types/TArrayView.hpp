@@ -267,18 +267,7 @@ namespace ct
     {
         const size_t size = static_cast<const D*>(this)->size();
         assert(dest.size() == size);
-        if (std::is_pod<T>::value)
-        {
-            std::memcpy(dest.data(), begin(), sizeof(T) * size);
-        }
-        else
-        {
-            const T* ptr = this->begin();
-            for (size_t i = 0; i < size; ++i)
-            {
-                dest[i] = ptr[i];
-            }
-        }
+        std::copy(begin(), end(), dest.data());
     }
 
     ///////////////////////////////////////////////////////////
