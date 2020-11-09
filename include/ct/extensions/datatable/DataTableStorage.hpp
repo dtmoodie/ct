@@ -43,8 +43,46 @@ namespace ct
 {
     namespace ext
     {
+        template <class T, class Tag>
+        struct ScalarComponent
+        {
+            using DType = T;
+            template <class... ARGS>
+            ScalarComponent(ARGS&&... args) : m_value(std::forward<ARGS>(args)...)
+            {
+            }
+
+            ScalarComponent(T val = T{}) : m_value(std::move(val)) {}
+
+            ScalarComponent(const ScalarComponent& val) = default;
+            ScalarComponent(ScalarComponent&& val) = default;
+            ScalarComponent& operator=(const ScalarComponent& val) = default;
+            ScalarComponent& operator=(ScalarComponent&& val) = default;
+
+            operator T&() { return m_value; }
+            operator const T&() const { return m_value; }
+
+            bool operator==(const ScalarComponent& other) const { return m_value == other.m_value; }
+            bool operator!=(const ScalarComponent& other) const { return m_value != other.m_value; }
+            bool operator>(const ScalarComponent& other) const { return m_value > other.m_value; }
+            bool operator>=(const ScalarComponent& other) const { return m_value >= other.m_value; }
+            bool operator<(const ScalarComponent& other) const { return m_value < other.m_value; }
+            bool operator<=(const ScalarComponent& other) const { return m_value <= other.m_value; }
+
+            T m_value;
+        };
+
         template <class T, class E = void>
         struct DataDimensionality
+        {
+            static constexpr const uint8_t value = 0;
+            using DType = T;
+            using TensorView = mt::Tensor<DType, value + 1>;
+            using ConstTensorView = mt::Tensor<const DType, value + 1>;
+        };
+
+        template <class T, class Tag>
+        struct DataDimensionality<ScalarComponent<T, Tag>, void>
         {
             static constexpr const uint8_t value = 0;
             using DType = T;
