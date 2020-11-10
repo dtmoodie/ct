@@ -62,6 +62,12 @@ namespace ct
             operator T&() { return m_value; }
             operator const T&() const { return m_value; }
 
+            template <class U>
+            operator U() const
+            {
+                return m_value;
+            }
+
             bool operator==(const ScalarComponent& other) const { return m_value == other.m_value; }
             bool operator!=(const ScalarComponent& other) const { return m_value != other.m_value; }
             bool operator>(const ScalarComponent& other) const { return m_value > other.m_value; }
