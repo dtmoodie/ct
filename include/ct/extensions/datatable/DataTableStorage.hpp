@@ -214,9 +214,18 @@ namespace ct
                 m_data.resize(m_shape.numElements());
             }
 
+            void resizeSubarray(mt::Shape<storage_dim> shape)
+            {
+                // TODO move stuff?
+                m_shape = std::move(shape);
+                m_shape.calculateStride();
+                m_data.resize(m_shape.numElements());
+            }
+
             template <uint8_t I>
             void resizeSubarray(mt::Shape<I>)
             {
+                // can't remember why this is needed
             }
 
             void erase(uint32_t index)
