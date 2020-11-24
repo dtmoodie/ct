@@ -374,7 +374,8 @@ namespace ct
         {
             auto tensor = data.data();
             const StorageType* ptr = tensor.data();
-            const size_t size = data.size();
+            const auto shape = data.shape();
+            const size_t size = shape.numElements();
             return TArrayView<const StorageType>(ptr, size);
         }
 
@@ -382,7 +383,8 @@ namespace ct
         {
             auto tensor = data.data();
             StorageType* ptr = tensor.data();
-            const size_t size = data.size();
+            const auto shape = data.shape();
+            const size_t size = shape.numElements();
             return TArrayView<StorageType>(ptr, size);
         }
 
