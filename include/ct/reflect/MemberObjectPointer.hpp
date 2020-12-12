@@ -1,12 +1,12 @@
 #ifndef CT_MEMBER_OBJECT_POINTER_HPP
 #define CT_MEMBER_OBJECT_POINTER_HPP
-#include "../bind.hpp"
-#include "../flags.hpp"
-#include "../types.hpp"
 #include "../Indexer.hpp"
 #include "../StringView.hpp"
 #include "../VariadicTypedef.hpp"
+#include "../bind.hpp"
+#include "../flags.hpp"
 #include "../type_traits.hpp"
+#include "../types.hpp"
 
 #include "metadata.hpp"
 #include "pointer_traits.hpp"
@@ -52,6 +52,14 @@ namespace ct
         }
 
         template <class DERIVED>
+        Data_t get(DERIVED&& obj) const
+        {
+            static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
+                          "Passed in object must either be of class type or derived from it");
+            return std::move(obj.*m_ptr);
+        }
+
+        template <class DERIVED>
         Data_t& set(DERIVED& obj) const
         {
             static_assert(std::is_same<CTYPE, DERIVED>::value || std::is_base_of<CTYPE, DERIVED>::value,
@@ -75,7 +83,7 @@ namespace ct
             obj.*m_ptr = std::move(val);
         }
 
-        constexpr StringView  getName() const { return m_name; }
+        constexpr StringView getName() const { return m_name; }
 
         METADATA getMetadata() const { return m_metadata; }
 
@@ -134,6 +142,6 @@ namespace ct
     {
         using type = METADATA;
     };
-}
+} // namespace ct
 
 #endif // CT_MEMBER_OBJECT_POINTER_HPP

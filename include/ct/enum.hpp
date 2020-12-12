@@ -239,8 +239,12 @@ namespace ct
     template <class T>
     struct EnumField
     {
-        // constexpr auto value() const -> decltype(T::value) { return T::value; }
+        // Uhh so this needs to include flags.hpp but it needs to also not
+        constexpr static const Flag_t DataFlags = (1 << 5); // COMPILE_TIME_CONSTANT
+
         constexpr T value() const { return T{}; }
+
+        constexpr StringView getName() const { return name; }
         StringView name;
     };
 

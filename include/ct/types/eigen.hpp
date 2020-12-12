@@ -12,7 +12,7 @@ namespace ct
     {
         using DataType = Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
@@ -42,7 +42,7 @@ namespace ct
     {
         using DataType = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, OPTS, MAX_ROWS, MAX_COLS>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static std::array<Eigen::Index, 2> shape(const DataType& data) { return {data.rows(), data.cols()}; }
 
@@ -78,7 +78,7 @@ namespace ct
     {
         using DataType = Eigen::Array<T, _Rows, _Cols, _Options, _MaxRows, _MaxCols>;
         using this_t = ReflectImpl<DataType, void>;
-        static constexpr StringView getName() { return GetName<DataType>::getName(); }
+        static constexpr StringView getTypeName() { return GetName<DataType>::getName(); }
 
         static TArrayView<const T> getData(const DataType& arr)
         {
@@ -107,21 +107,5 @@ namespace ct
     DECL_NAME(Eigen::Matrix4d);
 
 } // namespace ct
-
-#ifdef _MSC_VER
-#include <ct/reflect/cerealize.hpp>
-namespace ct
-{
-    namespace cereal
-    {
-        template <class T, int ROWS, int COLS, int OPTS, int MAX_ROWS, int MAX_COLS>
-        struct CerealizerSelector<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>, 5, void>
-            : public TensorCerealizer<Eigen::Matrix<T, ROWS, COLS, OPTS, MAX_ROWS, MAX_COLS>>
-        {
-        };
-    } // namespace cereal
-} // namespace ct
-
-#endif
 
 #endif // CT_EIGEN_HPP

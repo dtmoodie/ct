@@ -36,69 +36,83 @@
 
 namespace cereal
 {
-  //! Saving for std::array primitive types
-  //! using binary serialization, if supported
-  template <class Archive, class T, size_t N> inline
-  typename std::enable_if<traits::is_output_serializable<BinaryData<T>, Archive>::value
-                          && std::is_arithmetic<T>::value, void>::type
-  CEREAL_SAVE_FUNCTION_NAME( Archive & ar, std::array<T, N> const & array )
-  {
-    ar( binary_data( array.data(), sizeof(array) ) );
-  }
+    //! Saving for std::array primitive types
+    //! using binary serialization, if supported
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<traits::is_output_serializable<BinaryData<T>, Archive>::value &&
+                                       std::is_arithmetic<T>::value,
+                                   void>::type
+    CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::array<T, N> const& array)
+    {
+        ar(binary_data(array.data(), sizeof(array)));
+    }
 
-  //! Loading for std::array primitive types
-  //! using binary serialization, if supported
-  template <class Archive, class T, size_t N> inline
-  typename std::enable_if<traits::is_input_serializable<BinaryData<T>, Archive>::value
-                          && std::is_arithmetic<T>::value, void>::type
-  CEREAL_LOAD_FUNCTION_NAME( Archive & ar, std::array<T, N> & array )
-  {
-    ar( binary_data( array.data(), sizeof(array) ) );
-  }
-
-  //! Saving for std::array all other types
-  template <class Archive, class T, size_t N> inline
-  typename std::enable_if<(!traits::is_output_serializable<BinaryData<T>, Archive>::value
-                          || !std::is_arithmetic<T>::value) && !traits::is_text_archive<Archive>::value, void>::type
-  CEREAL_SAVE_FUNCTION_NAME( Archive & ar, std::array<T, N> const & array )
-  {
-    for( auto const & i : array )
-      ar( i );
-  }
-
-  //! Loading for std::array all other types
-  template <class Archive, class T, size_t N> inline
-  typename std::enable_if<(!traits::is_input_serializable<BinaryData<T>, Archive>::value
-                          || !std::is_arithmetic<T>::value) && !traits::is_text_archive<Archive>::value, void>::type
-  CEREAL_LOAD_FUNCTION_NAME( Archive & ar, std::array<T, N> & array )
-  {
-    for( auto & i : array )
-      ar( i );
-  }
+    //! Loading for std::array primitive types
+    //! using binary serialization, if supported
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<traits::is_input_serializable<BinaryData<T>, Archive>::value &&
+                                       std::is_arithmetic<T>::value,
+                                   void>::type
+    CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::array<T, N>& array)
+    {
+        ar(binary_data(array.data(), sizeof(array)));
+    }
 
     //! Saving for std::array all other types
-    template <class Archive, class T, size_t N> inline
-    typename std::enable_if<(!traits::is_output_serializable<BinaryData<T>, Archive>::value
-                            || !std::is_arithmetic<T>::value) && traits::is_text_archive<Archive>::value, void>::type
-    CEREAL_SAVE_FUNCTION_NAME( Archive & ar, std::array<T, N> const & array )
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<(!traits::is_output_serializable<BinaryData<T>, Archive>::value ||
+                                    !std::is_arithmetic<T>::value) &&
+                                       !traits::is_text_archive<Archive>::value,
+                                   void>::type
+    CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::array<T, N> const& array)
     {
-      ar( make_size_tag( static_cast<size_type>(N) ) );
-      for( auto const & i : array )
-        ar( i );
+        for (auto const& i : array)
+            ar(i);
     }
 
     //! Loading for std::array all other types
-    template <class Archive, class T, size_t N> inline
-    typename std::enable_if<(!traits::is_input_serializable<BinaryData<T>, Archive>::value
-                            || !std::is_arithmetic<T>::value) && traits::is_text_archive<Archive>::value, void>::type
-    CEREAL_LOAD_FUNCTION_NAME( Archive & ar, std::array<T, N> & array )
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<(!traits::is_input_serializable<BinaryData<T>, Archive>::value ||
+                                    !std::is_arithmetic<T>::value) &&
+                                       !traits::is_text_archive<Archive>::value,
+                                   void>::type
+    CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::array<T, N>& array)
     {
-      size_type size;
-      ar( make_size_tag( size ) );
-      assert(size == N);
-      for( auto & i : array )
-        ar( i );
+        for (auto& i : array)
+            ar(i);
+    }
+
+    //! Saving for std::array all other types
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<(!traits::is_output_serializable<BinaryData<T>, Archive>::value ||
+                                    !std::is_arithmetic<T>::value) &&
+                                       traits::is_text_archive<Archive>::value,
+                                   void>::type
+    CEREAL_SAVE_FUNCTION_NAME(Archive& ar, std::array<T, N> const& array)
+    {
+        ar(make_size_tag(static_cast<size_type>(N)));
+        for (auto const& i : array)
+            ar(i);
+    }
+
+    //! Loading for std::array all other types
+    template <class Archive, class T, size_t N>
+    inline typename std::enable_if<(!traits::is_input_serializable<BinaryData<T>, Archive>::value ||
+                                    !std::is_arithmetic<T>::value) &&
+                                       traits::is_text_archive<Archive>::value,
+                                   void>::type
+    CEREAL_LOAD_FUNCTION_NAME(Archive& ar, std::array<T, N>& array)
+    {
+        size_type size;
+        ar(make_size_tag(size));
+        assert(size == N);
+        for (auto& i : array)
+            ar(i);
     }
 } // namespace cereal
+
+namespace ct
+{
+}
 
 #endif // CEREAL_TYPES_ARRAY_HPP_

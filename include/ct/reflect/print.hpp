@@ -70,7 +70,7 @@ namespace ct
     template <class T, class C, ct::Flag_t FLAGS, class METADATA>
     void printField(const ct::MemberObjectPointer<T C::*, FLAGS, METADATA> ptr, std::ostream& os)
     {
-        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ct::Reflect<T>::getName() << " " << ptr.m_name;
+        os << "  Field  0x" << ct::memberOffset(ptr.m_ptr) << ' ' << ct::Reflect<T>::getTypeName() << ' ' << ptr.m_name;
         os << std::endl;
     }
 
@@ -176,7 +176,7 @@ namespace ct
             if (recursion_block)
             {
                 os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
-                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getName() << PRINT_OPTIONS::type_end;
+                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getTypeName() << PRINT_OPTIONS::type_end;
                 return;
             }
             recursion_block = true;
@@ -500,11 +500,11 @@ namespace std
     }
 
     template <class T>
-    ct::EnableIfIsEnum<T, ostream&> operator<<(ostream& os, T v)
+    ct::EnableIf<ct::EnumChecker<T>::value && ct::IsReflected<T>::value, ostream&> operator<<(ostream& os, T v)
     {
         return ct::printEnum(os, v);
     }
-}
+} // namespace std
 
 #include <sstream>
 
@@ -532,15 +532,15 @@ namespace ct
     // https://cukic.co/2019/02/19/tmp-testing-and-debugging-templates/
     // Only really useful on clang
     template <class... TS>
-    struct[[deprecated]] CompilerPrintTypes{};
+    struct [[deprecated]] CompilerPrintTypes {};
 
-    template<class T>
+    template <class T>
     ct::EnableIfIsEnum<T, std::string> toString(T val)
     {
         std::stringstream ss;
         ct::printEnum(ss, val);
         return std::move(ss).str();
     }
-}
+} // namespace ct
 
 #endif

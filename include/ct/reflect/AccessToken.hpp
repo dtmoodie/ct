@@ -21,6 +21,7 @@ namespace ct
         ~AccessToken() { (m_obj.*m_setter)(std::move(m_data)); }
 
         operator type&() { return m_data; }
+        type* operator&() { return &m_data; }
 
         AccessToken& operator=(typename std::decay<T1>::type data)
         {
@@ -50,6 +51,8 @@ namespace ct
         ~AccessToken() { m_setter(m_obj, std::move(m_data)); }
 
         operator type&() { return m_data; }
+
+        type* operator&() { return &m_data; }
 
         AccessToken& operator=(typename std::decay<T1>::type data)
         {

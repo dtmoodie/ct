@@ -49,5 +49,5 @@ namespace ct
             os << "}";
         }
     }
-}
+} // namespace ct
 #endif // CT_REFLECT_PRINT_CONTAINER_HPP

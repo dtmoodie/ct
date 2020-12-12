@@ -53,7 +53,10 @@ EXPECTED_NAME(std::vector<std::string>);
 EXPECTED_NAME(std::vector<std::vector<std::string>>);
 EXPECTED_NAME(Templated<double>);
 EXPECTED_NAME(std::map<std::string, Inherited>);
-
+EXPECTED_NAME(ct::ext::DataTableStorage<float>);
+// clang-format off
+EXPECTED_NAME(ct::ext::DataTableStorage<ct::TArrayView<float> >);
+// clang-format on
 #ifdef HAVE_EIGEN
 EXPECTED_NAME(Eigen::Matrix3f);
 EXPECTED_NAME(Eigen::MatrixXf);
@@ -82,11 +85,11 @@ struct CheckName : ::testing::Test
     void testName()
     {
         auto expected_name = ExpectedName<T>::getName();
-        if (ct::Reflect<T>::getName() != expected_name)
+        if (ct::Reflect<T>::getTypeName() != expected_name)
         {
             std::cout << "funcname: " << ct::GetName<T>::funcName() << std::endl;
         }
-        EXPECT_EQ(ct::Reflect<T>::getName(), expected_name);
+        EXPECT_EQ(ct::Reflect<T>::getTypeName(), expected_name);
     }
 };
 

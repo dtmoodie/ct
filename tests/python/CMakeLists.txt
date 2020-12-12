@@ -29,6 +29,7 @@ if(HAVE_PYTHON)
         ct
         gtest
         gtest_main
+        minitensor
     )
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

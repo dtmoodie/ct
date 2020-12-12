@@ -10,7 +10,7 @@
 /*!
     This macro is used for determining of a class has a desired static function.
     It can be used as follows:
-    DEFINE_HAS_STATIC_FUNCTION(HasFoo, foo, void(*)(int));
+    DEFINE_HAS_STATIC_FUNCTION(HasFoo, foo, void, int);
     struct Has
     {
         static void foo(int);
@@ -113,7 +113,7 @@ namespace ct
     template <class... T>
     using DisableIfValid = EnableIf<!std::is_same<Valid<T...>, void>::value>;
 
-    DEFINE_HAS_STATIC_FUNCTION(Has_name, getName, ct::StringView);
+    DEFINE_HAS_STATIC_FUNCTION(Has_name, getTypeName, ct::StringView);
 
     template <class T, class E = void>
     struct StreamWritable : std::false_type
@@ -186,6 +186,9 @@ namespace ct
     template <class T>
     using remove_reference_t = typename std::remove_reference<T>::type;
 #endif
+
+    template <class T>
+    using remove_pointer_t = typename std::remove_pointer<T>::type;
 
     template <class T>
     using remove_cv_t = typename std::remove_cv<T>::type;

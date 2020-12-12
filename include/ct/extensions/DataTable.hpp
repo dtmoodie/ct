@@ -17,8 +17,13 @@ namespace ct
     namespace ext
     {
         template <class U, template <class...> class STORAGE_POLICY = DefaultStoragePolicy>
-        struct DataTable : public DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>
+        struct DataTable
+            : DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>,
+              TComponentProviderImpl<DataTable<U, STORAGE_POLICY>,
+                                     typename SelectComponents<typename ct::GlobMemberObjects<U>::types>::type>
+
         {
+            using DType = U;
             using Super = DataTableBase<U, STORAGE_POLICY, typename ct::GlobMemberObjects<U>::types>;
             using Storage = typename Super::Storage;
 
@@ -63,8 +68,8 @@ namespace ct
 
             void reserve(const size_t size);
 
-            template <class T>
-            void resizeSubarray(T U::*mem_ptr, size_t size);
+            template <class T, class SHAPE>
+            void resizeSubarray(T U::*mem_ptr, const SHAPE size);
 
             // Currently not const since DataTableArray returns a pointer into the data table which is potentially
             // mutable
@@ -79,7 +84,6 @@ namespace ct
 
             size_t size() const override;
         };
-
 
         ///////////////////////////////////////////////////////////////////
         // IMPLEMENTATION
@@ -111,16 +115,18 @@ namespace ct
         template <class T>
         TArrayView<T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx)
         {
-            auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
-            return *p;
+            auto tensor = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
+            const uint32_t num_elements = tensor.getShape()[1];
+            return TArrayView<T>(ptrCast<T>(tensor.data()), num_elements);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
         template <class T>
         TArrayView<const T> DataTable<U, STORAGE_POLICY>::access(TArrayView<T> U::*mem_ptr, const size_t idx) const
         {
-            auto p = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
-            return *p;
+            auto tensor = this->ptr(memberOffset(mem_ptr), idx, Reflect<U>::end());
+            const uint32_t num_elements = tensor.getShape()[1];
+            return TArrayView<const T>(ptrCast<const T>(tensor.data()), num_elements);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -128,7 +134,7 @@ namespace ct
         T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr)
         {
             auto p = this->ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
-            return p.template ptr<T>();
+            return ptrCast<T>(p.data());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -136,7 +142,7 @@ namespace ct
         const T* DataTable<U, STORAGE_POLICY>::begin(T U::*mem_ptr) const
         {
             auto p = this->ptr(memberOffset(mem_ptr), 0, Reflect<U>::end());
-            return p.template ptr<T>();
+            return ptrCast<const T>(p.data());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -144,7 +150,7 @@ namespace ct
         T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr)
         {
             auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
-            return p.template ptr<T>();
+            return static_cast<T*>(p.data());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -152,28 +158,31 @@ namespace ct
         const T* DataTable<U, STORAGE_POLICY>::end(T U::*mem_ptr) const
         {
             auto p = this->ptr(memberOffset(mem_ptr), Storage::template get<0>().size(), Reflect<U>::end());
-            return p.template ptr<T>();
+            return static_cast<const T*>(p.data());
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
         U DataTable<U, STORAGE_POLICY>::access(const size_t idx)
         {
             U out;
-            this->populateDataRecurse(out, idx, ct::Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->populateDataRecurse(out, idx, start_idx);
             return out;
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
         void DataTable<U, STORAGE_POLICY>::reserve(const size_t size)
         {
-            this->reserveImpl(size, Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->reserveImpl(size, start_idx);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
-        template <class T>
-        void DataTable<U, STORAGE_POLICY>::resizeSubarray(T U::*mem_ptr, size_t size)
+        template <class T, class SHAPE>
+        void DataTable<U, STORAGE_POLICY>::resizeSubarray(T U::*mem_ptr, const SHAPE shape)
         {
-            this->resizeSubarrayImpl(memberOffset(mem_ptr), size, Reflect<U>::end());
+            const auto start_idx = ct::Reflect<U>::end();
+            this->resizeSubarrayImpl(memberOffset(mem_ptr), shape, start_idx);
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -195,9 +204,12 @@ namespace ct
         template <class T>
         DataTableStorage<T>& DataTable<U, STORAGE_POLICY>::storage(T U::*mem_ptr)
         {
-            void* out = this->template storageImpl<DataTableStorage<T>>(memberOffset(mem_ptr), Reflect<U>::end());
+            const auto offset = memberOffset(mem_ptr);
+            const auto idx = Reflect<U>::end();
+            void* out = this->template storageImpl<DataTableStorage<T>>(offset, idx);
             assert(out != nullptr);
-            return *static_cast<DataTableStorage<T>*>(out);
+            auto typed = static_cast<DataTableStorage<T>*>(out);
+            return *typed;
         }
 
         template <class U, template <class...> class STORAGE_POLICY>
@@ -205,8 +217,8 @@ namespace ct
         {
             return Storage::template get<0>().size();
         }
-    }
-}
+    } // namespace ext
+} // namespace ct
 #include "datatable/print.hpp"
 
 #endif // CT_EXTENSIONS_DATA_TABLE_HPP

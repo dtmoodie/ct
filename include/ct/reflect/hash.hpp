@@ -72,7 +72,7 @@ namespace ct
         template <class T, class OPTS = HashOptions>
         constexpr auto hashStructName() -> EnableIf<OPTS::hash_struct_name, uint32_t>
         {
-            return crc32(Reflect<T>:: getName());
+            return crc32(Reflect<T>::getTypeName());
         }
 
         template <class T, class OPTS = HashOptions>
@@ -85,7 +85,7 @@ namespace ct
         constexpr uint32_t hashMemberName()
         {
             return OPTS::hash_member_names
-                       ? std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}). getName())>::value
+                       ? std::integral_constant<uint32_t, crc32(Reflect<T>::getPtr(Indexer<I>{}).getName())>::value
                        : 0;
         }
 
@@ -140,7 +140,7 @@ namespace ct
         {
             return combineHash(hashStructName<T, OPTS>(), hashMembers<T, OPTS>());
         }
-    }
+    } // namespace detail
 
     template <class T>
     struct TypeHash<T, EnableIfReflected<T>>
@@ -151,7 +151,7 @@ namespace ct
     template <class T>
     constexpr uint32_t hashStruct()
     {
-        return crc32(Reflect<T>:: getName()) ^ hashMembers<T>();
+        return crc32(Reflect<T>::getTypeName()) ^ hashMembers<T>();
     }
 
     template <class T>
@@ -194,6 +194,6 @@ namespace ct
         // TODO
         return 0;
     }
-}
+} // namespace ct
 
 #endif // CT_REFLECT_HASH_HPP
