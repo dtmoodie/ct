@@ -20,7 +20,7 @@ namespace ct
         static constexpr index_t I0 = 0;
         static constexpr const index_t REFLECT_COUNT_BEGIN = __COUNTER__;
 
-        static constexpr const char* getName() { return "Eigen::Matrix<T, ROWS, COLS, OPTS, MAXROWS, MAXCOLS>"; }
+        static constexpr const char* getTypeName() { return "Eigen::Matrix<T, ROWS, COLS, OPTS, MAXROWS, MAXCOLS>"; }
 
         MEMBER_FUNCTION(data,
                         static_cast<const T* (DataType::*)() const>(&DataType::data),

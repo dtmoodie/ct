@@ -75,7 +75,7 @@ namespace ct
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_ = ct::Reflect<T>::getName();
+        static constexpr const auto substring_ = ct::Reflect<T>::getTypeName();
         static constexpr const auto substring_len = substring_.size();
         static constexpr const auto substring = makeCTS<substring_len + 1>(substring_);
 
@@ -176,8 +176,8 @@ namespace ct
         static StringView funcName() { return ""; }
         static StringView getName()
         {
-            static const std::string name = "std::pair<" + std::string(ct::Reflect<K>::getName()) + ", " +
-                                            std::string(ct::Reflect<V>::getName()) + ">";
+            static const std::string name = "std::pair<" + std::string(ct::Reflect<K>::getTypeName()) + ", " +
+                                            std::string(ct::Reflect<V>::getTypeName()) + ">";
             return StringView(name.data(), name.size());
         }
 

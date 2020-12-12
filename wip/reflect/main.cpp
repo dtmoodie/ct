@@ -1,17 +1,17 @@
-#include "reflect.hpp"
-#include "object.hpp"
 #include "equal.hpp"
+#include "object.hpp"
+#include "reflect.hpp"
 
 #include "print.hpp"
 
 #ifdef HAVE_CEREAL
 #include "cerealize.hpp"
-#include <cereal/cereal.hpp>
-#include <cereal/archives/json.hpp>
 #include <cereal/archives/binary.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 #endif
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 namespace ct
 {
@@ -34,8 +34,7 @@ namespace ct
         PUBLIC_ACCESS(id)
     REFLECT_END;
 
-}
-
+} // namespace ct
 
 #ifdef HAVE_OPENCV
 #include <opencv2/core/types.hpp>
@@ -61,13 +60,13 @@ namespace ct
         MEMBER_FUNCTION(area, &cv::Rect::area)
         MEMBER_FUNCTION(size, &cv::Rect::size)
     REFLECT_END;
-}
+} // namespace ct
 #endif
 
-template<class T>
+template <class T>
 void test(T& obj)
 {
-    std::cout << ct::Reflect<T>::getName() << std::endl;
+    std::cout << ct::Reflect<T>::getTypeName() << std::endl;
     ct::printStruct(std::cout, obj);
     std::cout << std::endl;
 #ifdef HAVE_CEREAL
@@ -99,8 +98,6 @@ void test(T& obj)
 #endif
 }
 
-
-
 int main()
 {
     Foo obj;
@@ -117,17 +114,19 @@ int main()
 
     TestNonSerizableData non_serializable;
     ct::printStruct<ct::SkipUnprintable>(std::cout, non_serializable);
-    static_assert(ct::detail::stream_writable<NonSerializable>::value == false, "ct::detail::stream_writable<NonSerializable>::value == false");
+    static_assert(ct::detail::stream_writable<NonSerializable>::value == false,
+                  "ct::detail::stream_writable<NonSerializable>::value == false");
     static_assert(ct::detail::stream_writable<float>::value, "ct::detail::stream_writable<float>::value");
-    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false, "ct::CanWrite<TestNonSerizableData, 0>::value == false");
+    static_assert(ct::CanWrite<TestNonSerizableData, 0>::value == false,
+                  "ct::CanWrite<TestNonSerizableData, 0>::value == false");
     static_assert(ct::CanWrite<TestNonSerizableData, 1>::value, "ct::CanWrite<TestNonSerizableData, 1>::value == true");
     std::cout << std::endl;
 
-    #ifdef HAVE_OPENCV
-        cv::Rect rect(0,2, 4, 5);
-        test(rect);
-        static_assert(ct::Reflect<cv::Rect>::REFLECTION_COUNT == 8, "Reflect<cv::Rect>::REFLECTION_COUNT == 8");
-    #endif
+#ifdef HAVE_OPENCV
+    cv::Rect rect(0, 2, 4, 5);
+    test(rect);
+    static_assert(ct::Reflect<cv::Rect>::REFLECTION_COUNT == 8, "Reflect<cv::Rect>::REFLECTION_COUNT == 8");
+#endif
     DerivedFoo derived_foo;
     test(derived_foo);
     static_assert(ct::Reflect<DerivedFoo>::REFLECTION_COUNT == 4, "");

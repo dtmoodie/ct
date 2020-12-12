@@ -54,7 +54,26 @@ namespace ct
     {
         return std::bind(p, ptr, placeholder_template<Is>{}...);
     }
-}
+
+    template <class R, class... Args>
+    std::function<R(Args...)> variadicBind(R (*p)(Args...))
+    {
+        return variadicBind(p, make_int_sequence<sizeof...(Args)>{});
+    }
+
+    template <class R, class C, class B, class... Args>
+    std::function<R(Args...)> variadicBind(R (C::*p)(Args...), B* ptr)
+    {
+        return variadicBind(p, ptr, make_int_sequence<sizeof...(Args)>{});
+    }
+
+    template <class R, class C, class B, class... Args>
+    std::function<R(Args...)> variadicBind(R (C::*p)(Args...) const, const B* ptr)
+    {
+        return variadicBind(p, ptr, make_int_sequence<sizeof...(Args)>{});
+    }
+
+} // namespace ct
 
 namespace std
 {
@@ -62,6 +81,6 @@ namespace std
     struct is_placeholder<ct::placeholder_template<N>> : integral_constant<int, N + 1>
     {
     };
-}
+} // namespace std
 // *************************************************************************
 #endif // CT_BIND_HPP

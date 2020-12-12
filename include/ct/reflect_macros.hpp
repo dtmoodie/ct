@@ -2,6 +2,8 @@
 #define CT_REFLECT_MACROS_HPP
 #include "macros.hpp"
 
+#include <ct/reflect/utils.hpp>
+
 #define REFLECT_INTERNAL_MEMBER_2(TYPE, NAME)                                                                          \
     TYPE NAME;                                                                                                         \
                                                                                                                        \
@@ -47,35 +49,66 @@
 
 #define REFLECT_STUB static constexpr const ct::index_t REFLECT_COUNT_BEGIN = __COUNTER__ + 1;
 
+namespace ct
+{
+    template <class TYPE, bool>
+    struct ReflectClassFunctionHelper
+    {
+        template <class R, class... ARGS>
+        static constexpr R (TYPE::*constFunctionCast(R (TYPE::*ptr)(ARGS...) const))(ARGS...) const
+        {
+            return ptr;
+        }
+        template <class R, class... ARGS>
+        static constexpr R (TYPE::*functionCast(R (TYPE::*ptr)(ARGS...)))(ARGS...)
+        {
+            return ptr;
+        }
+    };
+    template <class TYPE>
+    struct ReflectClassFunctionHelper<TYPE, false>
+    {
+    };
+} // namespace ct
+
+#define REFLECT_INTERNAL_BEGIN(TYPE)                                                                                   \
+    REFLECT_STUB                                                                                                       \
+        using DataType = TYPE;                                                                                         \
+        static constexpr ct::StringView getTypeName() { return #TYPE; }
+
 #define REFLECT_BEGIN(TYPE)                                                                                            \
     template <>                                                                                                        \
-    struct ReflectImpl<TYPE, void>                                                                                     \
+    struct ReflectImpl<TYPE, void> : ct::ReflectClassFunctionHelper<TYPE, std::is_class<TYPE>::value>                  \
     {                                                                                                                  \
-        using DataType = TYPE;                                                                                         \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
-        REFLECT_STUB
+        REFLECT_INTERNAL_BEGIN(TYPE)
 
 #define REFLECT_DERIVED(TYPE, ...)                                                                                     \
     template <>                                                                                                        \
-    struct ReflectImpl<TYPE, void>                                                                                     \
+    struct ReflectImpl<TYPE, void> : ct::ReflectClassFunctionHelper<TYPE, std::is_class<TYPE>::value>                  \
     {                                                                                                                  \
         using DataType = TYPE;                                                                                         \
         using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
-        static constexpr ct::StringView getName() { return #TYPE; }                                                    \
+        static constexpr ct::StringView getTypeName() { return #TYPE; }                                                \
         REFLECT_STUB
 
 #define REFLECT_TEMPLATED_BEGIN(TYPE)                                                                                  \
     template <class... Args>                                                                                           \
     struct ReflectImpl<TYPE<Args...>, void>                                                                            \
+        : ct::ReflectClassFunctionHelper<TYPE<Args...>, std::is_class<TYPE<Args...>>::value>                           \
     {                                                                                                                  \
         using DataType = TYPE<Args...>;                                                                                \
         using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
         REFLECT_STUB
 
-#define REFLECT_INTERNAL_BEGIN(TYPE)                                                                                   \
-    REFLECT_STUB                                                                                                       \
-        using DataType = TYPE;                                                                                         \
-        static constexpr ct::StringView getName() { return #TYPE; }
+#define REFLECT_TEMPLATED_DERIVED(TYPE, ...)                                                                           \
+    template <class... Args>                                                                                           \
+    struct ReflectImpl<TYPE<Args...>, void>                                                                            \
+        : ct::ReflectClassFunctionHelper<TYPE<Args...>, std::is_class<TYPE<Args...>>::value>                           \
+    {                                                                                                                  \
+        using DataType = TYPE<Args...>;                                                                                \
+        using BaseTypes = ct::VariadicTypedef<__VA_ARGS__>;                                                            \
+        using TemplateParameters = ct::VariadicTypedef<Args...>;                                                       \
+        REFLECT_STUB
 
 #define INFER_THIS_TYPE                                                                                                \
     static constexpr auto getTypeHelper()->decltype(this);                                                             \

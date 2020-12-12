@@ -25,6 +25,12 @@ if(NOT TARGET ct)
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
             $<INSTALL_INTERFACE:include>
     )
+    
+    add_subdirectory(dependencies/minitensor)
+    target_link_libraries(ct
+        INTERFACE
+            minitensor
+    )
 
     # this exists specifically for older version of FindCUDA.cmake which doesn't pull target includes correctly
     set(CT_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/include CACHE INTERNAL "" FORCE)
@@ -44,9 +50,7 @@ if(NOT TARGET ct)
     install(DIRECTORY include/ct DESTINATION include)
 
     if(BUILD_TESTS)
-        ADD_SUBDIRECTORY (googletest)
         enable_testing()
-        set(GTEST_INCLUDE googletest/googletest/include)
 
         find_package(OpenCV QUIET COMPONENTS core)
         find_package(CUDA QUIET)

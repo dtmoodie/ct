@@ -10,7 +10,7 @@
     template <>                                                                                                        \
     struct Reflect<TYPE> : public ReflectBase<TYPE>                                                                    \
     {                                                                                                                  \
-        static constexpr const char*  getName() { return "TYPE"; }                                                      \
+        static constexpr const char* getTypeName() { return "TYPE"; }                                                  \
     }
 
 #define CT_PP_CAT(a, b) CT_PP_CAT_I(a, b)
@@ -21,7 +21,6 @@
 #define CT_PP_CAT_II(p, res) res
 #endif
 #define CT_PP_EMPTY()
-
 
 #define CT_PP_VARIADIC_SIZE_I(e0,                                                                                      \
                               e1,                                                                                      \
@@ -228,6 +227,5 @@
 #endif
 
 #define CT_PP_OVERLOAD(prefix, ...) CT_PP_CAT(prefix, CT_PP_VARIADIC_SIZE(__VA_ARGS__))
-
 
 #endif // CT_MACROS_HPP

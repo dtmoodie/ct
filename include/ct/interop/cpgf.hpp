@@ -80,12 +80,12 @@ namespace ct
         }
         else
         {
-            name += Reflect<T>:: getName();
+            name += Reflect<T>::getTypeName();
         }
         auto definition = createDefinition<T>(name.c_str(), typename Reflect<T>::Base{});
         recursiveRegisterHelper<T>(definition, Reflect<T>::end());
     }
-}
+} // namespace ct
 
 namespace cpgf
 {
@@ -109,7 +109,7 @@ namespace cpgf
             auto result_name = result.getBaseName();
             if (result_name == nullptr)
             {
-                result_name = result.getBaseType().getStdTypeInfo(). getName();
+                result_name = result.getBaseType().getStdTypeInfo().getName();
             }
             if (result.isConst())
             {
@@ -126,7 +126,7 @@ namespace cpgf
                 os << "*";
             }
 
-            const auto& name = method-> getName();
+            const auto& name = method->getName();
             os << " " << name << "(";
             for (int j = 0; j < num_params; ++j)
             {
@@ -142,7 +142,7 @@ namespace cpgf
                 const char* type_name = type.getBaseName();
                 if (!type_name)
                 {
-                    type_name = type.getBaseType().getStdTypeInfo(). getName();
+                    type_name = type.getBaseType().getStdTypeInfo().getName();
                 }
 
                 os << type_name;
@@ -167,7 +167,8 @@ namespace cpgf
         for (int i = 0; i < num_fields; ++i)
         {
             auto field = cls->getFieldAt(i);
-            os << " " << field-> getName() << " " << field->getItemType().getBaseType().getStdTypeInfo(). getName() << "\n";
+            os << " " << field->getName() << " " << field->getItemType().getBaseType().getStdTypeInfo().getName()
+               << "\n";
         }
 
         const auto num_properties = cls->getPropertyCount();
@@ -175,10 +176,11 @@ namespace cpgf
         for (int i = 0; i < num_properties; ++i)
         {
             auto prop = cls->getPropertyAt(i);
-            os << " " << prop->getItemType().getBaseType().getStdTypeInfo(). getName() << " " << prop-> getName() << "()\n";
+            os << " " << prop->getItemType().getBaseType().getStdTypeInfo().getName() << " " << prop->getName()
+               << "()\n";
         }
         return os;
     }
-}
+} // namespace cpgf
 
 #endif // CT_CPGF_HPP

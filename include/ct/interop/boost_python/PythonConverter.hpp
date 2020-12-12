@@ -9,7 +9,7 @@ namespace ct
     template <class T>
     boost::python::object convertToPython(const T& data);
 
-    template<class T>
+    template <class T>
     void registerToPython();
 
     template <class T>
@@ -28,7 +28,7 @@ namespace ct
         static boost::python::object convertToPython(const T& result);
     };
 
-    template<class T, class A>
+    template <class T, class A>
     struct PythonConverter<std::vector<T, A>, 4, void>
     {
         static void registerToPython(const char* name)
@@ -115,7 +115,7 @@ namespace ct
         }
     }
 
-    template<class T>
+    template <class T>
     void registerToPythonCreateNamespace(std::string name)
     {
         namespace bp = boost::python;
@@ -124,7 +124,7 @@ namespace ct
         auto bracketed_pos = name.find("<");
         // This is false if for example we have vector<std::string> since the namespace std is within the template arg
         const bool namespace_in_template_arg = bracketed_pos < pos;
-        if(have_namespace && !namespace_in_template_arg)
+        if (have_namespace && !namespace_in_template_arg)
         {
             auto namespace_name = name.substr(0, pos);
             bp::scope current_scope;
@@ -132,14 +132,15 @@ namespace ct
             {
                 std::string current_scope_name;
                 convertFromPython(current_scope.attr("__name__"), current_scope_name);
-                if(current_scope_name.find(namespace_name) == current_scope_name.size() - namespace_name.size())
+                if (current_scope_name.find(namespace_name) == current_scope_name.size() - namespace_name.size())
                 {
                     submodule = current_scope;
-                }else
+                }
+                else
                 {
                     std::string scope_name = current_scope_name + "." + namespace_name;
                     auto mod = PyImport_AddModule(scope_name.c_str());
-                    if(mod == nullptr)
+                    if (mod == nullptr)
                     {
                         PyObject *ptype, *pvalue, *ptraceback;
                         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
@@ -177,9 +178,9 @@ namespace ct
         }
         registered = true;
 
-        std::string name = ct::Reflect<T>::getName().toString();
+        std::string name = ct::Reflect<T>::getTypeName().toString();
         registerToPythonCreateNamespace<T>(name);
     }
-}
+} // namespace ct
 
 #endif // CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
