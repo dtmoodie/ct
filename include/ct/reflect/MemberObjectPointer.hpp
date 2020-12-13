@@ -51,6 +51,7 @@ namespace ct
             return obj.*m_ptr;
         }
 
+#ifdef CT_GET_FROM_RVALUE
         template <class DERIVED>
         Data_t get(DERIVED&& obj) const
         {
@@ -58,6 +59,7 @@ namespace ct
                           "Passed in object must either be of class type or derived from it");
             return std::move(obj.*m_ptr);
         }
+#endif
 
         template <class DERIVED>
         Data_t& set(DERIVED& obj) const

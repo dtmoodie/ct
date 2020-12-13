@@ -2,7 +2,7 @@
 #define CT_CONFIG_HPP
 
 // Check if we have constexpr support
-
+#define CT_GET_FROM_RVALUE
 // clang-format off
 #ifdef __CUDA_ARCH__
     #include <cuda_runtime_api.h>
@@ -31,9 +31,14 @@
             // There is a known bug where PRETTY_FUNCTION is not constexpr between 5.4 and 8.3
             #if __GNUC__ >= 5 && __GNUC__ < 8
                 #define CT_CONSTEXPR_NAME CTCONSTEXPR
+                
                 //#define CT_HAVE_CONSTEXPR_NAME
             #else
                 #define CT_CONSTEXPR_NAME
+            #endif
+            #if __GNUC__ < 5
+                // gcc 4.8 has a bug where this is amgibuous :/
+                #undef CT_GET_FROM_RVALUE
             #endif
 
         #else // __GNUC__
