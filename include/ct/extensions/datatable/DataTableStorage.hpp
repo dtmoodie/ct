@@ -195,10 +195,16 @@ namespace ct
             void push_back(T_&& val)
             {
                 auto input_view = mt::tensorWrap(val);
-                size_t new_size = m_data.size() + input_view.getShape().numElements();
-                m_data.resize(new_size);
-                uint32_t new_index = m_shape[0];
-                m_shape.setShape(0, new_index + 1);
+                const auto input_shape = input_view.getShape();
+                const uint32_t new_index = m_shape[0];
+                const auto new_batch_size = new_index + 1;
+                mt::Shape<storage_dim> new_shape;
+                new_shape.setShape(0, new_batch_size);
+                for(size_t i = 1; i < storage_dim; ++i)
+                {
+                    new_shape.setShape(i, input_shape[i - 1]);
+                }
+                this->resizeSubarray(new_shape);
                 mt::Tensor<T, storage_dim> storage_view = this->data();
                 input_view.copyTo(storage_view[new_index]);
             }
