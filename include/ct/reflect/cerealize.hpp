@@ -92,7 +92,7 @@ namespace ct
             template <class AR>
             static void save(AR& ar, const T& obj, const Ptr_t ptr)
             {
-                saveImpl(ar, obj, ptr, std::integral_constant<bool, IS_CONST == 0>{});
+                saveImpl(ar, obj, ptr, std::integral_constant<bool, WRITABLE != 0>{});
             }
 
           private:
