@@ -20,41 +20,38 @@ struct Cerealization : ::testing::Test
     void test()
     {
         const T data = TestData<T>::init();
+        std::stringstream serialized;
         {
-            std::ofstream ofs;
-            ofs.open(m_path);
-            ASSERT_TRUE(ofs.is_open());
-
-            WRITE archive(ofs);
+            WRITE archive(serialized);
             archive(cereal::make_nvp("data", data));
         }
         {
-            std::ifstream ifs;
-            ifs.open(m_path);
-            ASSERT_TRUE(ifs.is_open());
-            READ archive(ifs);
+            READ archive(serialized);
             T loaded_data;
             bool cerealization_success = false;
+            std::stringstream msg;
             try
             {
                 archive(cereal::make_nvp("data", loaded_data));
             }
             catch (std::exception& exception)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName()
-                          << " failed with exception: " << exception.what() << std::endl;
+
+                msg << "Cerealization of " << ct::Reflect<T>::getTypeName()
+                    << " failed with exception: " << exception.what() << std::endl;
             }
             cerealization_success = ct::compare(data, loaded_data, DebugEqual());
             if (!cerealization_success)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
-                ct::printStruct(std::cout, data);
-                std::cout << std::endl;
-                WRITE archive(std::cout);
-                archive(cereal::make_nvp("data", data));
+                msg << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
+                ct::printStruct(msg, data);
+                msg << "\nDeserialized \n";
+                ct::printStruct(msg, loaded_data);
+                msg << "\n Serialized format:\n";
+                msg << serialized.str();
+                msg << std::endl;
             }
-            std::cout << std::endl;
-            EXPECT_TRUE(cerealization_success);
+            EXPECT_TRUE(cerealization_success) << msg.str();
         }
         std::cout << std::endl;
     }
@@ -62,13 +59,13 @@ struct Cerealization : ::testing::Test
     void testBinary()
     {
         m_path = "test.bin";
-        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
+        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
     }
 
     void testJson()
     {
         m_path = "test.json";
-        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
+        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
     }
 
     std::string m_path;
