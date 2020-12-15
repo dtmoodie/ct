@@ -23,96 +23,131 @@ namespace ct
         template <class DTYPE, class BASES = typename Reflect<DTYPE>::BaseTypes>
         struct IDataTable;
 
+        template <class T>
+        struct TensorOf
+        {
+            using DType = typename DataDimensionality<T>::DType;
+            static constexpr const uint8_t Dims = DataDimensionality<T>::value;
+            using Type = mt::Tensor<DType, Dims + 1>;
+            using ConstType = mt::Tensor<const DType, Dims + 1>;
+        };
+
+        template <class T>
+        using TensorOf_t = typename TensorOf<T>::Type;
+
+        template <class T>
+        using ConstTensorOf_t = typename TensorOf<T>::ConstType;
+
         template <class DTYPE>
         struct IDataTable<DTYPE, VariadicTypedef<>>
         {
             virtual ~IDataTable() = default;
+
             template <class T, class U>
-            T* begin(T U::*mem_ptr)
+            auto begin(T U::*mem_ptr) -> EnableIf<DataDimensionality<T>::value == 0, T*>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return ptrCast<T>(p.data());
             }
 
-            template <class T, class U>
+            /*template <class T, class U>
             DataTableArrayIterator<T> begin(TArrayView<T> U::*mem_ptr)
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return p;
-            }
+            }*/
 
             template <class T, class U>
-            const T* begin(T U::*mem_ptr) const
+            auto begin(T U::*mem_ptr) const -> ct::EnableIf<DataDimensionality<T>::value == 0, const T*>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
-                return ptrCast<T>(p.data());
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
+                const auto ptr = p.data();
+                return ptrCast<T>(ptr);
             }
 
             template <class T, class U>
-            mt::Tensor<const T, 2> begin(TArrayView<T> U::*mem_ptr) const
+            auto begin(T U::*mem_ptr) const -> ct::EnableIf<DataDimensionality<T>::value != 0, ConstTensorOf_t<T>>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return p;
             }
 
             template <class T, class U>
-            T* end(T U::*mem_ptr)
+            auto end(T U::*mem_ptr) -> ct::EnableIf<DataDimensionality<T>::value == 0, T*>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.data());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
+                const auto ptr = p.data();
+                return ptrCast<T>(ptr);
             }
 
             template <class T, class U>
-            mt::Tensor<T, 2> end(TArrayView<T> U::*mem_ptr)
+            auto end(T U::*mem_ptr) -> EnableIf<DataDimensionality<T>::value != 0, TensorOf_t<T>>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return p;
             }
 
             template <class T, class U>
-            const T* end(T U::*mem_ptr) const
+            auto end(T U::*mem_ptr) const -> EnableIf<DataDimensionality<T>::value == 0, T*>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
-                return ptrCast<T>(p.data());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
+                const auto ptr = p.data();
+                return ptrCast<T>(ptr);
             }
 
             template <class T, class U>
-            mt::Tensor<const T, 2> end(TArrayView<T> U::*mem_ptr) const
+            auto end(T U::*mem_ptr) const -> EnableIf<DataDimensionality<T>::value != 0, ConstTensorOf_t<T>>
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return p;
             }
 
             template <class T, class U>
             ElementView<T> view(T U::*mem_ptr)
             {
-                return {begin(mem_ptr), end(mem_ptr)};
+                auto begin_ = begin(mem_ptr);
+                auto end_ = end(mem_ptr);
+                return {begin_, end_};
             }
 
             template <class T, class U>
             ElementView<const T> view(T U::*mem_ptr) const
             {
-                return {begin(mem_ptr), end(mem_ptr)};
+                auto begin_ = begin(mem_ptr);
+                auto end_ = end(mem_ptr);
+                return {begin_, end_};
             }
 
             virtual size_t size() const = 0;
@@ -143,7 +178,8 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return p.template ptr<T>();
             }
 
@@ -153,7 +189,8 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return p;
             }
 
@@ -163,7 +200,8 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return ptrCast<T>(p.data());
             }
 
@@ -173,7 +211,8 @@ namespace ct
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value ||
                                   IsBase<Base<U>, Derived<DTYPE>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), 0);
+                const size_t offset = memberOffset(mem_ptr);
+                auto p = ptr(offset, 0);
                 return p;
             }
 
@@ -182,7 +221,9 @@ namespace ct
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return ptrCast<T>(p.data());
             }
 
@@ -191,7 +232,9 @@ namespace ct
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return p;
             }
 
@@ -200,7 +243,9 @@ namespace ct
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return ptrCast<T>(p.data());
             }
 
@@ -209,7 +254,9 @@ namespace ct
             {
                 static_assert(std::is_same<U, DTYPE>::value || IsBase<Base<DTYPE>, Derived<U>>::value,
                               "Mem ptr must derive from DTYPE");
-                auto p = ptr(memberOffset(mem_ptr), size());
+                const size_t offset = memberOffset(mem_ptr);
+                const size_t sz = size();
+                auto p = ptr(offset, sz);
                 return p;
             }
 
