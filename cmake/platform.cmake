@@ -1,3 +1,7 @@
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
+endif()
+
 function(setTargetPlatformFlags tgt)
     if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
         set(CMAKE_CXX_FLAGS "-ftemplate-backtrace-limit=0")
