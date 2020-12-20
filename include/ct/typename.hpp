@@ -17,15 +17,15 @@ namespace ct
     {
         constexpr StringView parseClassNameGCC(const StringView name)
         {
-            return name.slice(ssize_t(name.rfind('=') + 2), ssize_t(name.size() - 1));
+            return name.slice(int64_t(name.rfind('=') + 2), int64_t(name.size() - 1));
         }
 
         constexpr StringView
         parseClassNameMSVCHelper(const StringView name, size_t struct_pos, size_t /*TODO class_pos*/)
         {
             return name
-                .slice((struct_pos != StringView::npos ? ssize_t(struct_pos + 7) : ssize_t(name.find("C<") + 2)),
-                       ssize_t(name.rfind('>') - 1))
+                .slice((struct_pos != StringView::npos ? int64_t(struct_pos + 7) : int64_t(name.find("C<") + 2)),
+                       int64_t(name.rfind('>') - 1))
                 .strip();
         }
 

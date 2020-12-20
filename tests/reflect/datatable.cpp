@@ -223,7 +223,7 @@ TEST(datatable, dyn_array_init)
         auto val = table[0];
         for (size_t i = 0; i < val.embeddings.size(); ++i)
         {
-            EXPECT_TRUE(fclose(val.embeddings[ssize_t(i)], embeddings[i]));
+            EXPECT_TRUE(fclose(val.embeddings[int64_t(i)], embeddings[i]));
         }
         auto emb = table.access(&DynStruct::embeddings, 0);
         EXPECT_EQ(val.embeddings.data(), emb.data());
@@ -251,7 +251,7 @@ TEST(datatable, dyn_array_reserve_init)
         auto val = table[0];
         for (size_t i = 0; i < val.embeddings.size(); ++i)
         {
-            EXPECT_TRUE(fclose(val.embeddings[ssize_t(i)], embeddings[i]));
+            EXPECT_TRUE(fclose(val.embeddings[int64_t(i)], embeddings[i]));
         }
         auto emb = table.access(&DynStruct::embeddings, 0);
         EXPECT_EQ(val.embeddings.data(), emb.data());
