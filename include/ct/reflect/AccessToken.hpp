@@ -14,7 +14,7 @@ namespace ct
     template <class T, class T1, class R>
     struct AccessToken<R (T::*)(T1)>
     {
-        using type = typename std::decay<T1>::type;
+        using type = typename std::remove_const<typename std::decay<T1>::type>::type;
         AccessToken(T& obj, R (T::*setter)(T1), T1 init) : m_data(init), m_obj(obj), m_setter(setter) {}
         AccessToken(T& obj, R (T::*setter)(T1)) : m_obj(obj), m_setter(setter) {}
 
@@ -22,6 +22,8 @@ namespace ct
 
         operator type&() { return m_data; }
         type* operator&() { return &m_data; }
+
+        type& get() { return m_data; }
 
         AccessToken& operator=(typename std::decay<T1>::type data)
         {
@@ -44,7 +46,7 @@ namespace ct
     template <class T, class T1, class R>
     struct AccessToken<R (*)(T&, T1)>
     {
-        using type = typename std::decay<T1>::type;
+        using type = typename std::remove_const<typename std::decay<T1>::type>::type;
         AccessToken(T& obj, R (*setter)(T&, T1), T1 init) : m_data(init), m_obj(obj), m_setter(setter) {}
         AccessToken(T& obj, R (*setter)(T&, T1)) : m_obj(obj), m_setter(setter) {}
 
@@ -53,6 +55,8 @@ namespace ct
         operator type&() { return m_data; }
 
         type* operator&() { return &m_data; }
+
+        type& get() {return m_data; }
 
         AccessToken& operator=(typename std::decay<T1>::type data)
         {
@@ -72,11 +76,35 @@ namespace ct
         R (*m_setter)(T&, T1);
     };
 
+    template<class T>
+    const T& ref(const T& v)
+    {
+        return v;
+    }
+
+    template<class T>
+    T& ref(T&& v)
+    {
+        return v;
+    }
+
+    template<class Sig>
+    auto ref(AccessToken<Sig>&& token) -> typename AccessToken<Sig>::type&
+    {
+        return token.get();
+    }
+
+    template<class Sig>
+    auto ref(const AccessToken<Sig>& token) -> const typename AccessToken<Sig>::type&
+    {
+        return token.get();
+    }
+
     template <class T>
     struct ReferenceType<AccessToken<T>>
     {
-        using Type = AccessToken<T>;
-        using ConstType = const AccessToken<T>;
+        using Type = typename AccessToken<T>::type;
+        using ConstType = const typename AccessToken<T>::type;
     };
 } // namespace ct
 #endif // CT_REFLECT_ACCESS_TOKEN_HPP

@@ -84,9 +84,9 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(shape, &this_t::getShape, &this_t::reshape)
             PROPERTY(size, &this_t::getSize)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             MEMBER_FUNCTION(elemSize)
             MEMBER_FUNCTION(elemSize1)
             MEMBER_FUNCTION(type)

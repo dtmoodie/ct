@@ -78,21 +78,18 @@ EXPECTED_OBJECT_PRINT(cv::Vec2f, "(data: [2 3] shape: [2 1] size: 2 ) ");
 EXPECTED_OBJECT_PRINT(cv::Scalar, "(data: [0 1 2 3] shape: [4 1] size: 4 ) ");
 EXPECTED_OBJECT_PRINT(cv::Rect2f, "(x: 0 y: 1 width: 2 height: 3 ) ");
 EXPECTED_OBJECT_PRINT(cv::Rect, "(x: 0 y: 1 width: 2 height: 3 ) ");
-EXPECTED_OBJECT_PRINT(cv::Mat_<float>, "(data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] shape: [4 4] size: 16 ) ");
+EXPECTED_OBJECT_PRINT(cv::Mat_<float>, "(shape: [4 4] size: 16 data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] ) ");
 EXPECTED_OBJECT_PRINT(cv::Mat_<cv::Vec3f>,
-                      "(data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
-                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, "
-                      "0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
-                      "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] shape: [4 4] size: 16 ) ");
+                      "(shape: [4 4] size: 16 data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] ) ");
 EXPECTED_OBJECT_PRINT(cv::Mat, "(rows: 4 cols: 4 ) ");
 
 #endif
 
 #ifdef HAVE_EIGEN
 EXPECTED_OBJECT_PRINT(Eigen::Matrix3f,
-                      "(data: [1 0 0 0 1 0 0 0 1] shape: [3 3] size: 9 colStride: 3 rowStride: 1 cols: 3 rows: 3 ) ");
+                      "(shape: [3 3] data: [1 0 0 0 1 0 0 0 1] size: 9 colStride: 3 rowStride: 1 cols: 3 rows: 3 ) ");
 EXPECTED_OBJECT_PRINT(Eigen::MatrixXf,
-                      "(data: [1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1] shape: [5 5] size: "
+                      "(shape: [5 5] data: [1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1] size: "
                       "25 colStride: 5 rowStride: 1 cols: 5 rows: 5 ) ");
 #endif
 

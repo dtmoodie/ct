@@ -26,8 +26,8 @@ namespace ct
         static TArrayView<T> getDataMutable(DataType& mat) { return {mat.data(), ROWS * COLS}; }
 
         REFLECT_STUB
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, shape, &this_t::shape)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, size)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, colStride)
             PROPERTY_WITH_FLAG(Flags::COMPILE_TIME_CONSTANT, rowStride)
@@ -62,8 +62,8 @@ namespace ct
         }
 
         REFLECT_STUB
-            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(shape, &this_t::shape, &this_t::reshape)
+            PROPERTY(data, &this_t::getData, &this_t::getDataMutable)
             PROPERTY(size)
             PROPERTY(colStride)
             PROPERTY(rowStride)
