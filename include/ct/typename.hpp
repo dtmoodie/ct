@@ -114,11 +114,11 @@ namespace ct
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getTypeName();
         static constexpr const auto substring_a_len = substring_a_.size();
         static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
 
-        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getTypeName();
         static constexpr const auto substring_b_len = substring_b_.size();
         static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
 
@@ -157,11 +157,11 @@ namespace ct
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getTypeName();
         static constexpr const auto substring_a_len = substring_a_.size();
         static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
 
-        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getTypeName();
         static constexpr const auto substring_b_len = substring_b_.size();
         static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
 
