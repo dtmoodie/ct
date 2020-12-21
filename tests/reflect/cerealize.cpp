@@ -24,7 +24,6 @@ struct Cerealization : ::testing::Test
         {
             WRITE archive(serialized);
             archive(cereal::make_nvp("data", data));
-            std::cout << serialized.str() << std::endl;
         }
         {
             READ archive(serialized);
