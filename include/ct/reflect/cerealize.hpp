@@ -274,6 +274,7 @@ namespace ct
 
         };
 
+
         template <class T, class ENABLE = void>
         struct CerealMinimalRepresentation;
 

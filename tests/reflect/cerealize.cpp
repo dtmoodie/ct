@@ -86,13 +86,40 @@ TYPED_TEST_P(Cerealization, json)
 
 REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
-//using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>>::type;
-using Types = ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>;
+using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>>::type;
 
 TEST_DATA(MyClass::MyEnum, MyClass::MyEnum::kVALUE1);
 TEST_DATA(MyClass::SecondEnum, MyClass::SecondEnum::kRGB);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<Types>::type);
+
+
+TEST(access_token, set_on_dtor)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    {
+        auto token = prop.set(obj);
+        token.get() = 5;
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
+
+TEST(access_token, set_on_dtor_from_temp)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    auto setter = [](float& val)
+    {
+        val = 5;
+    };
+    {
+        setter(ct::ref(prop.set(obj)));
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
 
 
 TEST(access_token, set_on_dtor)
