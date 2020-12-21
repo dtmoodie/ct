@@ -58,17 +58,13 @@ struct Cerealization : ::testing::Test
 
     void testBinary()
     {
-        m_path = "test.bin";
         test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
     }
 
     void testJson()
     {
-        m_path = "test.json";
         test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
     }
-
-    std::string m_path;
 };
 
 TYPED_TEST_SUITE_P(Cerealization);
@@ -84,9 +80,17 @@ TYPED_TEST_P(Cerealization, json)
     this->testJson();
 }
 
+#include "../enum/enum.hpp"
+
+
 REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<TestTypes>::type);
+using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>>::type;
+
+TEST_DATA(MyClass::MyEnum, MyClass::MyEnum::kVALUE1);
+TEST_DATA(MyClass::SecondEnum, MyClass::SecondEnum::kRGB);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<Types>::type);
 
 
 TEST(access_token, set_on_dtor)
@@ -115,6 +119,7 @@ TEST(access_token, set_on_dtor_from_temp)
     }
     ASSERT_EQ(obj.getX(), 5);
 }
+
 
 int main(int argc, char** argv)
 {

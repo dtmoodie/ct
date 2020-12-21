@@ -16,6 +16,7 @@ namespace ct
 
 #include <cereal/archives/json.hpp>
 #include <cereal/cereal.hpp>
+#include <cereal/details/traits.hpp>
 // TODO make specialization for text archives that uses a size tag
 #include <ct/VariadicTypedef.hpp>
 #include <ct/types/std_array.hpp>
@@ -178,6 +179,37 @@ namespace ct
             }
         };
 
+        template<class T>
+        struct EnumCerealizer
+        {
+            template<class AR>
+            static void load(AR& ar, T& obj)
+            {
+                if(::cereal::traits::is_text_archive<AR>::value)
+                {
+                    std::string str;
+                    ar(str);
+                    obj = ct::fromString<T>(str);
+                }else
+                {
+                    ar(obj.value);
+                }
+            }
+
+            template<class AR>
+            static void save(AR& ar, const T& obj)
+            {
+                if(::cereal::traits::is_text_archive<AR>::value)
+                {
+                    std::string str = ct::toString(obj);
+                    ar(str);
+                }else
+                {
+                    ar(obj.value);
+                }
+            }
+        };
+
         template <class T>
         struct SingleValueCerealizer
         {
@@ -226,15 +258,22 @@ namespace ct
         };
 
         template <class T, index_t PRIORITY = 10, class ENABLE = void>
-        struct CerealizerSelector : public CerealizerSelector<T, PRIORITY - 1, void>
+        struct CerealizerSelector : CerealizerSelector<T, PRIORITY - 1, void>
         {
         };
 
         // lowest priority select the generic StructCerealizer
         template <class T>
-        struct CerealizerSelector<T, 0, void> : public StructCerealizer<T>
+        struct CerealizerSelector<T, 0, void> : StructCerealizer<T>
         {
         };
+
+        template<class T>
+        struct CerealizerSelector<T, 1, EnableIfIsEnum<T>>: EnumCerealizer<T>
+        {
+
+        };
+
 
         template <class T, class ENABLE = void>
         struct CerealMinimalRepresentation;
@@ -318,5 +357,6 @@ namespace cereal
     {
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
+
 } // namespace cereal
 #endif // CT_REFLECT_CEREALIZE_HPP
