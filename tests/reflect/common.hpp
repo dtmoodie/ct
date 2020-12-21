@@ -339,11 +339,11 @@ using TestTypes = ct::VariadicTypedef<
 #endif
                                       >;
 
-template <class T>
+template <class ... T>
 struct ToTestTypes;
 
-template <class... Ts>
-struct ToTestTypes<ct::VariadicTypedef<Ts...>>
+template <class... Ts, class ... Us>
+struct ToTestTypes<ct::VariadicTypedef<Ts...>, Us...>
 {
-    using type = ::testing::Types<Ts...>;
+    using type = ::testing::Types<Ts..., Us...>;
 };
