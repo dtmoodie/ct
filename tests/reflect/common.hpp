@@ -295,7 +295,8 @@ TEST_DATA(Eigen::Matrix3f, Eigen::Matrix3f::Identity());
 TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
 #endif
 
-using TestTypes = ct::VariadicTypedef<ReflectedStruct,
+using TestTypes = ct::VariadicTypedef<
+                                      ReflectedStruct,
                                       Inherited,
                                       Composite,
                                       TestA,

@@ -17,15 +17,15 @@ namespace ct
     {
         constexpr StringView parseClassNameGCC(const StringView name)
         {
-            return name.slice(ssize_t(name.rfind('=') + 2), ssize_t(name.size() - 1));
+            return name.slice(int64_t(name.rfind('=') + 2), int64_t(name.size() - 1));
         }
 
         constexpr StringView
         parseClassNameMSVCHelper(const StringView name, size_t struct_pos, size_t /*TODO class_pos*/)
         {
             return name
-                .slice((struct_pos != StringView::npos ? ssize_t(struct_pos + 7) : ssize_t(name.find("C<") + 2)),
-                       ssize_t(name.rfind('>') - 1))
+                .slice((struct_pos != StringView::npos ? int64_t(struct_pos + 7) : int64_t(name.find("C<") + 2)),
+                       int64_t(name.rfind('>') - 1))
                 .strip();
         }
 
@@ -114,11 +114,11 @@ namespace ct
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getTypeName();
         static constexpr const auto substring_a_len = substring_a_.size();
         static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
 
-        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getTypeName();
         static constexpr const auto substring_b_len = substring_b_.size();
         static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
 
@@ -157,11 +157,11 @@ namespace ct
         static constexpr const auto postfix = makeCTS(">");
         static constexpr const auto postfix_len = postfix.size();
 
-        static constexpr const auto substring_a_ = ct::Reflect<K>::getName();
+        static constexpr const auto substring_a_ = ct::Reflect<K>::getTypeName();
         static constexpr const auto substring_a_len = substring_a_.size();
         static constexpr const auto substring_a = makeCTS<substring_a_len + 1>(substring_a_);
 
-        static constexpr const auto substring_b_ = ct::Reflect<V>::getName();
+        static constexpr const auto substring_b_ = ct::Reflect<V>::getTypeName();
         static constexpr const auto substring_b_len = substring_b_.size();
         static constexpr const auto substring_b = makeCTS<substring_b_len + 1>(substring_b_);
 

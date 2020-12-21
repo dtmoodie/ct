@@ -88,6 +88,34 @@ REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<TestTypes>::type);
 
+
+TEST(access_token, set_on_dtor)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    {
+        auto token = prop.set(obj);
+        token.get() = 5;
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
+
+TEST(access_token, set_on_dtor_from_temp)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    auto setter = [](float& val)
+    {
+        val = 5;
+    };
+    {
+        setter(ct::ref(prop.set(obj)));
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
