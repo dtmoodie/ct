@@ -18,7 +18,7 @@ for:
       CXX: /usr/bin/g++-8
 
 before_build:
-- git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
+- git clone https://github.com/dtmoodie/cereal -b v1.3.0
 - git clone https://github.com/eigenteam/eigen-git-mirror
 - cd eigen-git-mirror
 - git checkout 3.3.7
