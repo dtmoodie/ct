@@ -141,7 +141,7 @@ namespace ct
             template <class AR, index_t I>
             static void load(AR& ar, T& obj, const Indexer<I> idx)
             {
-                const Indexer<I-1> next_idx;
+                const Indexer<I - 1> next_idx;
                 load(ar, obj, next_idx);
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::load(ar, obj, ptr);
@@ -157,7 +157,7 @@ namespace ct
             template <class AR, index_t I>
             static void save(AR& ar, const T& obj, const Indexer<I> idx)
             {
-                const Indexer<I-1> next_idx;
+                const Indexer<I - 1> next_idx;
                 save(ar, obj, next_idx);
                 auto ptr = ct::Reflect<T>::getPtr(idx);
                 FieldCerealizer<T, decltype(ptr)>::save(ar, obj, ptr);
@@ -179,31 +179,33 @@ namespace ct
             }
         };
 
-        template<class T>
+        template <class T>
         struct EnumCerealizer
         {
-            template<class AR>
+            template <class AR>
             static void load(AR& ar, T& obj)
             {
-                if(::cereal::traits::is_text_archive<AR>::value)
+                if (::cereal::traits::is_text_archive<AR>::value)
                 {
                     std::string str;
                     ar(str);
                     obj = ct::fromString<T>(str);
-                }else
+                }
+                else
                 {
                     ar(obj.value);
                 }
             }
 
-            template<class AR>
+            template <class AR>
             static void save(AR& ar, const T& obj)
             {
-                if(::cereal::traits::is_text_archive<AR>::value)
+                if (::cereal::traits::is_text_archive<AR>::value)
                 {
                     std::string str = ct::toString(obj);
                     ar(str);
-                }else
+                }
+                else
                 {
                     ar(obj.value);
                 }
@@ -268,12 +270,10 @@ namespace ct
         {
         };
 
-        template<class T>
-        struct CerealizerSelector<T, 1, EnableIfIsEnum<T>>: EnumCerealizer<T>
+        template <class T>
+        struct CerealizerSelector<T, 1, EnableIfIsEnum<T>> : EnumCerealizer<T>
         {
-
         };
-
 
         template <class T, class ENABLE = void>
         struct CerealMinimalRepresentation;
@@ -358,16 +358,32 @@ namespace cereal
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
 
-    template<class AR, class T>
-    auto save_minimal(const AR&, const T& data) -> ct::EnableIfIsEnum<T, std::string>
+    template <class AR, class T>
+    auto save_minimal(const AR&, const T& data)
+        -> ct::EnableIf<ct::EnumChecker<T>::value && traits::is_text_archive<AR>::value, std::string>
     {
         return ct::toString(data);
     }
 
-    template<class AR, class T>
-    auto load_minimal(const AR&, T& data, const std::string& str) -> ct::EnableIfIsEnum<T>
+    template <class AR, class T>
+    auto load_minimal(const AR&, T& data, const std::string& str)
+        -> ct::EnableIf<ct::EnumChecker<T>::value && traits::is_text_archive<AR>::value>
     {
         data = ct::fromString<T>(str);
+    }
+
+    template <class AR, class T>
+    auto save_minimal(const AR&, T& data)
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !traits::is_text_archive<AR>::value, decltype(data.value)>
+    {
+        return data.value;
+    }
+
+    template <class AR, class T>
+    auto load_minimal(const AR&, T& data, const decltype(data.value)& val)
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !traits::is_text_archive<AR>::value>
+    {
+        data.value = val;
     }
 
 } // namespace cereal
