@@ -13,8 +13,9 @@ before_install:
  - sudo apt-get install -y libboost-test-dev libboost-python-dev
  - sudo apt-get install -y libopencv-core-dev
  - sudo apt-get install -y libpython-dev python-numpy
+ - sudo wget https://github.com/Kitware/CMake/releases/download/v3.14.4/cmake-3.14.4-Linux-x86_64.sh && sudo chmod +x cmake-3.14.4-Linux-x86_64.sh && sudo ./cmake-3.14.4-Linux-x86_64.sh --prefix=/usr/local --exclude-subdir --skip-license
  - git clone https://github.com/eigenteam/eigen-git-mirror
- - git clone https://github.com/dtmoodie/cereal -b v1.2.2_fixed
+ - git clone https://github.com/dtmoodie/cereal -b v1.3.0
  - cd eigen-git-mirror && git checkout 3.3.7 && cd ..
  - sudo -E ./scripts/travis/install-deps.sh
 

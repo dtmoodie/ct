@@ -347,15 +347,27 @@ namespace cereal
 {
 
     template <class AR, class T>
-    auto save(AR& ar, const T& data) -> ct::EnableIf<ct::IsReflected<T>::value>
+    auto save(AR& ar, const T& data) -> ct::EnableIf<ct::IsReflected<T>::value && !ct::EnumChecker<T>::value>
     {
         ct::cereal::CerealizerSelector<T>::save(ar, data);
     }
 
     template <class AR, class T>
-    auto load(AR& ar, T& data) -> ct::EnableIf<ct::IsReflected<T>::value>
+    auto load(AR& ar, T& data) -> ct::EnableIf<ct::IsReflected<T>::value && !ct::EnumChecker<T>::value>
     {
         ct::cereal::CerealizerSelector<T>::load(ar, data);
+    }
+
+    template<class AR, class T>
+    auto save_minimal(const AR&, const T& data) -> ct::EnableIfIsEnum<T, std::string>
+    {
+        return ct::toString(data);
+    }
+
+    template<class AR, class T>
+    auto load_minimal(const AR&, T& data, const std::string& str) -> ct::EnableIfIsEnum<T>
+    {
+        data = ct::fromString<T>(str);
     }
 
 } // namespace cereal
