@@ -213,6 +213,39 @@ namespace ct
         };
 
         template <class T>
+        struct EnumCerealizer
+        {
+            template <class AR>
+            static void load(AR& ar, T& obj)
+            {
+                if (::cereal::traits::is_text_archive<AR>::value)
+                {
+                    std::string str;
+                    ar(str);
+                    obj = ct::fromString<T>(str);
+                }
+                else
+                {
+                    ar(obj.value);
+                }
+            }
+
+            template <class AR>
+            static void save(AR& ar, const T& obj)
+            {
+                if (::cereal::traits::is_text_archive<AR>::value)
+                {
+                    std::string str = ct::toString(obj);
+                    ar(str);
+                }
+                else
+                {
+                    ar(obj.value);
+                }
+            }
+        };
+
+        template <class T>
         struct SingleValueCerealizer
         {
             template <class AR>
