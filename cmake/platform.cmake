@@ -9,7 +9,7 @@ function(setTargetPlatformFlags tgt)
             target_compile_features(${tgt}
                 INTERFACE cxx_return_type_deduction
             )
-            target_compile_options(${tgt} INTERFACE "-Wno-noexcept-type")
+            #target_compile_options(${tgt} INTERFACE "-Wno-noexcept-type")
         else()
             # for gcc 4.8 we just set the c++1y flag to get return type deduction
             target_compile_options(${tgt} INTERFACE "-std=c++1y")

@@ -153,6 +153,7 @@ namespace ct
             return value >= v.toBitset();
         }
 
+        STORAGE value;
       private:
         template <class U, uint16_t V, uint16_t I>
         constexpr STORAGE indexToBit(BitsetIndex<U, V, I>) const
@@ -160,8 +161,6 @@ namespace ct
             static_assert(V < MAX_BIT, "Can only do bitsets up to 64 bits for now :/");
             return static_cast<STORAGE>(1) << V;
         }
-
-        STORAGE value;
     };
 
     template <class E, class T>
