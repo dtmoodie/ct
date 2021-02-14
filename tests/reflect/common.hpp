@@ -295,7 +295,8 @@ TEST_DATA(Eigen::Matrix3f, Eigen::Matrix3f::Identity());
 TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
 #endif
 
-using TestTypes = ct::VariadicTypedef<ReflectedStruct,
+using TestTypes = ct::VariadicTypedef<
+                                      ReflectedStruct,
                                       Inherited,
                                       Composite,
                                       TestA,
@@ -338,11 +339,11 @@ using TestTypes = ct::VariadicTypedef<ReflectedStruct,
 #endif
                                       >;
 
-template <class T>
+template <class ... T>
 struct ToTestTypes;
 
-template <class... Ts>
-struct ToTestTypes<ct::VariadicTypedef<Ts...>>
+template <class... Ts, class ... Us>
+struct ToTestTypes<ct::VariadicTypedef<Ts...>, Us...>
 {
-    using type = ::testing::Types<Ts...>;
+    using type = ::testing::Types<Ts..., Us...>;
 };

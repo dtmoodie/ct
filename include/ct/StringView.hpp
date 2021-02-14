@@ -8,7 +8,7 @@
 
 #if defined(_MSC_VER)
 #include <BaseTsd.h>
-using ssize_t = SSIZE_T;
+using int64_t = int64_t;
 #endif
 
 namespace ct
@@ -39,9 +39,9 @@ namespace ct
         constexpr BasicStringView(const T* data);
         constexpr BasicStringView() {}
 
-        constexpr BasicStringView slice(ssize_t begin, ssize_t end) const;
+        constexpr BasicStringView slice(int64_t begin, int64_t end) const;
 
-        constexpr BasicStringView substr(ssize_t pos = 0, size_t count = 0) const;
+        constexpr BasicStringView substr(int64_t pos = 0, size_t count = 0) const;
 
         constexpr size_t find(T character, size_t n = 0, size_t pos = 0) const;
         constexpr size_t find(BasicStringView substring, size_t n = 0, size_t pos = 0) const;
@@ -81,7 +81,7 @@ namespace ct
         constexpr bool operator==(const BasicStringView other) const;
         constexpr bool operator!=(const BasicStringView other) const;
 
-        constexpr size_t revIndex(const ssize_t idx) const;
+        constexpr size_t revIndex(const int64_t idx) const;
 
       private:
         constexpr BasicStringView sliceHelper(size_t begin, size_t end) const;
@@ -259,7 +259,7 @@ namespace ct
     }
 
     template <class T>
-    constexpr BasicStringView<T> BasicStringView<T>::slice(ssize_t begin, ssize_t end) const
+    constexpr BasicStringView<T> BasicStringView<T>::slice(int64_t begin, int64_t end) const
     {
         return sliceHelper(revIndex(begin), (end == 0 && begin < 0) ? m_size : revIndex(end));
     }
@@ -274,7 +274,7 @@ namespace ct
     }
 
     template <class T>
-    constexpr BasicStringView<T> BasicStringView<T>::substr(ssize_t pos, size_t count) const
+    constexpr BasicStringView<T> BasicStringView<T>::substr(int64_t pos, size_t count) const
     {
         return count == 0 ? slice(revIndex(pos), m_size) : slice(revIndex(pos), revIndex(pos) + count);
     }
@@ -457,7 +457,7 @@ namespace ct
     }
 
     template <class T>
-    constexpr size_t BasicStringView<T>::revIndex(const ssize_t idx) const
+    constexpr size_t BasicStringView<T>::revIndex(const int64_t idx) const
     {
         return idx >= 0 ? idx : m_size + idx;
     }

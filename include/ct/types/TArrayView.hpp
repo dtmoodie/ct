@@ -26,25 +26,25 @@ namespace ct
     {
     };
 
-    template <class T, ssize_t N = -1>
+    template <class T, int64_t N = -1>
     struct TArrayView;
 
-    template <class T, ssize_t N, class DERIVED>
+    template <class T, int64_t N, class DERIVED>
     struct TArrayBaseConst : TArrayViewTag
     {
         using value_type = T;
         CT_DEVICE_INLINE const T* begin() const;
         CT_DEVICE_INLINE const T* end() const;
-        CT_DEVICE_INLINE size_t revIndex(ssize_t) const;
+        CT_DEVICE_INLINE size_t revIndex(int64_t) const;
         CT_DEVICE_INLINE bool empty() const { return static_cast<const DERIVED*>(this)->size() == 0; }
 
-        CT_DEVICE_INLINE TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
-        CT_DEVICE_INLINE TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
+        CT_DEVICE_INLINE TArrayView<const T, N> slice(int64_t begin, int64_t end = 0) const;
+        CT_DEVICE_INLINE TArrayView<const T, N> subView(int64_t begin, size_t count = 0) const;
 
         void copyTo(TArrayView<T, N>& dest) const;
     };
 
-    template <class T, ssize_t N, class DERIVED>
+    template <class T, int64_t N, class DERIVED>
     struct TArrayBase : public TArrayBaseConst<T, N, DERIVED>
     {
         CT_DEVICE_INLINE T* begin();
@@ -52,19 +52,19 @@ namespace ct
         CT_DEVICE_INLINE const T* begin() const;
         CT_DEVICE_INLINE const T* end() const;
 
-        CT_DEVICE_INLINE TArrayView<T, N> slice(ssize_t begin, ssize_t end = 0);
-        CT_DEVICE_INLINE TArrayView<T, N> subView(ssize_t begin, size_t count = 0);
-        CT_DEVICE_INLINE TArrayView<const T, N> slice(ssize_t begin, ssize_t end = 0) const;
-        CT_DEVICE_INLINE TArrayView<const T, N> subView(ssize_t begin, size_t count = 0) const;
+        CT_DEVICE_INLINE TArrayView<T, N> slice(int64_t begin, int64_t end = 0);
+        CT_DEVICE_INLINE TArrayView<T, N> subView(int64_t begin, size_t count = 0);
+        CT_DEVICE_INLINE TArrayView<const T, N> slice(int64_t begin, int64_t end = 0) const;
+        CT_DEVICE_INLINE TArrayView<const T, N> subView(int64_t begin, size_t count = 0) const;
     };
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     struct TArrayView : public TArrayBase<T, N, TArrayView<T, N>>
     {
         CT_DEVICE_INLINE TArrayView(T* ptr = nullptr);
 
-        CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
-        CT_DEVICE_INLINE T& operator[](ssize_t idx);
+        CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
+        CT_DEVICE_INLINE T& operator[](int64_t idx);
 
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
@@ -84,12 +84,12 @@ namespace ct
         T* m_data;
     };
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     struct TArrayView<const T, N> : public TArrayBaseConst<T, N, TArrayView<const T, N>>
     {
         CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr);
 
-        CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
+        CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
 
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
@@ -113,8 +113,8 @@ namespace ct
         CT_DEVICE_INLINE TArrayView(mt::Tensor<T, 1> tensor);
         TArrayView(std::vector<T>& vector);
 
-        CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
-        CT_DEVICE_INLINE T& operator[](ssize_t idx);
+        CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
+        CT_DEVICE_INLINE T& operator[](int64_t idx);
 
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
@@ -143,7 +143,7 @@ namespace ct
 
         CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<T>& other);
 
-        CT_DEVICE_INLINE const T& operator[](ssize_t idx) const;
+        CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
 
@@ -220,21 +220,21 @@ namespace ct
 
     ///////////////////////////////////////////////////////////
     // TArrayBaseConst
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE const T* TArrayBaseConst<T, N, D>::begin() const
     {
         return static_cast<const D*>(this)->data();
     }
 
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE const T* TArrayBaseConst<T, N, D>::end() const
     {
         auto This = static_cast<const D*>(this);
         return This->data() + This->size();
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE size_t TArrayBaseConst<T, N, D>::revIndex(ssize_t idx) const
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE size_t TArrayBaseConst<T, N, D>::revIndex(int64_t idx) const
     {
         if (idx < 0)
         {
@@ -243,8 +243,8 @@ namespace ct
         return static_cast<size_t>(idx);
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBaseConst<T, N, D>::slice(ssize_t begin, ssize_t end) const
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBaseConst<T, N, D>::slice(int64_t begin, int64_t end) const
     {
         const T* ptr_begin = static_cast<const D*>(this)->data() + revIndex(begin);
         const T* ptr_end =
@@ -252,8 +252,8 @@ namespace ct
         return TArrayView<const T>(ptr_begin, ptr_end);
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBaseConst<T, N, D>::subView(ssize_t begin, size_t count) const
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBaseConst<T, N, D>::subView(int64_t begin, size_t count) const
     {
         if (count == 0)
         {
@@ -262,7 +262,7 @@ namespace ct
         return slice(begin, begin + count);
     }
 
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     void TArrayBaseConst<T, N, D>::copyTo(TArrayView<T, N>& dest) const
     {
         const size_t size = static_cast<const D*>(this)->size();
@@ -272,40 +272,40 @@ namespace ct
 
     ///////////////////////////////////////////////////////////
     // TArrayBase
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE T* TArrayBase<T, N, D>::begin()
     {
         return static_cast<D*>(this)->data();
     }
 
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE T* TArrayBase<T, N, D>::end()
     {
         return static_cast<D*>(this)->data() + static_cast<D*>(this)->size();
     }
 
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE const T* TArrayBase<T, N, D>::begin() const
     {
         return TArrayBaseConst<T, N, D>::begin();
     }
 
-    template <class T, ssize_t N, class D>
+    template <class T, int64_t N, class D>
     CT_DEVICE_INLINE const T* TArrayBase<T, N, D>::end() const
     {
         return TArrayBaseConst<T, N, D>::end();
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<T, N> TArrayBase<T, N, D>::slice(ssize_t begin, ssize_t end)
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<T, N> TArrayBase<T, N, D>::slice(int64_t begin, int64_t end)
     {
         T* ptr_begin = static_cast<D*>(this)->data() + this->revIndex(begin);
         T* ptr_end = static_cast<D*>(this)->data() + (end == 0 ? static_cast<D*>(this)->size() : this->revIndex(end));
         return TArrayView<T>(ptr_begin, ptr_end);
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<T, N> TArrayBase<T, N, D>::subView(ssize_t begin, size_t count)
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<T, N> TArrayBase<T, N, D>::subView(int64_t begin, size_t count)
     {
         if (count == 0)
         {
@@ -314,14 +314,14 @@ namespace ct
         return slice(begin, begin + count);
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBase<T, N, D>::slice(ssize_t begin, ssize_t end) const
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBase<T, N, D>::slice(int64_t begin, int64_t end) const
     {
         return TArrayBaseConst<T, N, D>::slice(begin, end);
     }
 
-    template <class T, ssize_t N, class D>
-    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBase<T, N, D>::subView(ssize_t begin, size_t count) const
+    template <class T, int64_t N, class D>
+    CT_DEVICE_INLINE TArrayView<const T, N> TArrayBase<T, N, D>::subView(int64_t begin, size_t count) const
     {
         return TArrayBaseConst<T, N, D>::subView(begin, count);
     }
@@ -329,24 +329,24 @@ namespace ct
     ///////////////////////////////////////////////////////////
     // TArrayView<T, N>
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<T, N>::TArrayView(T* ptr) : m_data(ptr)
     {
     }
 
-    template <class T, ssize_t N>
-    CT_DEVICE_INLINE const T& TArrayView<T, N>::operator[](ssize_t idx) const
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE const T& TArrayView<T, N>::operator[](int64_t idx) const
     {
         return m_data[this->revIndex(idx)];
     }
 
-    template <class T, ssize_t N>
-    CT_DEVICE_INLINE T& TArrayView<T, N>::operator[](ssize_t idx)
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE T& TArrayView<T, N>::operator[](int64_t idx)
     {
         return m_data[this->revIndex(idx)];
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE bool TArrayView<T, N>::operator==(const TArrayView& other) const
     {
         if (other.m_data == m_data)
@@ -364,37 +364,37 @@ namespace ct
         return true;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE bool TArrayView<T, N>::operator!=(const TArrayView& other) const
     {
         return !(*this == other);
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE size_t TArrayView<T, N>::size() const
     {
         return N;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE T* TArrayView<T, N>::data()
     {
         return m_data;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE const T* TArrayView<T, N>::data() const
     {
         return m_data;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<T, N>::operator TArrayView<void, N * sizeof(T)>() &
     {
         return {m_data};
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<T, N>::operator TArrayView<void, N * sizeof(T)>() &&
     {
         TArrayView<void, N * sizeof(T)> ret(m_data);
@@ -405,18 +405,18 @@ namespace ct
     ///////////////////////////////////////////////////////////
     // TArrayView<const T, N>
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const T* ptr) : m_data(ptr)
     {
     }
 
-    template <class T, ssize_t N>
-    CT_DEVICE_INLINE const T& TArrayView<const T, N>::operator[](ssize_t idx) const
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE const T& TArrayView<const T, N>::operator[](int64_t idx) const
     {
         return m_data[this->revIndex(idx)];
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE bool TArrayView<const T, N>::operator==(const TArrayView& other) const
     {
         if (other.m_data == m_data)
@@ -434,7 +434,7 @@ namespace ct
         return true;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE bool TArrayView<const T, N>::operator!=(const TArrayView& other) const
     {
         if (other.m_data == m_data)
@@ -452,25 +452,25 @@ namespace ct
         return true;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE size_t TArrayView<const T, N>::size() const
     {
         return N;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE const T* TArrayView<const T, N>::data() const
     {
         return m_data;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<const T, N>::operator TArrayView<const void, N * sizeof(T)>() const&
     {
         return {m_data};
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<const T, N>::operator TArrayView<const void, N * sizeof(T)>() &&
     {
         TArrayView<const void, N * sizeof(T)> ret(m_data);
@@ -507,13 +507,13 @@ namespace ct
     }
 
     template <class T>
-    CT_DEVICE_INLINE const T& TArrayView<T>::operator[](ssize_t idx) const
+    CT_DEVICE_INLINE const T& TArrayView<T>::operator[](int64_t idx) const
     {
         return m_data[this->revIndex(idx)];
     }
 
     template <class T>
-    CT_DEVICE_INLINE T& TArrayView<T>::operator[](ssize_t idx)
+    CT_DEVICE_INLINE T& TArrayView<T>::operator[](int64_t idx)
     {
         return m_data[this->revIndex(idx)];
     }
@@ -606,7 +606,7 @@ namespace ct
     }
 
     template <class T>
-    CT_DEVICE_INLINE const T& TArrayView<const T>::operator[](ssize_t idx) const
+    CT_DEVICE_INLINE const T& TArrayView<const T>::operator[](int64_t idx) const
     {
         return m_data[idx];
     }
@@ -734,8 +734,7 @@ namespace ct
 
     CT_DEVICE_INLINE TArrayView<void>::operator TArrayView<const void, -1>() const
     {
-        TArrayView<const void, -1> ret(data(), size());
-        return ret;
+        return TArrayView<const void, -1>(data(), size());
     }
 
     // const void specialzation
@@ -802,13 +801,13 @@ namespace ct
 
     // free functions
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     TArrayView<T, N> makeArrayView(TArrayView<T, N> view)
     {
         return view;
     }
 
-    template <class T, ssize_t N>
+    template <class T, int64_t N>
     TArrayView<T, N> makeArrayView(TArrayView<T, N> view, size_t)
     {
         return view;

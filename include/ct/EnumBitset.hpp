@@ -74,19 +74,19 @@ namespace ct
     {
         static constexpr uint8_t MAX_BIT = sizeof(STORAGE) * 8;
 
-        constexpr EnumBitset(STORAGE v = 0) : m_data{v} {}
+        constexpr EnumBitset(STORAGE v = 0) : value{v} {}
 
         template <uint16_t V, uint16_t I>
         EnumBitset& operator=(BitsetIndex<T, V, I> v)
         {
-            m_data = v.toBitset();
+            value = v.toBitset();
             return *this;
         }
 
         template <class U, uint16_t V, uint16_t I>
         constexpr bool test(BitsetIndex<U, V, I> idx) const
         {
-            return (m_data & indexToBit(idx)) != 0;
+            return (value & indexToBit(idx)) != 0;
         }
 
         bool test(STORAGE bitset) const
@@ -94,7 +94,7 @@ namespace ct
             for (size_t i = 0; i < 8 * sizeof(STORAGE); ++i)
             {
                 const STORAGE bit = (static_cast<STORAGE>(1) << i);
-                if (bitset & bit && !(m_data & bit))
+                if (bitset & bit && !(value & bit))
                 {
                     return false;
                 }
@@ -102,7 +102,7 @@ namespace ct
             return true;
         }
 
-        void reset(STORAGE bitset) { m_data = m_data & (~bitset); }
+        void reset(STORAGE bitset) { value = value & (~bitset); }
 
         template <class U, uint16_t V, uint16_t I>
         void reset(BitsetIndex<U, V, I> idx)
@@ -113,10 +113,10 @@ namespace ct
         template <class U, uint16_t V, uint16_t I>
         void set(BitsetIndex<U, V, I> idx)
         {
-            m_data = m_data | indexToBit(idx);
+            value = value | indexToBit(idx);
         }
 
-        void set(STORAGE bitset) { m_data = m_data | bitset; }
+        void set(STORAGE bitset) { value = value | bitset; }
 
         // TODO implement flip
         template <class U, uint16_t V, uint16_t I>
@@ -124,35 +124,36 @@ namespace ct
         {
         }
 
-        void flip(STORAGE v) { m_data = m_data ^ v; }
+        void flip(STORAGE v) { value = value ^ v; }
 
-        constexpr operator STORAGE() const { return m_data; }
+        constexpr operator STORAGE() const { return value; }
 
         // This should only be used when this EnumBitset represents a single set bit, otherwise it doesn't make sense
         template <uint16_t V, uint16_t I>
         constexpr bool operator>(BitsetIndex<T, V, I> v) const
         {
-            return m_data > v.toBitset();
+            return value > v.toBitset();
         }
 
         template <uint16_t V, uint16_t I>
         constexpr bool operator<(BitsetIndex<T, V, I> v) const
         {
-            return m_data < v.toBitset();
+            return value < v.toBitset();
         }
 
         template <uint16_t V, uint16_t I>
         constexpr bool operator<=(BitsetIndex<T, V, I> v) const
         {
-            return m_data <= v.toBitset();
+            return value <= v.toBitset();
         }
 
         template <uint16_t V, uint16_t I>
         constexpr bool operator>=(BitsetIndex<T, V, I> v) const
         {
-            return m_data >= v.toBitset();
+            return value >= v.toBitset();
         }
 
+        STORAGE value;
       private:
         template <class U, uint16_t V, uint16_t I>
         constexpr STORAGE indexToBit(BitsetIndex<U, V, I>) const
@@ -160,8 +161,6 @@ namespace ct
             static_assert(V < MAX_BIT, "Can only do bitsets up to 64 bits for now :/");
             return static_cast<STORAGE>(1) << V;
         }
-
-        STORAGE m_data;
     };
 
     template <class E, class T>

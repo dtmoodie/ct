@@ -5,19 +5,49 @@
 using namespace ct;
 using namespace ct::detail;
 
-struct StructHash
+struct A
 {
-    // Include the name of the struct in the hash
-    static constexpr bool hash_struct_name = true;
-    static constexpr bool hash_member_types = true;
-    static constexpr bool hash_member_offsets = true;
-    static constexpr bool hash_member_names = true;
+    float x, y, z;
 };
+
+struct B
+{
+    float x, y, z;
+};
+
+struct C
+{
+    float y, x, z;
+};
+
+namespace ct
+{
+    REFLECT_BEGIN(A)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
+
+    REFLECT_BEGIN(B)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
+
+    REFLECT_BEGIN(C)
+        PUBLIC_ACCESS(y)
+        PUBLIC_ACCESS(x)
+        PUBLIC_ACCESS(z)
+    REFLECT_END;
+} // namespace ct
 
 int main()
 {
-    //using HashOptions = ct::detail::HashOptions;
-    using HashMembers = ct::detail::HashMembers;
+    constexpr const ct::detail::HashOptions hash_members(false, true, false, true, true);
+
+    ct::StaticEquality<uint32_t, ct::detail::hash<A>(hash_members), ct::detail::hash<B>(hash_members)>{};
+    ct::StaticInequality<uint32_t, ct::detail::hash<A>(hash_members), ct::detail::hash<C>(hash_members)>{};
+
     ct::StaticEquality<uint32_t, TypeHash<float>::value, ct::crc32("float")>{};
     static_assert(ct::getName<0, ReflectedStruct>() == ct::StringView("x"), "asdf");
 #if !(defined(_MSC_VER) && _MSC_VER == 1900)
@@ -45,25 +75,30 @@ int main()
 #ifndef _MSC_VER
     // member offsets
     {
-	    // member names
+        // member names
         {
             ct::StaticEquality<uint32_t, hashMemberName<TestA, 0>(), hashMemberName<TestB, 0>()>{};
             ct::StaticEquality<uint32_t, hashMemberName<TestA, 1>(), hashMemberName<TestB, 1>()>{};
             ct::StaticEquality<uint32_t, hashMemberName<TestA, 2>(), hashMemberName<TestB, 2>()>{};
 
             ct::StaticInequality<uint32_t,
-                                 hashMemberName<TestA, 0, HashMembers>(),
-                                 hashMemberName<TestB, 1, HashMembers>()>{};
+                                 hashMemberName<TestA, 0>(hash_members),
+                                 hashMemberName<TestB, 1>(hash_members)>{};
             ct::StaticInequality<uint32_t,
-                                 hashMemberName<TestA, 1, HashMembers>(),
-                                 hashMemberName<TestB, 2, HashMembers>()>{};
+                                 hashMemberName<TestA, 1>(hash_members),
+                                 hashMemberName<TestB, 2>(hash_members)>{};
 
             ct::StaticInequality<uint32_t,
-                                 hashMemberName<TestA, 2, HashMembers>(),
-                                 hashMemberName<TestB, 0, HashMembers>()>{};
+                                 hashMemberName<TestA, 2>(hash_members),
+                                 hashMemberName<TestB, 0>(hash_members)>{};
         }
 
-		// https://developercommunity.visualstudio.com/content/problem/22196/static-assert-cannot-compile-constexprs-method-tha.html
+// These don't work on gcc 9 due to them fixing disallowing UB in constexpr
+#if __GNUC__ < 9
+        ct::StaticEquality<size_t, memberOffset(&TestA::x), 0>{};
+        ct::StaticEquality<size_t, memberOffset(&TestA::y), 4>{};
+        ct::StaticEquality<size_t, memberOffset(&TestA::z), 8>{};
+        // https://developercommunity.visualstudio.com/content/problem/22196/static-assert-cannot-compile-constexprs-method-tha.html
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 0>(), hashMemberOffset<TestB, 0>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 1>()>{};
         ct::StaticEquality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 2>()>{};
@@ -72,9 +107,13 @@ int main()
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 1>(), hashMemberOffset<TestB, 2>()>{};
 
         ct::StaticInequality<uint32_t, hashMemberOffset<TestA, 2>(), hashMemberOffset<TestB, 0>()>{};
-
+#else
+        assert(memberOffset(&TestA::x) == 0);
+        assert(memberOffset(&TestA::y) == 4);
+        assert(memberOffset(&TestA::z) == 8);
+#endif
     }
-
+#if (__GNUC__ < 9 || _MSC_VER)
     ct::StaticInequality<uint32_t, detail::hash<ReflectedStruct>(), ct::detail::hash<Inherited>()>{};
 
     // This tests to see if two structs are mem copy compatible.  IE they have the same members, with the same
@@ -82,9 +121,10 @@ int main()
     // An additonal check ontop of this should be to do sizeof(A) == sizeof(B) in case there are members that are not
     // reflected
     ct::StaticEquality<uint32_t, ct::detail::hash<TestA>(), ct::detail::hash<TestB>()>{};
+#endif
 #ifdef CT_HAVE_CONSTEXPR_NAME
     ct::StaticInequality<uint32_t, ct::detail::hash<TestA, StructHash>(), ct::detail::hash<TestB, StructHash>()>{};
 #endif
 
-#endif  // _MSC_VER
+#endif // _MSC_VER
 }

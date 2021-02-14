@@ -20,58 +20,51 @@ struct Cerealization : ::testing::Test
     void test()
     {
         const T data = TestData<T>::init();
+        std::stringstream serialized;
         {
-            std::ofstream ofs;
-            ofs.open(m_path);
-            ASSERT_TRUE(ofs.is_open());
-
-            WRITE archive(ofs);
+            WRITE archive(serialized);
             archive(cereal::make_nvp("data", data));
         }
         {
-            std::ifstream ifs;
-            ifs.open(m_path);
-            ASSERT_TRUE(ifs.is_open());
-            READ archive(ifs);
+            READ archive(serialized);
             T loaded_data;
             bool cerealization_success = false;
+            std::stringstream msg;
             try
             {
                 archive(cereal::make_nvp("data", loaded_data));
             }
             catch (std::exception& exception)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName()
-                          << " failed with exception: " << exception.what() << std::endl;
+
+                msg << "Cerealization of " << ct::Reflect<T>::getTypeName()
+                    << " failed with exception: " << exception.what() << std::endl;
             }
             cerealization_success = ct::compare(data, loaded_data, DebugEqual());
             if (!cerealization_success)
             {
-                std::cout << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
-                ct::printStruct(std::cout, data);
-                std::cout << std::endl;
-                WRITE archive(std::cout);
-                archive(cereal::make_nvp("data", data));
+                msg << "Cerealization of " << ct::Reflect<T>::getTypeName() << std::endl;
+                ct::printStruct(msg, data);
+                msg << "\nDeserialized \n";
+                ct::printStruct(msg, loaded_data);
+                msg << "\n Serialized format:\n";
+                msg << serialized.str();
+                msg << std::endl;
             }
-            std::cout << std::endl;
-            EXPECT_TRUE(cerealization_success);
+            EXPECT_TRUE(cerealization_success) << msg.str();
         }
         std::cout << std::endl;
     }
 
     void testBinary()
     {
-        m_path = "test.bin";
-        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
+        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
     }
 
     void testJson()
     {
-        m_path = "test.json";
-        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
+        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
     }
-
-    std::string m_path;
 };
 
 TYPED_TEST_SUITE_P(Cerealization);
@@ -87,9 +80,46 @@ TYPED_TEST_P(Cerealization, json)
     this->testJson();
 }
 
+#include "../enum/enum.hpp"
+
+
 REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
-INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<TestTypes>::type);
+using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>>::type;
+
+TEST_DATA(MyClass::MyEnum, MyClass::MyEnum::kVALUE1);
+TEST_DATA(MyClass::SecondEnum, MyClass::SecondEnum::kRGB);
+
+INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<Types>::type);
+
+
+TEST(access_token, set_on_dtor)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    {
+        auto token = prop.set(obj);
+        token.get() = 5;
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
+
+TEST(access_token, set_on_dtor_from_temp)
+{
+    PrivateGetAndSet obj;
+    ASSERT_NE(obj.getX(), 5);
+    auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
+    auto setter = [](float& val)
+    {
+        val = 5;
+    };
+    {
+        setter(ct::ref(prop.set(obj)));
+    }
+    ASSERT_EQ(obj.getX(), 5);
+}
+
 
 int main(int argc, char** argv)
 {
