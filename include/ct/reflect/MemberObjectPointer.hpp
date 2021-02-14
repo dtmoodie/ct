@@ -16,7 +16,7 @@
 
 namespace ct
 {
-
+    // This will not work in newer GCC because they patched allowing of this UB in constexpr
     template <typename T, typename U>
     constexpr size_t memberOffset(U T::*member)
     {

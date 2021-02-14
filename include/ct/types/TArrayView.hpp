@@ -734,8 +734,7 @@ namespace ct
 
     CT_DEVICE_INLINE TArrayView<void>::operator TArrayView<const void, -1>() const
     {
-        TArrayView<const void, -1> ret(data(), size());
-        return ret;
+        return TArrayView<const void, -1>(data(), size());
     }
 
     // const void specialzation
