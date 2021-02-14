@@ -2,9 +2,9 @@ version: 1.0.{build}
 image:
 - Previous Visual Studio 2017
 - Visual Studio 2017
-- Ubuntu
-- Previous Ubuntu
-- ubuntu1804
+- Ubuntu1604
+- Ubuntu1804
+- Ubuntu2004
 
 clone_depth: 1
 
