@@ -121,8 +121,7 @@ namespace ct
         }
 
         template <class T, index_t I>
-        constexpr auto hashMember(uint32_t seed, HashOptions options = HashOptions())
-            -> DisableIfIsMemberObject<T, I, uint32_t>
+        constexpr auto hashMember(uint32_t seed, HashOptions = HashOptions()) -> DisableIfIsMemberObject<T, I, uint32_t>
         {
             return seed;
         }
