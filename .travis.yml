@@ -37,3 +37,5 @@ script:
  - reflect/test_ct_data_table
  - reflect/test_ct_get_name
  - enum/test_ct_enum
+ - tests/python/test_ct_python
+
