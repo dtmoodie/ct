@@ -10,7 +10,7 @@ function(add_conformance_test)
 
     if(add_conformance_test_CUDA)
         cuda_add_executable(${NAME}_cuda ${add_conformance_test_NAME}.cu)
-        target_link_libraries(${NAME}_cuda PRIVATE ct)
+        target_link_libraries(${NAME}_cuda ct)
         set_target_properties(${NAME}_cuda PROPERTIES FOLDER Tests/ct_cpp_compat)
 
     else()
