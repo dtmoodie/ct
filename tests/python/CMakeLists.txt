@@ -1,4 +1,4 @@
-include("../../cmake/boost_python.cmake")
+include("../../cmake/python.cmake")
 if(HAVE_PYTHON)
     find_package(Eigen3 QUIET)
     add_library(test_ct_python SHARED main.cpp)
