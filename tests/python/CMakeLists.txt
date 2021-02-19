@@ -39,11 +39,13 @@ if(HAVE_PYTHON)
     if(OpenCV_FOUND)
         target_link_libraries(test_ct_python ${OpenCV_LIBS})
     endif()
-
+    
     target_include_directories(test_ct_python
         SYSTEM
         PUBLIC
             $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${Python_INCLUDE_DIRS}>
+            $<BUILD_INTERFACE:${Python_NumPy_INCLUDE_DIRS}>
             $<BUILD_INTERFACE:${NUMPY_INCLUDE_DIR}>
             $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
             $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
