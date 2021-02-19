@@ -26,10 +26,12 @@ if(HAVE_PYTHON)
         optimized;${Boost_PYTHON_LIBRARY_RELEASE}
         debug;${Boost_PYTHON_LIBRARY_DEBUG}
         ${PYTHON_LIBRARY}
+        ${Python_LIBRARIES}
         ct
         gtest
         gtest_main
         minitensor
+        Boost::python
     )
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")

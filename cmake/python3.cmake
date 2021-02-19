@@ -23,9 +23,12 @@ else(WIN32)
     # Find the matching boost python implementation
     set(searched_libs "")
     set(version ${Python_VERSION})
+    
     STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
-    find_package(Boost QUIET COMPONENTS "python-py${boost_py_version}")
-    set(Boost_PYTHON_FOUND ${Boost_FOUND})
+    find_package(Boost QUIET COMPONENTS python)
+    if(Boost_PYTHON_FOUND)
+        #message(${Boost_PYTHON_LIBRARY})
+    endif()
 
     # older versions of boost call it boost-py
     while(NOT "${version}" STREQUAL "" AND NOT Boost_PYTHON_FOUND)
@@ -40,7 +43,7 @@ else(WIN32)
         STRING( REGEX MATCHALL "([0-9.]+).[0-9]+" has_more_version ${version} )
         if("${has_more_version}" STREQUAL "" OR Boost_PYTHON_FOUND)
             set(Boost_PYTHON_LIBRARY_RELEASE "${Boost_PYTHON-PY${boost_py_version}_LIBRARY_RELEASE}" CACHE PATH "" FORCE)
-            set(Boost_PYTHON_LIBRARY_DEBUG "${Boost_PYTHON-PY${boost_py_version}_sLIBRARY_DEBUG}" CACHE PATH "" FORCE)
+            set(Boost_PYTHON_LIBRARY_DEBUG "${Boost_PYTHON-PY${boost_py_version}_LIBRARY_DEBUG}" CACHE PATH "" FORCE)
             break()
         endif()
     endwhile()
