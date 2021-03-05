@@ -22,17 +22,33 @@ if(HAVE_PYTHON)
         set(Boost_PYTHON_LIBRARY_DEBUG ${Boost_PYTHON_LIBRARY_RELEASE})
     endif()
 
+    if(PYTHON_LIBRARY)
+        set(py_lib ${PYTHON_LIBRARY})
+    endif()
+    if(Python_LIBRARIES)
+    set(py_lib ${Python_LIBRARIES})
+    endif()
     target_link_libraries(test_ct_python
-        optimized;${Boost_PYTHON_LIBRARY_RELEASE}
-        debug;${Boost_PYTHON_LIBRARY_DEBUG}
-        ${PYTHON_LIBRARY}
-        ${Python_LIBRARIES}
+        ${py_lib}
         ct
         gtest
         gtest_main
         minitensor
         Boost::python
     )
+    if(Boost_PYTHON_LIBRARY_RELEASE AND Boost_PYTHON_LIBRARY_DEBUG)
+        target_link_libraries(test_ct_python
+            optimized;${Boost_PYTHON_LIBRARY_RELEASE}
+            debug;${Boost_PYTHON_LIBRARY_DEBUG}
+        )
+    else()
+        if(Boost_PYTHON_LIBRARY_RELEASE AND NOT Boost_PYTHON_LIBRARY_DEBUG)
+            target_link_libraries(test_ct_python
+                ${Boost_PYTHON_LIBRARY_RELEASE}
+            )
+        endif()
+
+    endif()
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(test_ct_python PRIVATE -Werror -Wall -Wextra)
