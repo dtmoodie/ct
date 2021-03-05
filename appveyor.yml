@@ -68,6 +68,8 @@ test_script:
    reflect\debug\test_ct_get_name.exe
 
    enum\debug\test_ct_enum.exe
+
+   python/test_ct_python
    
 
 - sh: >-
@@ -92,4 +94,6 @@ test_script:
    enum/test_ct_enum
 
    reflect/test_ct_get_name
+
+   python/test_ct_python
    

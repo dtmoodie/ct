@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python@Python_VERSION_MAJOR@
 
 import test_ct_python
 import math
