@@ -352,10 +352,10 @@ namespace ct
             std::is_same<T, U1>::value || ContainsTypeImpl<T, ct::VariadicTypedef<U...>>::value;
     };
 
-    template <class T, class U>
+    template <class QUERY_TYPE, class TYPE_CONTAINER>
     struct ContainsType
     {
-        constexpr static const bool value = ContainsTypeImpl<T, U>::value;
+        constexpr static const bool value = ContainsTypeImpl<QUERY_TYPE, TYPE_CONTAINER>::value;
     };
 
     template <class T1, class T2>

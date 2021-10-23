@@ -53,15 +53,6 @@ EXPECTED_NAME(std::vector<std::string>);
 EXPECTED_NAME(std::vector<std::vector<std::string>>);
 EXPECTED_NAME(Templated<double>);
 EXPECTED_NAME(std::map<std::string, Inherited>);
-EXPECTED_NAME(ct::ext::DataTableStorage<float>);
-// clang-format off
-// TOOD can this be platform agnostic?
-#ifdef _MSC_VER
-EXPECTED_NAME(ct::ext::DataTableStorage<struct ct::TArrayView<float,-1> >);
-#else
-EXPECTED_NAME(ct::ext::DataTableStorage<ct::TArrayView<float> >);
-#endif
-// clang-format on
 #ifdef HAVE_EIGEN
 EXPECTED_NAME(Eigen::Matrix3f);
 EXPECTED_NAME(Eigen::MatrixXf);

@@ -13,8 +13,6 @@
 #include <ct/reflect/compare-container-inl.hpp>
 #include <ct/reflect/print.hpp>
 
-#include <ct/extensions/datatable/DataTableStorage.hpp>
-
 #include <gtest/gtest.h>
 
 #include <iostream>
@@ -141,41 +139,6 @@ using MapVec = std::map<int, TestVec>;
 TEST_DATA(MapVec, {{0, {{0, 1, 2, 3, 4, 5}}}, {10, {{0, 3, 4, 5}}}});
 TEST_DATA(Wrapper, {5});
 
-template<>
-struct TestData<ct::ext::DataTableStorage<float>>
-{
-    static ct::ext::DataTableStorage<float> init()
-    {
-        ct::ext::DataTableStorage<float> output;
-        for(int i = 0; i < 10; ++i)
-        {
-            output.push_back(i);
-        }
-        return output;
-    }
-};
-
-
-template<>
-struct TestData<ct::ext::DataTableStorage<ct::TArrayView<float>>>
-{
-
-    static ct::ext::DataTableStorage<ct::TArrayView<float>> init()
-    {
-        ct::ext::DataTableStorage<ct::TArrayView<float>> output;
-        std::vector<float> tmp;
-        tmp.resize(10);
-        for(int i = 0; i < 10; ++i)
-        {
-            for(int j = 0;j < 10; ++j)
-            {
-                tmp[j] = i * 10 + j;
-            }
-            output.push_back(ct::TArrayView<float>(tmp.data(), 10));
-        }
-        return output;
-    }
-};
 
 template <>
 struct TestData<Inherited>
@@ -313,10 +276,8 @@ using TestTypes = ct::VariadicTypedef<
                                       ExplicitThisProperty,
                                       Virtual,
                                       std::vector<ReflectedStruct>,
-                                      std::map<std::string, Inherited>,
-                                      ct::ext::DataTableStorage<float>,
-                                      ct::ext::DataTableStorage<ct::TArrayView<float>>
-                                    
+                                      std::map<std::string, Inherited>
+                                      
 #ifdef HAVE_OPENCV
                                       ,
                                       cv::Vec2f,

@@ -1,4 +1,4 @@
-include("../../cmake/boost_python.cmake")
+include("../../cmake/python.cmake")
 if(HAVE_PYTHON)
     find_package(Eigen3 QUIET)
     add_library(test_ct_python SHARED main.cpp)
@@ -22,15 +22,32 @@ if(HAVE_PYTHON)
         set(Boost_PYTHON_LIBRARY_DEBUG ${Boost_PYTHON_LIBRARY_RELEASE})
     endif()
 
+    if(PYTHON_LIBRARY)
+        set(py_lib ${PYTHON_LIBRARY})
+    endif()
+    if(Python_LIBRARIES)
+    set(py_lib ${Python_LIBRARIES})
+    endif()
     target_link_libraries(test_ct_python
-        optimized;${Boost_PYTHON_LIBRARY_RELEASE}
-        debug;${Boost_PYTHON_LIBRARY_DEBUG}
-        ${PYTHON_LIBRARY}
+        ${py_lib}
         ct
         gtest
         gtest_main
-        minitensor
+        Boost::python
     )
+    if(Boost_PYTHON_LIBRARY_RELEASE AND Boost_PYTHON_LIBRARY_DEBUG)
+        target_link_libraries(test_ct_python
+            optimized;${Boost_PYTHON_LIBRARY_RELEASE}
+            debug;${Boost_PYTHON_LIBRARY_DEBUG}
+        )
+    else()
+        if(Boost_PYTHON_LIBRARY_RELEASE AND NOT Boost_PYTHON_LIBRARY_DEBUG)
+            target_link_libraries(test_ct_python
+                ${Boost_PYTHON_LIBRARY_RELEASE}
+            )
+        endif()
+
+    endif()
 
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(test_ct_python PRIVATE -Werror -Wall -Wextra)
@@ -39,11 +56,13 @@ if(HAVE_PYTHON)
     if(OpenCV_FOUND)
         target_link_libraries(test_ct_python ${OpenCV_LIBS})
     endif()
-
+    
     target_include_directories(test_ct_python
         SYSTEM
         PUBLIC
             $<BUILD_INTERFACE:${PYTHON_INCLUDE_DIR}>
+            $<BUILD_INTERFACE:${Python_INCLUDE_DIRS}>
+            $<BUILD_INTERFACE:${Python_NumPy_INCLUDE_DIRS}>
             $<BUILD_INTERFACE:${NUMPY_INCLUDE_DIR}>
             $<BUILD_INTERFACE:${Boost_INCLUDE_DIR}>
             $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>

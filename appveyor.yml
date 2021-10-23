@@ -2,9 +2,9 @@ version: 1.0.{build}
 image:
 - Previous Visual Studio 2017
 - Visual Studio 2017
-- Ubuntu
-- Previous Ubuntu
-- ubuntu1804
+- Ubuntu1604
+- Ubuntu1804
+- Ubuntu2004
 
 clone_depth: 1
 
@@ -68,6 +68,8 @@ test_script:
    reflect\debug\test_ct_get_name.exe
 
    enum\debug\test_ct_enum.exe
+
+   python/test_ct_python
    
 
 - sh: >-
@@ -92,4 +94,6 @@ test_script:
    enum/test_ct_enum
 
    reflect/test_ct_get_name
+
+   python/test_ct_python
    
