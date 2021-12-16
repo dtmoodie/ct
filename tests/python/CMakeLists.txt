@@ -1,5 +1,6 @@
 include("../../cmake/python.cmake")
-if(HAVE_PYTHON)
+
+if(${CT_HAVE_PYTHON})
     find_package(Eigen3 QUIET)
     add_library(test_ct_python SHARED main.cpp)
 
@@ -33,7 +34,8 @@ if(HAVE_PYTHON)
         ct
         gtest
         gtest_main
-        Boost::python
+        ${Boost_PYTHON_LIBRARY}
+        Python::Python
     )
     if(Boost_PYTHON_LIBRARY_RELEASE AND Boost_PYTHON_LIBRARY_DEBUG)
         target_link_libraries(test_ct_python
@@ -74,6 +76,6 @@ if(HAVE_PYTHON)
     endif()
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python ${out_dir}/test_ct_python @ONLY)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python.py ${out_dir}/test_ct_python.py @ONLY)
-else()
+else(${CT_HAVE_PYTHON})
     message(STATUS ${PYTHON_STATUS})
-endif(HAVE_PYTHON)
+endif(${CT_HAVE_PYTHON})
