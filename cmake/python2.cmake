@@ -66,8 +66,7 @@ else(WIN32)
 
 
     if(Boost_PYTHON_FOUND)
-        find_package(NumPy 1.7.1)
-        if(NUMPY_FOUND)
+        if(Python_NumPy_FOUND)
             set(CT_HAVE_PYTHON 1 CACHE BOOL INTERNAL FORCE)
             set(CT_HAVE_PYTHON "${PYTHONLIBS_VERSION_STRING} \n    include:     ${PYTHON_INCLUDE_DIR} \n    Boost:       ${Boost_PYTHON_LIBRARY_RELEASE} \n    Numpy:       ${NUMPY_VERSION}")
         else()
