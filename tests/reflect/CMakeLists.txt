@@ -87,3 +87,4 @@ endif()
 
 add_executable(test_ct_empty_reflection empty_reflection.cpp)
 target_link_libraries(test_ct_empty_reflection  ct gtest gtest_main)
+add_test(test_ct_empty_reflection test_ct_empty_reflection)

@@ -4,6 +4,12 @@ if(${CT_HAVE_PYTHON})
     find_package(Eigen3 QUIET)
     add_library(test_ct_python SHARED main.cpp)
 
+
+    add_test(NAME test_ct_python
+        COMMAND ./test_ct_python
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
+
     if(Eigen3_FOUND)
         target_include_directories(test_ct_python SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIRS})
         target_include_directories(test_ct_python SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
