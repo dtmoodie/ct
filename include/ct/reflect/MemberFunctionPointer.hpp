@@ -381,6 +381,12 @@ namespace ct
         return StaticFunctions<T, FLAGS | Flags::INVOKABLE, METADATA, ARGS...>(name, metadata, args...);
     }
 
+    template<class U, class R, class ... ARGS>
+    constexpr R(U::*resolveFunctionPointer(R(U::*ptr)(ARGS...)))(ARGS...)
+    {
+        return ptr;
+    }
+
 } // namespace ct
 
 #endif // CT_REFLECT_MEMBER_FUNCTION_POINTER_HPP
