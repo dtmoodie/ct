@@ -2,6 +2,8 @@
 #define CT_VARIADIC_INDEXING_HPP
 #include "Indexer.hpp"
 #include "VariadicTypedef.hpp"
+#include "type_traits.hpp"
+
 namespace ct
 {
     template <class R, index_t I, class... Ts>
@@ -11,7 +13,7 @@ namespace ct
     }
 
     template <class R, index_t I, index_t J, class T, class... Ts>
-    R getImpl(Indexer<I> idx, Indexer<J> itr, T&& arg, Ts&&... args)
+    ct::EnableIf<std::is_same<R, T>::value == false, R> getImpl(Indexer<I> idx, Indexer<J> itr, T&& arg, Ts&&... args)
     {
         return getImpl<R>(idx, ++itr, std::forward<Ts>(args)...);
     }
