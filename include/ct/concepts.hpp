@@ -4,11 +4,11 @@
 
 namespace ct
 {
-    template<class T, template<class> class CONCEPT>
+    template <class T, template <class> class CONCEPT>
     constexpr bool conceptCheck()
     {
         return CONCEPT<T>::value;
     }
-}
+} // namespace ct
 
 #endif // CT_CONCEPTS_HPP

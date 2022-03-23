@@ -12,6 +12,6 @@ namespace ct
         constexpr static const index_t SIZE_INDEX = indexOfField<T>("size");
         static constexpr const bool value = DATA_INDEX != -1 && SHAPE_INDEX != -1 && SIZE_INDEX != -1;
     };
-}
+} // namespace ct
 
 #endif // CT_CONCEPTS_TENSOR_HPP

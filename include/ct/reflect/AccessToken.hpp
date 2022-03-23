@@ -56,7 +56,7 @@ namespace ct
 
         type* operator&() { return &m_data; }
 
-        type& get() {return m_data; }
+        type& get() { return m_data; }
 
         AccessToken& operator=(typename std::decay<T1>::type data)
         {
@@ -76,25 +76,25 @@ namespace ct
         R (*m_setter)(T&, T1);
     };
 
-    template<class T>
+    template <class T>
     const T& ref(const T& v)
     {
         return v;
     }
 
-    template<class T>
+    template <class T>
     T& ref(T&& v)
     {
         return v;
     }
 
-    template<class Sig>
+    template <class Sig>
     auto ref(AccessToken<Sig>&& token) -> typename AccessToken<Sig>::type&
     {
         return token.get();
     }
 
-    template<class Sig>
+    template <class Sig>
     auto ref(const AccessToken<Sig>& token) -> const typename AccessToken<Sig>::type&
     {
         return token.get();

@@ -37,5 +37,5 @@ namespace ct
     }
 
     constexpr ErrorToken error(StringView msg) { return {msg}; }
-}
+} // namespace ct
 #endif // CT_RESULT_HPP

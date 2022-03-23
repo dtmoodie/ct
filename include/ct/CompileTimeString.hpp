@@ -58,6 +58,6 @@ namespace ct
     {
         return makeCTS<N>(str, makeIndexSequence<N - 1>{});
     }
-}
+} // namespace ct
 
 #endif

@@ -71,7 +71,7 @@ namespace ct
     {
         return cmp.test(lhs, rhs);
     }
-}
+} // namespace ct
 
 template <class T>
 auto operator==(const T& lhs, const T& rhs) -> ct::EnableIfReflected<T, bool>

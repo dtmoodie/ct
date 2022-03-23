@@ -72,6 +72,6 @@ namespace ct
     {
         return {};
     }
-}
+} // namespace ct
 
 #endif // CT_INTEROP_BOOST_PYTHON_TENSOR_CONVERTER_HPP

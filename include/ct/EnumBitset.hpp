@@ -154,6 +154,7 @@ namespace ct
         }
 
         STORAGE value;
+
       private:
         template <class U, uint16_t V, uint16_t I>
         constexpr STORAGE indexToBit(BitsetIndex<U, V, I>) const

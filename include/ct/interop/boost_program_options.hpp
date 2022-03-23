@@ -140,6 +140,6 @@ namespace ct
     {
         readOptionsIterator(obj, vm, Reflect<T>::end(), path);
     }
-}
+} // namespace ct
 
 #endif // CT_INTEROP_BOOST_PROGRAM_OPTIONS_HPP

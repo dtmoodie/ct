@@ -31,33 +31,33 @@ namespace ct
         constexpr operator index_t() const { return 0U; }
     };
 
-    template<size_t... I>
+    template <size_t... I>
     struct IndexSequence
     {
-        template<size_t N>
+        template <size_t N>
         using append = IndexSequence<I..., N>;
 
-        template<size_t N>
+        template <size_t N>
         using preppend = IndexSequence<N, I...>;
     };
 
-    template<size_t N, size_t START = 0, size_t IDX = N>
-    struct MakeIndexSequence: MakeIndexSequence<N-1, START, IDX - 1 >
+    template <size_t N, size_t START = 0, size_t IDX = N>
+    struct MakeIndexSequence : MakeIndexSequence<N - 1, START, IDX - 1>
     {
-        using Super_t = MakeIndexSequence<N-1, START, IDX - 1 >;
+        using Super_t = MakeIndexSequence<N - 1, START, IDX - 1>;
         using type = typename Super_t::type::template append<Super_t::NEXT>;
         static constexpr const size_t NEXT = Super_t::NEXT + 1;
     };
 
-    template<size_t N, size_t START>
+    template <size_t N, size_t START>
     struct MakeIndexSequence<N, START, 0>
     {
         using type = IndexSequence<START>;
         static constexpr const size_t NEXT = START + 1;
     };
 
-    template<size_t N, size_t START = 0>
+    template <size_t N, size_t START = 0>
     using makeIndexSequence = typename MakeIndexSequence<N - 1, START>::type;
-}
+} // namespace ct
 
 #endif // CT_INDEXER_HPP

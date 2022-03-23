@@ -245,8 +245,8 @@ namespace ct
         constexpr T value() const { return T{}; }
 
         constexpr StringView getName() const { return name; }
-        
-        template<class U>
+
+        template <class U>
         constexpr auto get(const U v) const -> decltype(v.value)
         {
             return v.value;

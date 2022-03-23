@@ -26,10 +26,10 @@ namespace ct
         constexpr StaticInequality() { static_assert(LHS != RHS, "values are equal"); }
     };
 
-    template<class T, T LHS, T RHS>
+    template <class T, T LHS, T RHS>
     struct StaticGreater
     {
-        constexpr StaticGreater() {static_assert(LHS > RHS, "values not greater");}
+        constexpr StaticGreater() { static_assert(LHS > RHS, "values not greater"); }
     };
 
     template <index_t I, index_t START, index_t END>
@@ -38,13 +38,13 @@ namespace ct
         static_assert(I >= START && I < END, "I must be in range");
     };
 
-    template<class T, class U>
+    template <class T, class U>
     struct StaticIsBase;
 
-    template<class T, class U>
+    template <class T, class U>
     struct StaticIsBase<Base<T>, Derived<U>>
     {
         static_assert(IsBase<Base<T>, Derived<U>>::value, "Must be a base");
     };
-}
+} // namespace ct
 #endif

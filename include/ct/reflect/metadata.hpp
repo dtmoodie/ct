@@ -136,6 +136,6 @@ namespace ct
         using type = void;
     };
 
-}
+} // namespace ct
 
 #endif // CT_REFLECT_METADATA_HPP

@@ -148,5 +148,5 @@ namespace ct
 
         constexpr uint32_t crc32(const char* str) { return crc32(str, ct::strLen(str) - 1); }
     } // namespace detail
-}
+} // namespace ct
 #endif // CT_HASH_HPP

@@ -87,6 +87,6 @@ namespace ct
 
         return true;
     }
-}
+} // namespace ct
 
 #endif // CT_REFLECT_COMPARE_CONTAINTER_HPP

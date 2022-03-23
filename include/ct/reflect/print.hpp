@@ -532,7 +532,7 @@ namespace ct
     // https://cukic.co/2019/02/19/tmp-testing-and-debugging-templates/
     // Only really useful on clang
     template <class... TS>
-    struct [[deprecated]] CompilerPrintTypes {};
+    struct [[deprecated]] CompilerPrintTypes{};
 
     template <class T>
     ct::EnableIfIsEnum<T, std::string> toString(T val)
