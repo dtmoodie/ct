@@ -78,6 +78,9 @@ namespace ct
     {
         CT_DEVICE_INLINE TArrayView(T* ptr = nullptr);
 
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N * safeSizeOf<T>()>&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N * safeSizeOf<T>()>&&);
+
         CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
         CT_DEVICE_INLINE T& operator[](int64_t idx);
 
@@ -89,12 +92,6 @@ namespace ct
         CT_DEVICE_INLINE T* data();
         CT_DEVICE_INLINE const T* data() const;
 
-        CT_DEVICE_INLINE operator TArrayView<void, N * safeSizeOf<T>()>() &;
-        CT_DEVICE_INLINE operator TArrayView<void, N * safeSizeOf<T>()>() &&;
-
-        CT_DEVICE_INLINE operator TArrayView<const T, N>() const;
-        CT_DEVICE_INLINE operator TArrayView<const T, -1>() const;
-
       protected:
         T* m_data;
     };
@@ -103,6 +100,12 @@ namespace ct
     struct TArrayView<const T, N> : public TArrayBaseConst<T, N, TArrayView<const T, N>>
     {
         CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr);
+        CT_DEVICE_INLINE TArrayView(const TArrayView<void, N * sizeof(T)>&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N * sizeof(T)>&&);
+        CT_DEVICE_INLINE TArrayView(const TArrayView<const void, N * sizeof(T)>&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<const void, N * sizeof(T)>&&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<T>&);
+        CT_DEVICE_INLINE TArrayView(TArrayView<T>&&);
 
         CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
 
@@ -125,6 +128,20 @@ namespace ct
     {
         CT_DEVICE_INLINE TArrayView(T* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(T* begin, T* end);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<void, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N>&& other);
+
+        CT_DEVICE_INLINE TArrayView(const TArrayView<T>& other);
+        CT_DEVICE_INLINE TArrayView(TArrayView<T>&& other);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<T, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<T, N>&& other);
+
         TArrayView(std::vector<T>& vector);
 
         CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
@@ -138,9 +155,9 @@ namespace ct
         CT_DEVICE_INLINE T* data();
         CT_DEVICE_INLINE const T* data() const;
 
-        CT_DEVICE_INLINE operator TArrayView<void, -1>() &;
-        CT_DEVICE_INLINE operator TArrayView<void, -1>() &&;
-        CT_DEVICE_INLINE operator TArrayView<const T, -1>() const;
+        CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<T>& other);
+        CT_DEVICE_INLINE TArrayView& operator=(TArrayView<T>&& other);
+        CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<const T>& other);
 
       protected:
         T* m_data;
@@ -153,9 +170,31 @@ namespace ct
         CT_DEVICE_INLINE TArrayView(const T* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(const T* begin, const T* end);
 
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<T, N>& other);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<T, N>&& other);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<const T, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<const T, N>&& other);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<void, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N>&& other);
+
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<const void, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<const void, N>&& other);
+
         TArrayView(const std::vector<T>& vector);
 
-        CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<T>& other);
+        CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<T>&& other);
+        CT_DEVICE_INLINE TArrayView& operator=(const TArrayView<const T>&& other);
 
         CT_DEVICE_INLINE const T& operator[](int64_t idx) const;
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
@@ -177,6 +216,12 @@ namespace ct
     {
         CT_DEVICE_INLINE TArrayView(void* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(void* begin, void* end);
+
+        template <class T, int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<T, N>& other);
+        template <class T, int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<T, N>&& other);
+
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
 
@@ -187,13 +232,6 @@ namespace ct
 
         CT_DEVICE_INLINE void* data();
         CT_DEVICE_INLINE const void* data() const;
-
-        template <class U>
-        CT_DEVICE_INLINE operator TArrayView<U, -1>() &;
-        template <class U>
-        CT_DEVICE_INLINE operator TArrayView<U, -1>() &&;
-
-        CT_DEVICE_INLINE operator TArrayView<const void>() const;
 
       protected:
         void* m_data;
@@ -206,6 +244,17 @@ namespace ct
         CT_DEVICE_INLINE TArrayView(const void* ptr = nullptr, size_t sz = 0);
         CT_DEVICE_INLINE TArrayView(const void* begin, const void* end);
 
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<void, N>& other);
+        template <int64_t N>
+        CT_DEVICE_INLINE TArrayView(TArrayView<void, N>&& other);
+
+        template <class T, int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<T, N>& other);
+
+        template <class T, int64_t N>
+        CT_DEVICE_INLINE TArrayView(const TArrayView<T, N>&& other);
+
         CT_DEVICE_INLINE bool operator==(const TArrayView& other) const;
         CT_DEVICE_INLINE bool operator!=(const TArrayView& other) const;
 
@@ -217,11 +266,6 @@ namespace ct
         CT_DEVICE_INLINE size_t size() const;
 
         CT_DEVICE_INLINE const void* data() const;
-
-        template <class U>
-        CT_DEVICE_INLINE operator TArrayView<const U, -1>() const&;
-        template <class U>
-        CT_DEVICE_INLINE operator TArrayView<const U, -1>() &&;
 
       protected:
         const void* m_data;
@@ -349,6 +393,18 @@ namespace ct
     }
 
     template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<T, N>::TArrayView(TArrayView<void, N * safeSizeOf<T>()>& other)
+    {
+        m_data = ptrCast<T>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<T, N>::TArrayView(TArrayView<void, N * safeSizeOf<T>()>&& other)
+    {
+        m_data = ptrCast<T>(other.data());
+    }
+
+    template <class T, int64_t N>
     CT_DEVICE_INLINE const T& TArrayView<T, N>::operator[](int64_t idx) const
     {
         return m_data[this->revIndex(idx)];
@@ -402,26 +458,48 @@ namespace ct
         return m_data;
     }
 
-    template <class T, int64_t N>
-    CT_DEVICE_INLINE TArrayView<T, N>::operator TArrayView<void, N * safeSizeOf<T>()>() &
-    {
-        return {m_data};
-    }
-
-    template <class T, int64_t N>
-    CT_DEVICE_INLINE TArrayView<T, N>::operator TArrayView<void, N * safeSizeOf<T>()>() &&
-    {
-        TArrayView<void, N * safeSizeOf<T>()> ret(m_data);
-        m_data = nullptr;
-        return ret;
-    }
-
     ///////////////////////////////////////////////////////////
     // TArrayView<const T, N>
 
     template <class T, int64_t N>
     CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const T* ptr) : m_data(ptr)
     {
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const TArrayView<void, N * sizeof(T)>& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<void, N * sizeof(T)>&& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(const TArrayView<const void, N * sizeof(T)>& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<const void, N * sizeof(T)>&& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<T>& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T, N>::TArrayView(TArrayView<T>&& other)
+    {
+        m_data = static_cast<const T*>(other.data());
     }
 
     template <class T, int64_t N>
@@ -506,6 +584,52 @@ namespace ct
     }
 
     template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(const TArrayView<void, N>& other)
+    {
+        m_data = static_cast<T*>(const_cast<void*>(other.data()));
+        m_size = other.size() / safeSizeOf<T>();
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(TArrayView<void, N>&& other)
+    {
+        m_data = static_cast<T*>(other.data());
+        m_size = other.size() / safeSizeOf<T>();
+    }
+
+    template <class T>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(const TArrayView<T>& other)
+    {
+        m_data = other.m_data;
+        m_size = other.size();
+    }
+
+    template <class T>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(TArrayView<T>&& other)
+    {
+        m_data = other.data();
+        m_size = other.size();
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(const TArrayView<T, N>& other)
+    {
+        m_data = static_cast<T*>(other.data());
+        m_size = other.size();
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<T>::TArrayView(TArrayView<T, N>&& other)
+    {
+        m_data = static_cast<T*>(other.data());
+        m_size = other.size();
+    }
+
+    template <class T>
     TArrayView<T>::TArrayView(std::vector<T>& vector)
     {
         m_data = vector.data();
@@ -571,26 +695,33 @@ namespace ct
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<T>::operator TArrayView<void, -1>() &
+    CT_DEVICE_INLINE TArrayView<T>& TArrayView<T>::operator=(const TArrayView<T>& other)
     {
-        TArrayView<void, -1> ret(data(), safeSizeOf<T>() * size());
-        return ret;
+        const size_t N = std::min(other.size(), this->size());
+        for (size_t i = 0; i < N; ++i)
+        {
+            (*this)[i] = other[i];
+        }
+        return *this;
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<T>::operator TArrayView<void, -1>() &&
+    CT_DEVICE_INLINE TArrayView<T>& TArrayView<T>::operator=(TArrayView<T>&& other)
     {
-        TArrayView<void, -1> ret(data(), safeSizeOf<T>() * size());
-        m_data = nullptr;
-        m_size = 0;
-        return ret;
+        m_size = other.size();
+        m_data = other.data();
+        return *this;
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<T>::operator TArrayView<const T, -1>() const
+    CT_DEVICE_INLINE TArrayView<T>& TArrayView<T>::operator=(const TArrayView<const T>& other)
     {
-        TArrayView<const T, -1> ret(data(), size());
-        return ret;
+        const size_t N = std::min(other.size(), this->size());
+        for (size_t i = 0; i < N; ++i)
+        {
+            (*this)[i] = other[i];
+        }
+        return *this;
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -604,6 +735,66 @@ namespace ct
     template <class T>
     CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const T* begin, const T* end) : m_data(begin), m_size(end - begin)
     {
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<T, N>& other)
+        : m_data(other.data()), m_size(other.size())
+    {
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(TArrayView<T, N>&& other)
+        : m_data(other.data()), m_size(other.size())
+    {
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<const T, N>& other)
+        : m_data(other.data()), m_size(other.size())
+    {
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(TArrayView<const T, N>&& other)
+        : m_data(other.data()), m_size(other.size())
+    {
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<void, N>& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+        m_size = other.size() / sizeof(T);
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(TArrayView<void, N>&& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+        m_size = other.size() / sizeof(T);
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(const TArrayView<const void, N>& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+        m_size = other.size() / sizeof(T);
+    }
+
+    template <class T>
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const T>::TArrayView(TArrayView<const void, N>&& other)
+    {
+        m_data = static_cast<const T*>(other.data());
+        m_size = other.size() / sizeof(T);
     }
 
     template <class T>
@@ -646,7 +837,15 @@ namespace ct
     }
 
     template <class T>
-    CT_DEVICE_INLINE TArrayView<const T>& TArrayView<const T>::operator=(const TArrayView<T>& other)
+    CT_DEVICE_INLINE TArrayView<const T>& TArrayView<const T>::operator=(const TArrayView<T>&& other)
+    {
+        m_data = other.data();
+        m_size = other.size();
+        return *this;
+    }
+
+    template <class T>
+    CT_DEVICE_INLINE TArrayView<const T>& TArrayView<const T>::operator=(const TArrayView<const T>&& other)
     {
         m_data = other.data();
         m_size = other.size();
@@ -690,6 +889,20 @@ namespace ct
     {
     }
 
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T, N>& other)
+    {
+        m_data = other.data();
+        m_size = other.size() * safeSizeOf<T>();
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<void>::TArrayView(TArrayView<T, N>&& other)
+    {
+        m_data = other.data();
+        m_size = other.size() * safeSizeOf<T>();
+    }
+
     CT_DEVICE_INLINE bool TArrayView<void>::operator==(const TArrayView<void>& other) const
     {
         if (other.m_data == m_data && other.m_size == m_size)
@@ -722,27 +935,6 @@ namespace ct
 
     CT_DEVICE_INLINE const void* TArrayView<void>::data() const { return m_data; }
 
-    template <class T>
-    CT_DEVICE_INLINE TArrayView<void>::operator TArrayView<T, -1>() &
-    {
-        TArrayView<T, -1> ret(ptrCast<T>(data()), size() / safeSizeOf<T>());
-        return ret;
-    }
-
-    template <class T>
-    CT_DEVICE_INLINE TArrayView<void>::operator TArrayView<T, -1>() &&
-    {
-        TArrayView<T, -1> ret(ptrCast<T>(data()), size() / safeSizeOf<T>());
-        m_data = nullptr;
-        m_size = 0;
-        return ret;
-    }
-
-    CT_DEVICE_INLINE TArrayView<void>::operator TArrayView<const void, -1>() const
-    {
-        return TArrayView<const void, -1>(data(), size());
-    }
-
     // const void specialzation
 
     CT_DEVICE_INLINE TArrayView<const void>::TArrayView(const void* ptr, size_t sz) : m_data(ptr), m_size(sz) {}
@@ -750,6 +942,34 @@ namespace ct
     CT_DEVICE_INLINE TArrayView<const void>::TArrayView(const void* begin, const void* end)
         : m_data(begin), m_size(static_cast<size_t>(ptrCast<uint8_t>(end) - ptrCast<uint8_t>(begin)))
     {
+    }
+
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const void>::TArrayView(const TArrayView<void, N>& other)
+    {
+        m_data = other.data();
+        m_size = other.size();
+    }
+
+    template <int64_t N>
+    CT_DEVICE_INLINE TArrayView<const void>::TArrayView(TArrayView<void, N>&& other)
+    {
+        m_data = other.data();
+        m_size = other.size();
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const void>::TArrayView(const TArrayView<T, N>& other)
+    {
+        m_data = static_cast<const void*>(other.data());
+        m_size = other.size() * safeSizeOf<T>();
+    }
+
+    template <class T, int64_t N>
+    CT_DEVICE_INLINE TArrayView<const void>::TArrayView(const TArrayView<T, N>&& other)
+    {
+        m_data = static_cast<const void*>(other.data());
+        m_size = other.size() * safeSizeOf<T>();
     }
 
     CT_DEVICE_INLINE bool TArrayView<const void>::operator==(const TArrayView<const void>& other) const
@@ -788,22 +1008,6 @@ namespace ct
     CT_DEVICE_INLINE size_t TArrayView<const void>::size() const { return m_size; }
 
     CT_DEVICE_INLINE const void* TArrayView<const void>::data() const { return m_data; }
-
-    template <class T>
-    CT_DEVICE_INLINE TArrayView<const void>::operator TArrayView<const T, -1>() const&
-    {
-        TArrayView<const T, -1> ret(ptrCast<const T>(data()), size() / safeSizeOf<T>());
-        return ret;
-    }
-
-    template <class T>
-    CT_DEVICE_INLINE TArrayView<const void>::operator TArrayView<const T, -1>() &&
-    {
-        TArrayView<const T, -1> ret(ptrCast<const T>(data()), size() / safeSizeOf<T>());
-        m_data = nullptr;
-        m_size = 0;
-        return ret;
-    }
 
     // free functions
 
