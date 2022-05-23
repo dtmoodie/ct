@@ -86,3 +86,8 @@ obj = test_ct_python.Virtual()
 print(obj)
 
 print(dir(test_ct_python.std))
+
+
+obj = test_ct_python.WithEnum()
+val = obj.m_enum
+print(val)

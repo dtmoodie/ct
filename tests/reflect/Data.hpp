@@ -23,6 +23,18 @@ struct Composite
     ReflectedStruct a;
     ReflectedStruct b;
 };
+enum MyEnum : uint32_t
+{
+    k1234,
+    k2345,
+    k3456
+};
+
+struct WithEnum
+{
+
+    MyEnum m_enum;
+};
 
 struct TestA
 {

@@ -39,6 +39,7 @@ EXPECTED_NAME(DerivedB);
 EXPECTED_NAME(DerivedC);
 EXPECTED_NAME(Wrapper);
 EXPECTED_NAME(TestVec);
+EXPECTED_NAME(WithEnum);
 EXPECTED_NAME(PrivateMutableAccess);
 EXPECTED_NAME(PrivateGetAndSet);
 EXPECTED_NAME(MultipleInheritance);
