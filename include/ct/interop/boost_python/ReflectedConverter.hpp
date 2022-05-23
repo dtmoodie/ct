@@ -20,6 +20,18 @@ namespace ct
     }; // PythonConverter<T, 2, ct::EnableIfReflected<T>>
 
     template <class T>
+    struct PythonConverter<T, 4, EnableIfIsEnum<T>>
+    {
+        static std::string repr(const T& obj);
+
+        static void registerToPython(const char* name);
+
+        static bool convertFromPython(const boost::python::object&, T&);
+
+        static boost::python::object convertToPython(const T& result);
+    }; // PythonConverter<T, 2, ct::EnableIfReflected<T>>
+
+    template <class T>
     struct ReflectedConverter<T, 1, void>
     {
         static std::string repr(const T& obj);
@@ -512,7 +524,52 @@ namespace ct
             return std::move(ss).str();
         }
 
+        template <class T, class BPOBJ>
+        void registerEnumToPython(BPOBJ& obj, ct::Indexer<0> idx)
+        {
+            auto ptr = ct::Reflect<T>::getPtr(idx);
+            obj.value(ptr.getName().cStr(), ptr.value());
+        }
+
+        template <class T, class BPOBJ, index_t I>
+        void registerEnumToPython(BPOBJ& obj, ct::Indexer<I> idx)
+        {
+            auto ptr = ct::Reflect<T>::getPtr(idx);
+            obj.value(ptr.getName().cStr(), ptr.value());
+            registerEnumToPython<T>(obj, --idx);
+        }
+
     } // namespace detail
+
+    template <class T>
+    std::string PythonConverter<T, 4, EnableIfIsEnum<T>>::repr(const T& obj)
+    {
+        std::stringstream ss;
+        ss << obj;
+        return ss.str();
+    }
+
+    template <class T>
+    void PythonConverter<T, 4, EnableIfIsEnum<T>>::registerToPython(const char* name)
+    {
+        boost::python::enum_<T> bpobj(name);
+        auto end = ct::Reflect<T>::end();
+        detail::registerEnumToPython<T>(bpobj, end);
+    }
+
+    template <class T>
+    bool PythonConverter<T, 4, EnableIfIsEnum<T>>::convertFromPython(const boost::python::object&, T& val)
+    {
+        (void)val;
+        return false;
+    }
+
+    template <class T>
+    boost::python::object PythonConverter<T, 4, EnableIfIsEnum<T>>::convertToPython(const T& val)
+    {
+        boost::python::object ret(val);
+        return ret;
+    }
 
     template <class T>
     void ReflectedConverter<T, 1, void>::registerToPython(const char* name)

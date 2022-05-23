@@ -247,7 +247,13 @@ namespace ct
         constexpr StringView getName() const { return name; }
 
         template <class U>
-        constexpr auto get(const U v) const -> decltype(v.value)
+        constexpr auto get(const U v) const -> EnableIf<std::is_enum<U>::value, typename std::underlying_type<U>::type>
+        {
+            return v;
+        }
+
+        template <class U>
+        constexpr auto get(const U v) const -> EnableIf<!std::is_enum<U>::value, decltype(v.value)>
         {
             return v.value;
         }
