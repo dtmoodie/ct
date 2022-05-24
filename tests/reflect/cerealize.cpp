@@ -56,15 +56,9 @@ struct Cerealization : ::testing::Test
         std::cout << std::endl;
     }
 
-    void testBinary()
-    {
-        test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>();
-    }
+    void testBinary() { test<cereal::BinaryInputArchive, cereal::BinaryOutputArchive>(); }
 
-    void testJson()
-    {
-        test<cereal::JSONInputArchive, cereal::JSONOutputArchive>();
-    }
+    void testJson() { test<cereal::JSONInputArchive, cereal::JSONOutputArchive>(); }
 };
 
 TYPED_TEST_SUITE_P(Cerealization);
@@ -82,16 +76,15 @@ TYPED_TEST_P(Cerealization, json)
 
 #include "../enum/enum.hpp"
 
-
 REGISTER_TYPED_TEST_SUITE_P(Cerealization, json, binary);
 
-using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum>>::type;
+using Types = TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum, MyClass::StandardEnum>>::type;
 
 TEST_DATA(MyClass::MyEnum, MyClass::MyEnum::kVALUE1);
 TEST_DATA(MyClass::SecondEnum, MyClass::SecondEnum::kRGB);
+TEST_DATA(MyClass::StandardEnum, MyClass::StandardEnum::k1);
 
 INSTANTIATE_TYPED_TEST_SUITE_P(ReflectCerealize, Cerealization, ToTestTypes<Types>::type);
-
 
 TEST(access_token, set_on_dtor)
 {
@@ -110,16 +103,12 @@ TEST(access_token, set_on_dtor_from_temp)
     PrivateGetAndSet obj;
     ASSERT_NE(obj.getX(), 5);
     auto prop = ct::Reflect<PrivateGetAndSet>::getPtr(ct::Indexer<0>{});
-    auto setter = [](float& val)
-    {
-        val = 5;
-    };
+    auto setter = [](float& val) { val = 5; };
     {
         setter(ct::ref(prop.set(obj)));
     }
     ASSERT_EQ(obj.getX(), 5);
 }
-
 
 int main(int argc, char** argv)
 {

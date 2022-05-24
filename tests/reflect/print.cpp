@@ -52,6 +52,7 @@ EXPECTED_OBJECT_PRINT(TestC, "(y: 0 x: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(DerivedA, "(base_x: 0 base_y: 1 base_z: 2 derived_a: 3 ) ");
 EXPECTED_OBJECT_PRINT(DerivedB, "(base_x: 0 base_y: 1 base_z: 2 derived_b: 4 ) ");
 EXPECTED_OBJECT_PRINT(DerivedC, "(derived_b: 4 base_x: 0 base_y: 1 base_z: 2 derived_a: 3 derived_c: 5 ) ");
+EXPECTED_OBJECT_PRINT(WithEnum, "(m_enum: ()  ) ");
 EXPECTED_OBJECT_PRINT(TestVec, "(vec: [0 1 2 3 4] ) ");
 EXPECTED_OBJECT_PRINT(ExplicitThisProperty, "(prop: 0 ) ");
 EXPECTED_OBJECT_PRINT(Virtual, "() ");
@@ -71,8 +72,11 @@ EXPECTED_OBJECT_PRINT(cv::Scalar, "(data: [0 1 2 3] shape: [4 1] size: 4 ) ");
 EXPECTED_OBJECT_PRINT(cv::Rect2f, "(x: 0 y: 1 width: 2 height: 3 ) ");
 EXPECTED_OBJECT_PRINT(cv::Rect, "(x: 0 y: 1 width: 2 height: 3 ) ");
 EXPECTED_OBJECT_PRINT(cv::Mat_<float>, "(shape: [4 4] size: 16 data: [1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1] ) ");
-EXPECTED_OBJECT_PRINT(cv::Mat_<cv::Vec3f>,
-                      "(shape: [4 4] size: 16 data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] ) ");
+EXPECTED_OBJECT_PRINT(
+    cv::Mat_<cv::Vec3f>,
+    "(shape: [4 4] size: 16 data: [[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
+    "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] "
+    "[3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0] [3.14159, 0, 0]] ) ");
 EXPECTED_OBJECT_PRINT(cv::Mat, "(rows: 4 cols: 4 ) ");
 
 #endif
