@@ -28,6 +28,7 @@ namespace ct
         static constexpr uint16_t index = I;
         constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
+        T getValue() const { return VALUE; }
 
 #if defined(_MSC_VER) || defined(__clang__)
         static constexpr T value = VALUE;

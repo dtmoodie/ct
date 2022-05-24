@@ -528,14 +528,14 @@ namespace ct
         void registerEnumToPython(BPOBJ& obj, ct::Indexer<0> idx)
         {
             auto ptr = ct::Reflect<T>::getPtr(idx);
-            obj.value(ptr.getName().cStr(), ptr.value());
+            obj.value(ptr.getName().cStr(), T(ptr.value().getValue()));
         }
 
         template <class T, class BPOBJ, index_t I>
         void registerEnumToPython(BPOBJ& obj, ct::Indexer<I> idx)
         {
             auto ptr = ct::Reflect<T>::getPtr(idx);
-            obj.value(ptr.getName().cStr(), ptr.value());
+            obj.value(ptr.getName().cStr(), T(ptr.value().getValue()));
             registerEnumToPython<T>(obj, --idx);
         }
 
