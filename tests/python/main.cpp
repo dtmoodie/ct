@@ -41,7 +41,7 @@ BOOST_PYTHON_MODULE(test_ct_python)
     static_assert(ct::conceptCheck<Eigen::Matrix3f, ct::TensorConcept>(), "Expect matrix to match tensor concept");
 #endif
     static_assert(!ct::conceptCheck<TestA, ct::TensorConcept>(), "Expect matrix to not match tensor concept");
-    using Types =
-        TestTypes::Append<ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum, MyClass::StandardEnum>>::type;
+    using Types = TestTypes::Append<
+        ct::VariadicTypedef<MyClass::MyEnum, MyClass::SecondEnum, MyClass::StandardEnum, MyClass::StandardEnum2>>::type;
     registerType(Types::begin());
 }
