@@ -1,3 +1,6 @@
+### 2022-05-24 v1.2.3
+- fixed printing of enums
+
 ### 2022-05-23 v1.2.2
 - expanded enum support
 
