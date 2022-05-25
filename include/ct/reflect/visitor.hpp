@@ -226,6 +226,12 @@ namespace ct
         {
         }
 
+        template <class PTR, class T, index_t I, class... ARGS>
+        void visitField(const T&, const std::string&, ct::EnumField<PTR>, Indexer<I>, ARGS&&...)
+        {
+            // TODO visit enum fields
+        }
+
         template <class DTYPE, class CTYPE, Flag_t FLAGS, class METADATA, class T, index_t I, class... ARGS>
         auto visitField(T& obj,
                         const std::string& path,

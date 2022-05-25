@@ -52,7 +52,7 @@ EXPECTED_OBJECT_PRINT(TestC, "(y: 0 x: 1 z: 2 ) ");
 EXPECTED_OBJECT_PRINT(DerivedA, "(base_x: 0 base_y: 1 base_z: 2 derived_a: 3 ) ");
 EXPECTED_OBJECT_PRINT(DerivedB, "(base_x: 0 base_y: 1 base_z: 2 derived_b: 4 ) ");
 EXPECTED_OBJECT_PRINT(DerivedC, "(derived_b: 4 base_x: 0 base_y: 1 base_z: 2 derived_a: 3 derived_c: 5 ) ");
-EXPECTED_OBJECT_PRINT(WithEnum, "(m_enum: ()  ) ");
+EXPECTED_OBJECT_PRINT(WithEnum, "(m_enum: (k2345)  ) ");
 EXPECTED_OBJECT_PRINT(TestVec, "(vec: [0 1 2 3 4] ) ");
 EXPECTED_OBJECT_PRINT(ExplicitThisProperty, "(prop: 0 ) ");
 EXPECTED_OBJECT_PRINT(Virtual, "() ");

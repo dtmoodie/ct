@@ -169,7 +169,8 @@ namespace ct
         using Super_t = ct::VisitorBase<PrintVisitor<PRINT_OPTIONS, PARAMS>, PARAMS>;
 
         template <class T>
-        ct::EnableIfReflected<T> visit(const T& obj, const std::string& name, std::ostream& os)
+        EnableIf<IsReflected<T>::value && !EnumChecker<T>::value>
+        visit(const T& obj, const std::string& name, std::ostream& os)
         {
             thread_local bool recursion_block = false;
 
@@ -192,6 +193,39 @@ namespace ct
                 ++m_indent;
             }
             Super_t::recurseFields(obj, name, ct::Reflect<T>::end(), os);
+            os << PRINT_OPTIONS::object_end;
+
+            if (PRINT_OPTIONS::indent)
+            {
+                --m_indent;
+            }
+            recursion_block = false;
+        }
+
+        template <class T>
+        EnableIfIsEnum<T> visit(const T& obj, const std::string& name, std::ostream& os)
+        {
+            thread_local bool recursion_block = false;
+
+            if (recursion_block)
+            {
+                os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
+                os << PRINT_OPTIONS::type_begin << ct::Reflect<T>::getTypeName() << PRINT_OPTIONS::type_end;
+                return;
+            }
+            recursion_block = true;
+            /*if (!name.empty())
+            {
+                indent(os);
+                os << PRINT_OPTIONS::name_begin << name << PRINT_OPTIONS::name_end;
+            }*/
+
+            os << PRINT_OPTIONS::object_begin;
+            if (PRINT_OPTIONS::indent)
+            {
+                ++m_indent;
+            }
+            os << obj;
             os << PRINT_OPTIONS::object_end;
 
             if (PRINT_OPTIONS::indent)
