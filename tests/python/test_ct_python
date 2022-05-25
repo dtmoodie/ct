@@ -3,6 +3,9 @@
 import test_ct_python
 import math
 
+obj = test_ct_python.WithEnum()
+print(obj)
+
 obj = test_ct_python.ReflectedStruct(x=1, y=2, z=3, id=10)
 print(obj)
 assert obj.x == 1, str(obj.x)
@@ -96,4 +99,20 @@ val = test_ct_python.MyEnum.k2345
 assert str(val) == 'k2345'
 assert int(val) == 1
 
+val = test_ct_python.MyClass.StandardEnum.k0
+assert str(val) == 'k0'
+assert int(val) == 0
 
+val = test_ct_python.MyClass.StandardEnum.k1
+assert str(val) == 'k1'
+assert int(val) == 1
+
+val = test_ct_python.MyClass.StandardEnum2.k1234
+assert str(val) == 'k1234'
+assert int(val) == 1
+
+val = test_ct_python.MyClass.StandardEnum2.kASDF
+assert str(val) == 'kASDF'
+assert int(val) == 0
+
+print('all enum assertions passed')

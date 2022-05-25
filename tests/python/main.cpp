@@ -18,20 +18,20 @@ struct PythonTester
     template <class T>
     void test(const T&)
     {
-        ct::registerToPython<T>();
+        ct::bp::registerToPython<T>();
     }
 };
 
 template <class T>
 void registerType(ct::VariadicTypedefIterator<T>)
 {
-    ct::registerToPython<T>();
+    ct::bp::registerToPython<T>();
 }
 
 template <class T, class... ARGS>
 auto registerType(ct::VariadicTypedefIterator<T, ARGS...> itr) -> ct::EnableIf<sizeof...(ARGS) >= 1>
 {
-    ct::registerToPython<T>();
+    ct::bp::registerToPython<T>();
     registerType(++itr);
 }
 
