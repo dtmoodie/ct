@@ -4,6 +4,16 @@
 
 namespace ct
 {
+    REFLECT_BEGIN(MyEnum)
+        ENUM(k1234)
+        ENUM(k2345)
+        ENUM(k3456)
+    REFLECT_END;
+
+    REFLECT_BEGIN(WithEnum)
+        PUBLIC_ACCESS(m_enum)
+    REFLECT_END;
+
     REFLECT_BEGIN(ReflectedStruct)
         // This is a work in progress for some reason ... causes an error in hashing of structs
         // MEMBER_FUNCTION(description, &ReflectedStruct::description)

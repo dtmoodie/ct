@@ -358,30 +358,34 @@ namespace cereal
         ct::cereal::CerealizerSelector<T>::load(ar, data);
     }
 
+    // We disable if it is a standard enum since cereal already has a save and load minimal for standard enums
     template <class AR, class T>
     auto save_minimal(const AR&, const T& data)
-        -> ct::EnableIf<ct::EnumChecker<T>::value && traits::is_text_archive<AR>::value, std::string>
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !std::is_enum<T>::value && traits::is_text_archive<AR>::value,
+                        std::string>
     {
         return ct::toString(data);
     }
 
+    // We disable if it is a standard enum since cereal already has a save and load minimal for standard enums
     template <class AR, class T>
     auto load_minimal(const AR&, T& data, const std::string& str)
-        -> ct::EnableIf<ct::EnumChecker<T>::value && traits::is_text_archive<AR>::value>
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !std::is_enum<T>::value && traits::is_text_archive<AR>::value>
     {
         data = ct::fromString<T>(str);
     }
 
     template <class AR, class T>
     auto save_minimal(const AR&, T& data)
-        -> ct::EnableIf<ct::EnumChecker<T>::value && !traits::is_text_archive<AR>::value, decltype(data.value)>
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !std::is_enum<T>::value && !traits::is_text_archive<AR>::value,
+                        decltype(data.value)>
     {
         return data.value;
     }
 
     template <class AR, class T>
     auto load_minimal(const AR&, T& data, const decltype(data.value)& val)
-        -> ct::EnableIf<ct::EnumChecker<T>::value && !traits::is_text_archive<AR>::value>
+        -> ct::EnableIf<ct::EnumChecker<T>::value && !std::is_enum<T>::value && !traits::is_text_archive<AR>::value>
     {
         data.value = val;
     }

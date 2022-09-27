@@ -255,6 +255,8 @@ TEST(enum_value_to_string, StandardEnum2)
 
 TEST(enum_value_from_string, MyEnum)
 {
+    // ct::StaticEquality<MyClass::MyEnum, ct::fromString<MyClass::MyEnum>("kVALUE0"), MyClass::MyEnum::kVALUE0>();
+    ASSERT_EQ(ct::fromString<MyClass::MyEnum>("kVALUE0"), ct::value(MyClass::MyEnum::kVALUE0));
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE0") == MyClass::MyEnum::kVALUE0, "asdf");
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE1") == MyClass::MyEnum::kVALUE1, "asdf");
     static_assert(ct::fromString<MyClass::MyEnum>("kVALUE2") == MyClass::MyEnum::kVALUE2, "asdf");

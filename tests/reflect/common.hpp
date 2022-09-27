@@ -134,11 +134,11 @@ TEST_DATA(TestVec, {{0, 1, 2, 3, 4}});
 TEST_DATA(PrivateMutableAccess, {4});
 TEST_DATA(InternallyReflected, {5, 10, 15});
 TEST_DATA(PrivateGetAndSet, {5.2f});
+TEST_DATA(WithEnum, {MyEnum::k2345});
 TEST_DATA(std::vector<ReflectedStruct>, {{0, 1, 2, 3}, {4, 5, 6, 7}, {8, 9, 10, 11}});
 using MapVec = std::map<int, TestVec>;
 TEST_DATA(MapVec, {{0, {{0, 1, 2, 3, 4, 5}}}, {10, {{0, 3, 4, 5}}}});
 TEST_DATA(Wrapper, {5});
-
 
 template <>
 struct TestData<Inherited>
@@ -235,6 +235,7 @@ struct TestData<DerivedC>
         return derived;
     }
 };
+
 TEST_DATA(Virtual, {});
 TEST_DATA(Templated<double>, {0.0, 1.0, 2.0});
 
@@ -258,8 +259,7 @@ TEST_DATA(Eigen::Matrix3f, Eigen::Matrix3f::Identity());
 TEST_DATA(Eigen::MatrixXf, Eigen::MatrixXf::Identity(5, 5));
 #endif
 
-using TestTypes = ct::VariadicTypedef<
-                                      ReflectedStruct,
+using TestTypes = ct::VariadicTypedef<ReflectedStruct,
                                       Inherited,
                                       Composite,
                                       TestA,
@@ -269,6 +269,7 @@ using TestTypes = ct::VariadicTypedef<
                                       DerivedA,
                                       DerivedB,
                                       DerivedC,
+                                      WithEnum,
                                       PrivateMutableAccess,
                                       InternallyReflected,
                                       PrivateGetAndSet,
@@ -277,7 +278,7 @@ using TestTypes = ct::VariadicTypedef<
                                       Virtual,
                                       std::vector<ReflectedStruct>,
                                       std::map<std::string, Inherited>
-                                      
+
 #ifdef HAVE_OPENCV
                                       ,
                                       cv::Vec2f,
@@ -300,10 +301,10 @@ using TestTypes = ct::VariadicTypedef<
 #endif
                                       >;
 
-template <class ... T>
+template <class... T>
 struct ToTestTypes;
 
-template <class... Ts, class ... Us>
+template <class... Ts, class... Us>
 struct ToTestTypes<ct::VariadicTypedef<Ts...>, Us...>
 {
     using type = ::testing::Types<Ts..., Us...>;

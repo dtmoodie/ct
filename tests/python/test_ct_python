@@ -86,3 +86,14 @@ obj = test_ct_python.Virtual()
 print(obj)
 
 print(dir(test_ct_python.std))
+
+
+obj = test_ct_python.WithEnum()
+val = obj.m_enum
+assert str(val) == 'k1234'
+assert int(val) == 0
+val = test_ct_python.MyEnum.k2345
+assert str(val) == 'k2345'
+assert int(val) == 1
+
+

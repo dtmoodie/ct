@@ -28,6 +28,7 @@ namespace ct
         static constexpr uint16_t index = I;
         constexpr EnumValue() = default;
         constexpr operator T() const { return VALUE; }
+        T getValue() const { return VALUE; }
 
 #if defined(_MSC_VER) || defined(__clang__)
         static constexpr T value = VALUE;
@@ -247,7 +248,13 @@ namespace ct
         constexpr StringView getName() const { return name; }
 
         template <class U>
-        constexpr auto get(const U v) const -> decltype(v.value)
+        constexpr auto get(const U v) const -> EnableIf<std::is_enum<U>::value, typename std::underlying_type<U>::type>
+        {
+            return v;
+        }
+
+        template <class U>
+        constexpr auto get(const U v) const -> EnableIf<!std::is_enum<U>::value, decltype(v.value)>
         {
             return v.value;
         }
