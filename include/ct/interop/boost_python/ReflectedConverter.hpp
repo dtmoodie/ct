@@ -393,6 +393,32 @@ namespace ct
         }
 
         template <class T, class BP, index_t I, class U, Flag_t FLAGS, class MDATA, class... PTRS>
+        void addStaticFunctionImpl(BP& bpobj, StaticFunctions<U, FLAGS, MDATA, PTRS...> ptrs, Indexer<I>)
+        {
+            auto ptr = ptrs.template getPtr<I>();
+            bpobj.def(ptrs.getName().cStr(), ptr.m_ptr).staticmethod(ptrs.getName().cStr());
+        }
+
+        template <class T, class BP, class PTRS>
+        void addStaticFunctionRecurse(BP& bpobj, PTRS ptrs, Indexer<0> idx)
+        {
+            addStaticFunctionImpl<T>(bpobj, ptrs, idx);
+        }
+
+        template <class T, class BP, index_t I, class PTRS>
+        void addStaticFunctionRecurse(BP& bpobj, PTRS ptrs, Indexer<I> idx)
+        {
+            addStaticFunctionImpl<T>(bpobj, ptrs, idx);
+            addStaticFunctionRecurse<T>(bpobj, ptrs, --idx);
+        }
+
+        template <class T, class BP, class U, Flag_t FLAGS, class MDATA, class... PTRS>
+        auto addPropertyImpl(BP& bp, StaticFunctions<U, FLAGS, MDATA, PTRS...> ptr, index_t)
+        {
+            addStaticFunctionRecurse<T>(bp, ptr, Indexer<sizeof...(PTRS) - 1>());
+        }
+
+        template <class T, class BP, index_t I, class U, Flag_t FLAGS, class MDATA, class... PTRS>
         void addMemberFunctionImpl(BP& bpobj, MemberFunctionPointers<U, FLAGS, MDATA, PTRS...> ptrs, Indexer<I>)
         {
             auto ptr = ptrs.template getPtr<I>();
