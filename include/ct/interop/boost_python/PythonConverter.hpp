@@ -2,6 +2,7 @@
 #define CT_INTEROP_BOOST_PYTHON_PYTHON_CONVERTER_HPP
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <ct/typename.hpp>
 #include <ct/types.hpp>
 
 namespace ct
@@ -31,10 +32,21 @@ namespace ct
     template <class T, class A>
     struct PythonConverter<std::vector<T, A>, 4, void>
     {
-        static void registerToPython(const char* name)
+        static void registerToPython(const char* name_)
         {
-            boost::python::class_<std::vector<T, A>> vec(name, boost::python::no_init);
+            std::string name;
+            if (name_ == nullptr)
+            {
+                name = GetName<std::vector<T, A>>::getName().toString();
+            }
+            else
+            {
+                name = name_;
+            }
+            boost::python::class_<std::vector<T, A>> vec(name.c_str(), boost::python::no_init);
             vec.def(boost::python::vector_indexing_suite<std::vector<T, A>>());
+
+            PythonConverter<T>::registerToPython(nullptr);
         }
 
         static bool convertFromPython(const boost::python::object&, std::vector<T, A>&)

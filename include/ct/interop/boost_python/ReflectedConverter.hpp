@@ -598,9 +598,18 @@ namespace ct
     }
 
     template <class T>
-    void ReflectedConverter<T, 1, void>::registerToPython(const char* name)
+    void ReflectedConverter<T, 1, void>::registerToPython(const char* name_)
     {
-        boost::python::class_<T> bpobj(name);
+        std::string name;
+        if (name_ == nullptr)
+        {
+            name = ct::Reflect<T>::getTypeName().toString();
+        }
+        else
+        {
+            name = name_;
+        }
+        boost::python::class_<T> bpobj(name.c_str());
         detail::addProperties<T>(bpobj);
         detail::addInit<T>(bpobj);
         bpobj.def("__getitem__", &detail::getItem<T>);
