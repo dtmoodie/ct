@@ -370,7 +370,7 @@ namespace ct
         boost::python::object pythonInvokeMutable(const T& obj)
         {
             auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>());
-            return accessor.invoke<0>(obj);
+            return accessor.template invoke<0>(obj);
         }
 
         template <class T, class BP, class PROPERTY, index_t I>
