@@ -1,6 +1,7 @@
 #ifndef CT_STRING_VIEW_HPP
 #define CT_STRING_VIEW_HPP
 #include <cstddef>
+#include <cstdint>
 #include <ostream>
 #include <stdexcept>
 #include <string>
