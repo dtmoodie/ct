@@ -560,9 +560,14 @@ namespace ct
         }
 
         template <class T>
-        bool PythonConverter<T, 4, EnableIfIsEnum<T>>::convertFromPython(const boost::python::object&, T& val)
+        bool PythonConverter<T, 4, EnableIfIsEnum<T>>::convertFromPython(const boost::python::object& pyobj, T& val)
         {
-            (void)val;
+            boost::python::extract<T> extractor(pyobj);
+            if (extractor.check())
+            {
+                val = extractor();
+                return true;
+            }
             return false;
         }
 
