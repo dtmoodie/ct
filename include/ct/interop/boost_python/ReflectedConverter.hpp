@@ -406,6 +406,34 @@ namespace ct
             {
             }
 
+            // These three function templates are for recursing over overloaded static member functions
+            template<class BP, index_t I, class U, Flag_t FLAGS = 0, class METADATA = void, class... PTRS>
+            void addStaticMemberFunction(BP& bpobj, StaticFunctions<U, FLAGS, METADATA, PTRS...> funcs, Indexer<I>)
+            {
+                auto ptr = funcs. template getPtr<I>();
+                auto name = funcs.getName();
+                bpobj.def(name.cStr(), ptr.m_ptr).staticmethod(name.cStr());
+            }
+
+            template<class BP, index_t I, class U, Flag_t FLAGS = 0, class METADATA = void, class... PTRS>
+            void addStaticMemberFunctionRecurse(BP& bpobj, StaticFunctions<U, FLAGS, METADATA, PTRS...> funcs, Indexer<I> idx)
+            {
+                addStaticMemberFunction(bpobj, funcs, idx);
+                addStaticMemberFunctionRecurse(bpobj, funcs, Indexer<I-1>());
+            }
+
+            template<class BP, class U, Flag_t FLAGS = 0, class METADATA = void, class... PTRS>
+            void addStaticMemberFunctionRecurse(BP& bpobj, StaticFunctions<U, FLAGS, METADATA, PTRS...> funcs, Indexer<0> idx)
+            {
+                addStaticMemberFunction(bpobj, funcs, idx);
+            }
+
+            template<class T, class BP, index_t I, class U, Flag_t FLAGS = 0, class METADATA = void, class... PTRS>
+            void addPropertyImpl(BP& bpobj, StaticFunctions<U, FLAGS, METADATA, PTRS...> ptrs, Indexer<I>)
+            {
+                addStaticMemberFunctionRecurse(bpobj, ptrs, Indexer<sizeof...(PTRS) - 1>());
+            }
+
             template <class T, class BP, index_t I, class U, Flag_t FLAGS, class MDATA, class... PTRS>
             void addMemberFunctionImpl(BP& bpobj, MemberFunctionPointers<U, FLAGS, MDATA, PTRS...> ptrs, Indexer<I>)
             {
