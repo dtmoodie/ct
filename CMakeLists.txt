@@ -9,6 +9,7 @@ file(GLOB_RECURSE hdr "include/*.hpp")
 
 include(cmake/subdir_list.cmake)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT TARGET ct)
     option(BUILD_TESTS "Build tests" ON)

@@ -1,7 +1,9 @@
 #pragma once
 #include <cmath>
-#include <ct/reflect.hpp>
 #include <vector>
+#include <cstdint>
+#include <string>
+#include <ct/reflect.hpp>
 
 struct ReflectedStruct
 {
@@ -32,7 +34,6 @@ enum MyEnum : uint32_t
 
 struct WithEnum
 {
-
     MyEnum m_enum;
 };
 

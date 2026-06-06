@@ -82,6 +82,32 @@ if(${CT_HAVE_PYTHON})
     endif()
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python ${out_dir}/test_ct_python @ONLY)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python.py ${out_dir}/test_ct_python.py @ONLY)
+
+    # Copy pytest test files to the build directory
+    set(PYTEST_TEST_FILES
+        conftest.py
+        test_reflect_struct.py
+        test_enum_reflection.py
+        test_reflection_print.py
+        test_string_utils.py
+        test_hash.py
+    )
+    foreach(f ${PYTEST_TEST_FILES})
+        configure_file(${CMAKE_CURRENT_LIST_DIR}/${f} ${out_dir}/${f} @ONLY)
+    endforeach()
+
+    # Register each pytest file as a CTest test
+    if(Python_EXECUTABLE)
+        foreach(f ${PYTEST_TEST_FILES})
+            if(f MATCHES "^test_")
+                string(REPLACE ".py" "" test_name ${f})
+                add_test(NAME ${test_name}
+                    COMMAND ${Python_EXECUTABLE} -m pytest ${out_dir}/${f} -v
+                    WORKING_DIRECTORY ${out_dir}
+                )
+            endif()
+        endforeach()
+    endif()
 else(${CT_HAVE_PYTHON})
     message(STATUS ${PYTHON_STATUS})
 endif(${CT_HAVE_PYTHON})
