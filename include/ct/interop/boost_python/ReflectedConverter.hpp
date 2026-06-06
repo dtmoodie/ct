@@ -30,6 +30,7 @@ namespace ct
 
             static bool convertFromPython(const boost::python::object&, T&);
 
+            static boost::python::object convertToPython(T& result);
             static boost::python::object convertToPython(const T& result);
         }; // PythonConverter<T, 2, ct::EnableIfReflected<T>>
 
@@ -43,6 +44,7 @@ namespace ct
             static bool convertFromPython(const boost::python::object&, T&);
 
             static boost::python::object convertToPython(const T& result);
+            static boost::python::object convertToPython(T& result);
         };
 
         /////////////////////////////////////////////////////////////////////////////
@@ -258,10 +260,10 @@ namespace ct
             }
 
             template <int I, class T>
-            boost::python::object pythonGet(const T& obj)
+            boost::python::object pythonGet(T& obj)
             {
                 auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>{});
-                return convertToPython(accessor.get(obj));
+                return convertToPython(accessor.set(obj));
             }
 
             template <int I, class T>
@@ -280,19 +282,19 @@ namespace ct
 
             // TODO this needs to work for properties and needs to ignore functions
             template <class T, index_t I>
-            auto getItem(const T& obj, Indexer<I>) -> EnableIfIsReadable<T, I, boost::python::object>
+            auto getItem(T& obj, Indexer<I>) -> EnableIfIsReadable<T, I, boost::python::object>
             {
                 return pythonGet<I>(obj);
             }
 
             template <class T, index_t I>
-            auto getItem(const T&, Indexer<I>) -> DisableIfIsReadable<T, I, boost::python::object>
+            auto getItem(T&, Indexer<I>) -> DisableIfIsReadable<T, I, boost::python::object>
             {
                 return {};
             }
 
             template <class T>
-            boost::python::object getItemRecurse(const T& obj, const index_t i, Indexer<0> idx)
+            boost::python::object getItemRecurse(T& obj, const index_t i, Indexer<0> idx)
             {
                 if (i == 0)
                 {
@@ -302,7 +304,7 @@ namespace ct
             }
 
             template <class T, index_t I>
-            boost::python::object getItemRecurse(const T& obj, const index_t i, Indexer<I> idx)
+            boost::python::object getItemRecurse(T& obj, const index_t i, Indexer<I> idx)
             {
                 if (i == I)
                 {
@@ -312,7 +314,7 @@ namespace ct
             }
 
             template <class T>
-            boost::python::object getItem(const T& obj, const index_t i)
+            boost::python::object getItem(T& obj, const index_t i)
             {
                 if (size_t(i) >= GlobWritable<T>::num)
                 {
@@ -394,11 +396,19 @@ namespace ct
                 bpobj.add_property(ct::getName<I, T>().cStr(), &pythonGet<I, T>);
             }
 
-            template <class T, class BP, class PROPERTY, index_t I>
-            auto addPropertyImpl(BP& bpobj, PROPERTY, Indexer<I>)
+            template<class T, index_t I, class DTYPE, Flag_t FLAGS, class METADATA, class ... BPARGS>
+            void addPropertyImpl(boost::python::class_<T, BPARGS...>& bpobj, MemberObjectPointer<DTYPE T::*, FLAGS, METADATA> ptr, Indexer<I>)
+            {
+                auto name = ct::getName<I, T>();
+                bpobj.def_readwrite(name.cStr(), ptr.m_ptr);
+            }
+
+            template <class T, class PROPERTY, index_t I, class ... BPARGS>
+            auto addPropertyImpl(boost::python::class_<T, BPARGS...> & bpobj, PROPERTY, Indexer<I>)
                 -> EnableIf<(flags<PROPERTY>() & Flags::WRITABLE) && (flags<PROPERTY>() & Flags::READABLE)>
             {
-                bpobj.add_property(ct::getName<I, T>().cStr(), &pythonGet<I, T>, &pythonSet<I, T>);
+                auto name = ct::getName<I, T>();
+                bpobj.add_property(name.cStr(), &pythonGet<I, T>, &pythonSet<I, T>);
             }
 
             template <class T, class BP, class PROPERTY>
@@ -600,6 +610,13 @@ namespace ct
         }
 
         template <class T>
+        boost::python::object PythonConverter<T, 4, EnableIfIsEnum<T>>::convertToPython(T& val)
+        {
+            boost::python::object ret(val);
+            return ret;
+        }
+
+        template <class T>
         boost::python::object PythonConverter<T, 4, EnableIfIsEnum<T>>::convertToPython(const T& val)
         {
             boost::python::object ret(val);
@@ -640,6 +657,12 @@ namespace ct
             return false;
         }
 
+        template <class T>
+        boost::python::object ReflectedConverter<T, 1, void>::convertToPython(T& result)
+        {
+            return boost::python::object(result);
+        }
+        
         template <class T>
         boost::python::object ReflectedConverter<T, 1, void>::convertToPython(const T& result)
         {
