@@ -11,6 +11,8 @@ namespace ct
 
         template <class T>
         boost::python::object convertToPython(const T& data);
+        template <class T>
+        boost::python::object convertToPython(T& data);
 
         template <class T>
         void registerToPython();
@@ -29,6 +31,8 @@ namespace ct
             static void registerToPython(const char*);
             static bool convertFromPython(const boost::python::object& obj, T& val);
             static boost::python::object convertToPython(const T& result);
+            static boost::python::object convertToPython(T& result);
+
         };
 
         template <class T, class A>
@@ -47,6 +51,11 @@ namespace ct
             }
 
             static boost::python::object convertToPython(const std::vector<T, A>& result)
+            {
+                return boost::python::object(result);
+            }
+
+            static boost::python::object convertToPython(std::vector<T, A>& result)
             {
                 return boost::python::object(result);
             }
@@ -83,6 +92,18 @@ namespace ct
         boost::python::object PythonConverter<T, 0, void>::convertToPython(const T& result)
         {
             return boost::python::object(result);
+        }
+
+        template <class T>
+        boost::python::object PythonConverter<T, 0, void>::convertToPython(T& result)
+        {
+            return boost::python::object(result);
+        }
+
+        template <class T>
+        boost::python::object convertToPython(T& data)
+        {
+            return PythonConverter<T>::convertToPython(data);
         }
 
         template <class T>
