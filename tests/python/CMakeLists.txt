@@ -3,6 +3,11 @@ include("../../cmake/python.cmake")
 if(${CT_HAVE_PYTHON})
     find_package(Eigen3 QUIET)
     add_library(test_ct_python SHARED main.cpp)
+    # Name the module test_ct_python.so (no "lib" prefix) so the driver can
+    # simply `import test_ct_python`. The prefixed libtest_ct_python.so is not
+    # importable by the standard import machinery (older Pythons do not
+    # accept the lib prefix for extension modules).
+    set_target_properties(test_ct_python PROPERTIES PREFIX "")
 
 
     add_test(NAME test_ct_python
@@ -78,7 +83,7 @@ if(${CT_HAVE_PYTHON})
 
     get_target_property(out_dir test_ct_python ARCHIVE_OUTPUT_DIRECTORY)
     if(NOT out_dir)
-        set(out_dir "./")
+        set(out_dir ${CMAKE_CURRENT_BINARY_DIR})
     endif()
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python ${out_dir}/test_ct_python @ONLY)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python.py ${out_dir}/test_ct_python.py @ONLY)

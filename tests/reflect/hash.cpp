@@ -93,8 +93,12 @@ int main()
                                  hashMemberName<TestB, 0>(hash_members)>{};
         }
 
-// These don't work on gcc 9 due to them fixing disallowing UB in constexpr
-#if __GNUC__ < 9
+// memberOffset needs a reinterpret_cast bridge between unrelated pointer
+// types, which GCC 9+ (having fixed disallowing UB in constexpr) and Clang
+// both reject in a constant expression (see MemberObjectPointer.hpp). Only
+// ancient GCC can evaluate it at compile time. Clang defines __GNUC__ as 4,
+// so it must be excluded explicitly.
+#if __GNUC__ < 9 && !defined(__clang__)
         ct::StaticEquality<size_t, memberOffset(&TestA::x), 0>{};
         ct::StaticEquality<size_t, memberOffset(&TestA::y), 4>{};
         ct::StaticEquality<size_t, memberOffset(&TestA::z), 8>{};
@@ -111,9 +115,31 @@ int main()
         assert(memberOffset(&TestA::x) == 0);
         assert(memberOffset(&TestA::y) == 4);
         assert(memberOffset(&TestA::z) == 8);
+
+        // Runtime counterpart of the constexpr checks in the #if branch
+        // above. On GCC 9+ memberOffset is not a constant expression, so
+        // the default-options detail::hash (which folds in the member
+        // offsets there) can only be verified at runtime. Clang defines
+        // __GNUC__ as 4, so on Clang can_constexpr_hash_member_offset is
+        // false and the default hash folds in member indices instead; the
+        // asserts hold under either choice.
+        assert(ct::detail::hash<A>() == ct::detail::hash<B>());
+        assert(ct::detail::hash<TestA>() == ct::detail::hash<TestB>());
+        assert(ct::detail::hash<ReflectedStruct>() != ct::detail::hash<Inherited>());
+
+        // With offsets explicitly forced into the hash (something the #if
+        // branch above cannot do on these compilers): the equivalent
+        // layouts A and B still hash equal, while C, which has the same
+        // member types in the same offset slots but a different name in
+        // each slot, does not.
+        {
+            const ct::detail::HashOptions offsets_on(false, true, true, false, true);
+            assert(ct::detail::hash<A>(offsets_on) == ct::detail::hash<B>(offsets_on));
+            assert(ct::detail::hash<A>(offsets_on) != ct::detail::hash<C>(offsets_on));
+        }
 #endif
     }
-#if (__GNUC__ < 9 || _MSC_VER)
+#if (__GNUC__ < 9 && !defined(__clang__)) || _MSC_VER
     ct::StaticInequality<uint32_t, detail::hash<ReflectedStruct>(), ct::detail::hash<Inherited>()>{};
 
     // This tests to see if two structs are mem copy compatible.  IE they have the same members, with the same

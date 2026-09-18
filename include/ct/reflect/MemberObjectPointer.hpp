@@ -16,16 +16,46 @@
 
 namespace ct
 {
-    // This will not work in newer GCC because they patched allowing of this UB in constexpr
+    // Compute the offset of a data member from a pointer-to-member.
+    //
+    // Uses the standard offsetof idiom: take the difference between the
+    // member's address and the object's address. This is correct for all
+    // classes, including those with virtual bases, whose pointer-to-member
+    // ABI representation is NOT a plain offset (so the old code's raw
+    // representation read was wrong for those).
+    //
+    // Notes:
+    // - The object has static storage duration (one per class, below). This
+    //   keeps the body a single return statement, which is all C++11 allows
+    //   in a constexpr function (nvcc compiles ct's CUDA conformance tests
+    //   as C++11 and rejects local variables there).
+    // - Parentheses in &(obj.*member) are required: unary & binds tighter
+    //   than .*.
+    // - constexpr-usable only where the compiler permits it: the member and
+    //   class pointer types are unrelated, so the offset needs a
+    //   reinterpret_cast (char* or uintptr_t bridge), and GCC 9+ and Clang
+    //   reject any such cast in a constant expression (verified: GCC 9-13
+    //   and Clang 14, C++11 through gnu++23, every formulation tested).
+    //   In practice this is a runtime function on every supported toolchain;
+    //   the constexpr uses in tests/reflect/hash.cpp are guarded
+    //   accordingly.
+    // - Requires T to be default-constructible.
+    namespace detail
+    {
+        template <class T>
+        struct MemberOffsetObject
+        {
+            static T instance;
+        };
+        template <class T>
+        T MemberOffsetObject<T>::instance{};
+    }
+
     template <typename T, typename U>
     constexpr size_t memberOffset(U T::*member)
     {
-#if defined(_MSC_VER) || defined(__clang__)
-        // Have to test if this works on GCC
-        return *(unsigned int*)(&member);
-#else
-        return (char*)&((T*)nullptr->*member) - (char*)nullptr;
-#endif
+        return (char*)&(detail::MemberOffsetObject<T>::instance.*member)
+               - (char*)&detail::MemberOffsetObject<T>::instance;
     }
 
     template <class PTR, Flag_t FLAGS = 0, class METADATA = Empty>

@@ -75,13 +75,15 @@ class TestEnumBitwise:
         assert int(bindings.MyClass.ExtendedEnum.kVALUE4) == 16
 
     def test_bitset_values(self, bindings):
+        # Bitset values are bit flags (1 << i), matching the C++ ct::BitsetIndex
+        # semantics (see test_ct_enum)
         assert hasattr(bindings.MyClass, "Bitset")
-        assert int(bindings.MyClass.Bitset.v0) == 0
-        assert int(bindings.MyClass.Bitset.v1) == 1
-        assert int(bindings.MyClass.Bitset.v2) == 2
-        assert int(bindings.MyClass.Bitset.v3) == 3
-        assert int(bindings.MyClass.Bitset.v4) == 4
-        assert int(bindings.MyClass.Bitset.v5) == 5
+        assert int(bindings.MyClass.Bitset.v0) == 1
+        assert int(bindings.MyClass.Bitset.v1) == 2
+        assert int(bindings.MyClass.Bitset.v2) == 4
+        assert int(bindings.MyClass.Bitset.v3) == 8
+        assert int(bindings.MyClass.Bitset.v4) == 16
+        assert int(bindings.MyClass.Bitset.v5) == 32
 
     def test_mixed_bitwise_values(self, bindings):
         assert hasattr(bindings.MyClass, "MixedBitwise")

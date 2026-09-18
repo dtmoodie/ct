@@ -38,6 +38,8 @@ add_conformance_test(NAME 06_enum_internal)
 
 find_package(CUDA QUIET)
 if(CUDA_FOUND)
+    # CUDA_HOST_COMPILER fallback for hosts whose default GCC is newer than
+    # nvcc supports is handled at the top level.
     set(CUDA_NVCC_FLAGS "-std=c++11")
     set(CUDA_LINK_LIBRARIES_KEYWORD PUBLIC)
     include_directories("${CMAKE_CURRENT_LIST_DIR}/../../include")

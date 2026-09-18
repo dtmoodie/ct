@@ -40,14 +40,39 @@ namespace ct
         {
             static void registerToPython(const char* name)
             {
-                boost::python::class_<std::vector<T, A>> vec(name, boost::python::no_init);
+                boost::python::class_<std::vector<T, A>> vec(name, boost::python::init<>());
                 vec.def(boost::python::vector_indexing_suite<std::vector<T, A>>());
             }
 
-            static bool convertFromPython(const boost::python::object&, std::vector<T, A>&)
+            static bool convertFromPython(const boost::python::object& pyobj, std::vector<T, A>& data)
             {
-                // TODO
-                return false;
+                try
+                {
+                    const size_t len = boost::python::len(pyobj);
+                    data.clear();
+                    data.reserve(len);
+                    for (size_t i = 0; i < len; ++i)
+                    {
+                        T val;
+                        // Qualify to reach the free function; the static
+                        // member would otherwise hide it
+                        if (!ct::bp::convertFromPython(pyobj[i], val))
+                        {
+                            return false;
+                        }
+                        data.push_back(std::move(val));
+                    }
+                    return true;
+                }
+                catch (const boost::python::error_already_set&)
+                {
+                    // Not a sequence we can index into (None, an int, ...).
+                    // The Python error indicator is still set by the failed
+                    // call; clear it, otherwise returning a normal value with
+                    // the error set produces a SystemError in the trampoline.
+                    PyErr_Clear();
+                    return false;
+                }
             }
 
             static boost::python::object convertToPython(const std::vector<T, A>& result)

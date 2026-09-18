@@ -81,8 +81,9 @@ namespace ct
     }
 
     template <class T, class PTR, class... PTRS>
-    void printSignaturesHelper(const std::tuple<ct::MemberFunction<T, PTR>, ct::MemberFunction<T, PTRS>...>*,
-                               std::ostream& os)
+    ct::EnableIf<sizeof...(PTRS) >= 1>
+    printSignaturesHelper(const std::tuple<ct::MemberFunction<T, PTR>, ct::MemberFunction<T, PTRS>...>*,
+                          std::ostream& os)
     {
         os << "  " << typeid(PTR).name();
         printSignaturesHelper(static_cast<std::tuple<ct::MemberFunction<T, PTRS>...>*>(nullptr), os);

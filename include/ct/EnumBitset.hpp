@@ -39,6 +39,9 @@ namespace ct
         constexpr uint64_t toBitset() const { return uint64_t(1) << VALUE; }
         constexpr operator uint64_t() const { return toBitset(); }
         constexpr uint8_t bitIndex() const { return bit_index; }
+        // Mirror of EnumValue::getValue() so that enum registration and other
+        // generic enum handling can treat bitset values uniformly.
+        constexpr uint64_t getValue() const { return toBitset(); }
 
 #if defined(_MSC_VER) || defined(__clang__)
         static constexpr uint64_t value = 1 << VALUE;

@@ -266,12 +266,14 @@ class TestReflectedTypesExist:
 
 
 class TestVectorOfReflectedStruct:
+    # std::vector<ReflectedStruct> is registered in the std submodule under
+    # the mangled name vector_ReflectedStruct_
     def test_create_and_index(self, bindings):
-        vec = bindings["std::vector<ReflectedStruct>"]()
+        vec = bindings.std.vector_ReflectedStruct_()
         assert len(vec) == 0
 
     def test_append_and_access(self, bindings):
-        vec = bindings["std::vector<ReflectedStruct>"]()
+        vec = bindings.std.vector_ReflectedStruct_()
         a = bindings.ReflectedStruct(x=1.0, y=2.0, z=3.0, id=0)
         b = bindings.ReflectedStruct(x=4.0, y=5.0, z=6.0, id=1)
         vec.append(a)

@@ -61,8 +61,9 @@ class TestStringSlicing:
         assert self.str1[-5:] == "fasdf"
 
     def test_slice_invalid(self):
-        with pytest.raises(ValueError):
-            self.str1[-5:-6]
+        # An empty/inverted slice is valid Python and yields an empty string
+        # (unlike ct::StringView::substr which throws on invalid ranges)
+        assert self.str1[-5:-6] == ""
 
 
 class TestStringConversion:

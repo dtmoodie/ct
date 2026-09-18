@@ -259,11 +259,38 @@ namespace ct
             {
             }
 
+            // Some accessors' one-argument "mutable get" set() returns a value
+            // or reference to the data (data members, mutable accessor
+            // functions), while classic get/set function pairs return an
+            // AccessToken write-back wrapper which cannot be converted to
+            // Python. Use the plain get() for the latter.
+            template <class R>
+            struct IsAccessToken : std::false_type
+            {
+            };
+
+            template <class R>
+            struct IsAccessToken<AccessToken<R>> : std::true_type
+            {
+            };
+
+            template <class T, class ACCESSOR>
+            boost::python::object pythonGetImpl(T& obj, ACCESSOR accessor, std::true_type)
+            {
+                return convertToPython(accessor.get(obj));
+            }
+
+            template <class T, class ACCESSOR>
+            boost::python::object pythonGetImpl(T& obj, ACCESSOR accessor, std::false_type)
+            {
+                return convertToPython(accessor.set(obj));
+            }
+
             template <int I, class T>
             boost::python::object pythonGet(T& obj)
             {
                 auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>{});
-                return convertToPython(accessor.set(obj));
+                return pythonGetImpl(obj, accessor, IsAccessToken<decltype(accessor.set(obj))>{});
             }
 
             template <int I, class T>

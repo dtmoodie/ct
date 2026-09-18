@@ -51,6 +51,25 @@ if(NOT TARGET ct)
         find_package(OpenCV QUIET COMPONENTS core)
         find_package(CUDA QUIET)
 
+        if(CUDA_FOUND)
+            # nvcc rejects host compilers newer than the GCC it was built
+            # against (CUDA 12.0 stops at GCC 12). If the default GCC is too
+            # new, fall back to the newest installed GCC that CUDA 12.0
+            # supports.
+            execute_process(
+                COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+                OUTPUT_VARIABLE CT_HOST_GCC_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            string(REGEX MATCH "^[0-9]+" CT_HOST_GCC_MAJOR "${CT_HOST_GCC_VERSION}")
+            if(CT_HOST_GCC_MAJOR AND CT_HOST_GCC_MAJOR GREATER 12)
+                find_program(CT_SUPPORTED_GCC NAMES gcc-12 gcc-11)
+                if(CT_SUPPORTED_GCC)
+                    set(CUDA_HOST_COMPILER "${CT_SUPPORTED_GCC}")
+                endif()
+            endif()
+        endif()
+
         if(DEBUG_TEST_FAILURE)
             add_definitions(-DDEBUG_CONSTEXPR_OUTPUT)
         endif()
