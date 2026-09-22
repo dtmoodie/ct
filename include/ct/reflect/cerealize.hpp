@@ -22,6 +22,7 @@ namespace ct
 #include <ct/types/std_array.hpp>
 
 #include <ct/reflect.hpp>
+#include <ct/reflect/print.hpp>
 #include <ct/reflect_traits.hpp>
 #include <ct/static_asserts.hpp>
 #include <ct/type_traits.hpp>
