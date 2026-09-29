@@ -4,6 +4,9 @@
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <ct/types.hpp>
 
+#include <array>
+#include <cstddef>
+
 namespace ct
 {
     namespace bp
@@ -83,6 +86,59 @@ namespace ct
             static boost::python::object convertToPython(std::vector<T, A>& result)
             {
                 return boost::python::object(result);
+            }
+        };
+
+        // std::array: exposed as a fixed-length Python tuple (e.g. the
+        // getter-only "shape" property on reflected cv::Matx types).
+        template <class T, size_t N>
+        struct PythonConverter<std::array<T, N>, 5, void>
+        {
+            // Never registered directly; array values cross the boundary as
+            // tuples, so there is no Python class to define.
+            static void registerToPython(const char*) {}
+
+            static bool convertFromPython(const boost::python::object& pyobj, std::array<T, N>& data)
+            {
+                try
+                {
+                    const size_t len = boost::python::len(pyobj);
+                    if (len != N)
+                    {
+                        return false;
+                    }
+                    for (size_t i = 0; i < N; ++i)
+                    {
+                        // Qualify to reach the free function; the static
+                        // member would otherwise hide it
+                        if (!ct::bp::convertFromPython(pyobj[i], data[i]))
+                        {
+                            PyErr_Clear();
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+                catch (const boost::python::error_already_set&)
+                {
+                    PyErr_Clear();
+                    return false;
+                }
+            }
+
+            static boost::python::object convertToPython(const std::array<T, N>& result)
+            {
+                boost::python::tuple tuple(N);
+                for (size_t i = 0; i < N; ++i)
+                {
+                    tuple[i] = ct::bp::convertToPython(result[i]);
+                }
+                return tuple;
+            }
+
+            static boost::python::object convertToPython(std::array<T, N>& result)
+            {
+                return convertToPython(const_cast<const std::array<T, N>&>(result));
             }
         };
 
