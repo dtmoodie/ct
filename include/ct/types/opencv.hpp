@@ -129,7 +129,14 @@ namespace ct
         MEMBER_FUNCTION(topLeft, &DataType::tl)
         MEMBER_FUNCTION(bottomRight, &DataType::br)
         MEMBER_FUNCTION(area)
+#if (CV_VERSION_MAJOR > 4) || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 11)
+        // contains() became a member template in OpenCV 4.11, so the
+        // name-only form (which takes &DataType::contains) no longer
+        // compiles; use the instantiation for this Rect_'s argument type.
+        MEMBER_FUNCTION(contains, &DataType::template contains<Args...>)
+#else
         MEMBER_FUNCTION(contains)
+#endif
         MEMBER_FUNCTION(intersection, &intersection<Args...>)
         MEMBER_FUNCTION(union, &rectUnion<Args...>)
 #if ((CV_VERSION_MAJOR == 3 && CV_VERSION_MINOR > 2) || CV_VERSION_MAJOR > 3)
