@@ -286,11 +286,39 @@ namespace ct
                 return convertToPython(accessor.set(obj));
             }
 
+            template <class... Ts>
+            using VoidT = void;
+
+            // Getter-only property pointers (made with a null setter) have no
+            // `set` member at all, so probing for one must be SFINAE-friendly.
+            template <class A, class T, class = void>
+            struct HasMutableSet
+                : std::false_type
+            {
+            };
+
+            template <class A, class T>
+            struct HasMutableSet<A, T, VoidT<decltype(std::declval<A&>().set(std::declval<T&>()))>> : std::true_type
+            {
+            };
+
+            template <class T, class A>
+            boost::python::object pythonGetProbe(T& obj, A accessor, std::true_type)
+            {
+                return pythonGetImpl(obj, accessor, IsAccessToken<decltype(accessor.set(obj))>{});
+            }
+
+            template <class T, class A>
+            boost::python::object pythonGetProbe(T& obj, A accessor, std::false_type)
+            {
+                return convertToPython(accessor.get(obj));
+            }
+
             template <int I, class T>
             boost::python::object pythonGet(T& obj)
             {
                 auto accessor = ct::Reflect<T>::getPtr(ct::Indexer<I>{});
-                return pythonGetImpl(obj, accessor, IsAccessToken<decltype(accessor.set(obj))>{});
+                return pythonGetProbe(obj, accessor, HasMutableSet<decltype(accessor), T>{});
             }
 
             template <int I, class T>
