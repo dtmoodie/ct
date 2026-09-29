@@ -2,6 +2,7 @@
 #define CT_VARIADIC_TYPEDEF_HPP
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 #include <utility>
 
 namespace ct
@@ -36,7 +37,11 @@ namespace ct
         return PRED<T>::value;
     }
 
-    template <template <class> class PRED, class T, class... Ts>
+    // The recursive overload is only viable with a non-empty trailing pack: with
+    // an empty Ts... it would be identical to the single-type overload below and
+    // the call would be ambiguous (clang rejects it, gcc silently picks one).
+    template <template <class> class PRED, class T, class... Ts,
+              class = typename std::enable_if<sizeof...(Ts) >= 1>::type>
     constexpr bool allImpl(VariadicTypedef<T, Ts...>)
     {
         return !PRED<T>::value ? false : allImpl<PRED>(VariadicTypedef<Ts...>{});
@@ -48,10 +53,11 @@ namespace ct
         return PRED<T>::value;
     }
 
-    template <template <class> class PRED, class T, class... Ts>
+    template <template <class> class PRED, class T, class... Ts,
+              class = typename std::enable_if<sizeof...(Ts) >= 1>::type>
     constexpr bool anyImpl(ct::VariadicTypedef<T, Ts...>)
     {
-        return PRED<T>::value ? true : allImpl<PRED>(VariadicTypedef<Ts...>{});
+        return PRED<T>::value ? true : anyImpl<PRED>(VariadicTypedef<Ts...>{});
     }
 
     template <template <class> class PRED, class T>
@@ -60,7 +66,8 @@ namespace ct
         return PRED<T>::value ? idx : -1;
     }
 
-    template <template <class> class PRED, class T, class... Ts>
+    template <template <class> class PRED, class T, class... Ts,
+              class = typename std::enable_if<sizeof...(Ts) >= 1>::type>
     constexpr int32_t indexOfImpl(int32_t idx, VariadicTypedef<T, Ts...>)
     {
         return PRED<T>::value ? idx : indexOfImpl<PRED>(idx + 1, VariadicTypedef<Ts...>{});
@@ -72,7 +79,7 @@ namespace ct
         return std::is_same<T, U>::value ? idx : -1;
     }
 
-    template <class U, class T, class... Ts>
+    template <class U, class T, class... Ts, class = typename std::enable_if<sizeof...(Ts) >= 1>::type>
     constexpr int32_t indexOfTypeImpl(int32_t idx, VariadicTypedef<T, Ts...>)
     {
         return std::is_same<T, U>::value ? idx : indexOfTypeImpl<U>(idx + 1, VariadicTypedef<Ts...>{});
