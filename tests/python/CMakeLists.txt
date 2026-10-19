@@ -9,10 +9,20 @@ if(${CT_HAVE_PYTHON})
     # accept the lib prefix for extension modules).
     set_target_properties(test_ct_python PROPERTIES PREFIX "")
 
-
+    # The test "binary" is the driver script configured below
+    # (tests/python/test_ct_python), which imports the test_ct_python
+    # extension built next to it. ctest must be pointed at it by absolute
+    # path and run from its output directory: an embedding project may
+    # relocate the outputs (metaobject builds everything into its build
+    # root), where a bare ./test_ct_python resolved against this directory
+    # does not exist.
+    get_target_property(out_dir test_ct_python ARCHIVE_OUTPUT_DIRECTORY)
+    if(NOT out_dir)
+        set(out_dir ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
     add_test(NAME test_ct_python
-        COMMAND ./test_ct_python
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMAND ${out_dir}/test_ct_python
+        WORKING_DIRECTORY ${out_dir}
     )
 
     if(Eigen3_FOUND)
@@ -81,10 +91,6 @@ if(${CT_HAVE_PYTHON})
             $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
     )
 
-    get_target_property(out_dir test_ct_python ARCHIVE_OUTPUT_DIRECTORY)
-    if(NOT out_dir)
-        set(out_dir ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python ${out_dir}/test_ct_python @ONLY)
     configure_file(${CMAKE_CURRENT_LIST_DIR}/test_ct_python.py ${out_dir}/test_ct_python.py @ONLY)
 

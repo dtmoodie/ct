@@ -6,6 +6,14 @@
 #include "../typename.hpp"
 #include "TArrayView.hpp"
 
+// Include-order warning: the full core.hpp umbrella pulls in cvstd.inl.hpp,
+// whose inline operator<< for UMat streams a cv::Mat. If ct/reflect/print.hpp
+// is visible when that happens, its SFINAE'd std::operator<< probes
+// ct::IsReflected<cv::Mat>, instantiating the primary ReflectImpl<cv::Mat>
+// and making the explicit specialization below a "specialization after
+// instantiation" error. Any TU that includes this header must do so before
+// it compiles the OpenCV umbrella with print.hpp already visible
+// (metaobject's Parameters.cpp includes this header first for this reason).
 #include <opencv2/core.hpp>
 
 namespace ct

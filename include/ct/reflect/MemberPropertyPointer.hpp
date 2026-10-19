@@ -18,6 +18,16 @@ namespace ct
         return (obj.*ptr)();
     }
 
+    // C++17 (P0012R1): a noexcept member function pointer is a distinct type, so this
+    // is a distinct overload. In C++11/14 it would be a redefinition of the one above.
+#if defined(__cpp_noexcept_function_type) && (__cpp_noexcept_function_type >= 201510L)
+    template <class DTYPE, class CTYPE, class DERIVED>
+    DTYPE get(DTYPE (CTYPE::*ptr)() const noexcept, const DERIVED& obj)
+    {
+        return (obj.*ptr)();
+    }
+#endif
+
     template <class DTYPE, class CTYPE, class DERIVED>
     DTYPE get(DTYPE (*ptr)(const CTYPE&), const DERIVED& obj)
     {

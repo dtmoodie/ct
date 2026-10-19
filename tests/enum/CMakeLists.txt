@@ -2,7 +2,12 @@ add_executable(test_ct_enum enum.cpp)
 target_link_libraries(test_ct_enum ct gtest gtest_main)
 target_include_directories(test_ct_enum SYSTEM PRIVATE ${GTEST_INCLUDE})
 set_target_properties(test_ct_enum PROPERTIES FOLDER Tests/ct)
-add_test(test_ct_enum test_ct_enum)
+# Use the NAME/COMMAND form: CMake substitutes the target's absolute path
+# there, while the positional form leaves a bare name that ctest resolves
+# against the test's working directory. That breaks when an embedding
+# project relocates the binaries (metaobject builds them into its build
+# root), where the positional entry reports "Could not find executable".
+add_test(NAME test_ct_enum COMMAND test_ct_enum)
 
 if(CUDA_FOUND)
     set(CUDA_NVCC_FLAGS "-std=c++11")
@@ -17,7 +22,7 @@ if(CUDA_FOUND)
     )
     target_include_directories(test_ct_enum_cuda SYSTEM PRIVATE ${GTEST_INCLUDE})
     set_target_properties(test_ct_enum_cuda PROPERTIES FOLDER Tests/ct)
-    add_test(test_ct_enum_cuda test_ct_enum_cuda)
+    add_test(NAME test_ct_enum_cuda COMMAND test_ct_enum_cuda)
 endif()
 
 if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
